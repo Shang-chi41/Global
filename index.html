@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CNC Monitor</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        body { font-family: Arial; background: #1a1a2e; color: white; padding: 15px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        h1 { color: #4ecdc4; font-size: 24px; }
+        .gauges { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 15px 0; }
+        .card { background: #16213e; padding: 15px; border-radius: 12px; text-align: center; }
+        .value { font-size: 32px; font-weight: bold; }
+        .temp { color: #ff6b6b; }
+        .load { color: #4ecdc4; }
+        .chart-box { background: #16213e; padding: 15px; border-radius: 12px; margin: 10px 0; }
+        canvas { max-height: 250px; }
+        .status-badge { padding: 5px 15px; border-radius: 15px; font-weight: bold; }
+        .running { background: #00b894; }
+        .idle { background: #fdcb6e; color: #333; }
+        .error { background: #d63031; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏭 CNC Monitor</h1>
+        
+        <div class="gauges">
+            <div class="card">
+                <div style="color:#888">Temperature</div>
+                <div class="value temp" id="temp">--°C</div>
+            </div>
+            <div class="card">
+                <div style="color:#888">Load</div>
+                <div class="value load" id="load">--%</div>
+            </div>
+            <div class="card">
+                <div style="color:#888">Status</div>
+                <span class="status-badge" id="status">--</span>
+            </div>
+        </div>
+        
+        <div class="chart-box">
+            <h3>📈 Temperature</h3>
+            <canvas id="tempChart"></canvas>
+        </div>
+        
+        <div class="chart-box">
+            <h3>📈 Load</h3>
+            <canvas id="loadChart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        const MAX = 30;
+        const labels = [], temps = [], loads = [];
+        
+        const opts = { responsive: true, scales: { x: { ticks: { maxTicksLimit: 6 } } }, plugins: { legend: { display: false } } };
+        
+        const tempChart = new Chart(document.getElementById('tempChart'), {
+            type: 'line', data: { labels, datasets: [{ data: temps, borderColor: '#ff6b6b', borderWidth: 2, pointRadius: 0 }] }, options: opts
+        });
+        
+        const loadChart = new Chart(document.getElementById('loadChart'), {
+            type: 'line', data: { labels, datasets: [{ data: loads, borderColor: '#4ecdc4', borderWidth: 2, pointRadius: 0 }] }, options: opts
+        });
+        
+        async function fetchData() {
+            try {
+                const res = await fetch('/api/latest');
+                const d = await res.json();
+                
+                document.getElementById('temp').textContent = d.temp.toFixed(1) + '°C';
+                document.getElementById('load').textContent = d.load + '%';
+                document.getElementById('status').textContent = d.status;
+                document.getElementById('status').className = 'status-badge ' + d.status;
+                
+                const now = new Date().toLocaleTimeString();
+                labels.push(now); temps.push(d.temp); loads.push(d.load);
+                if (labels.length > MAX) { labels.shift(); temps.shift(); loads.shift(); }
+                tempChart.update(); loadChart.update();
+            } catch(e) {}
+        }
+        
+        fetchData();
+        setInterval(fetchData, 3000);
+    </script>
+</body>
+</html>
