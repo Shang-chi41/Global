@@ -1,7 +1,6 @@
 # app.py - SỬA LẠI
 from flask import Flask, render_template, jsonify
 from pymongo import MongoClient
-import os
 
 app = Flask(__name__)
 
@@ -26,16 +25,23 @@ def api_latest():
         return jsonify({"temp": 0, "load": 0, "status": "error"})
     
     try:
+        # Query bản ghi mới nhất
         doc = collection.find_one(sort=[("mqtt_timestamp", -1)])
+        
         if doc:
+            # Trả về đúng field từ Arduino
             return jsonify({
-                "temp": doc.get("temp", 0),
-                "load": doc.get("load", 0),
-                "status": doc.get("status", "unknown")
+                "temp": doc.get("temp", 0),           # Arduino gửi "temp"
+                "load": doc.get("load", 0),           # Arduino gửi "load"
+                "status": doc.get("status", "unknown"),
+                "rssi": doc.get("rssi", 0)
             })
-        return jsonify({"temp": 0, "load": 0, "status": "no_data"})
+        else:
+            return jsonify({"temp": 0, "load": 0, "status": "no_data"})
+            
     except Exception as e:
-        return jsonify({"temp": 0, "load": 0, "status": str(e)[:20]})
+        print(f"API error: {e}")
+        return jsonify({"temp": 0, "load": 0, "status": "error"})
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
