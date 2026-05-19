@@ -272,18 +272,21 @@ def api_history():
     if collection is None: return jsonify([])
     try:
         minutes = int(request.args.get("minutes", 10))
-        now = datetime.now()
+        
+        # ✅ Dùng giờ Việt Nam (UTC+7)
+        now = datetime.utcnow() + timedelta(hours=7)
         start_time = now - timedelta(minutes=minutes)
         
-        # ✅ Format có microseconds để khớp đúng với dữ liệu trong DB
         start_str = start_time.strftime("%Y-%m-%dT%H:%M:%S.000000")
+        now_str    = now.strftime("%Y-%m-%dT%H:%M:%S.999999")
         
-        print(f"📅 Từ: {start_str}  →  Đến: now")
+        print(f"📅 Giờ VN hiện tại: {now.strftime('%H:%M:%S')}")
+        print(f"📅 Từ: {start_str}  →  Đến: {now_str}")
         
-        # ✅ Chỉ cần $gte, bỏ $lte vì không có dữ liệu tương lai
         query = {
             "mqtt_timestamp": {
-                "$gte": start_str
+                "$gte": start_str,
+                "$lte": now_str   # ✅ Giữ lại $lte để chặn chính xác
             }
         }
         
