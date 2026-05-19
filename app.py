@@ -275,46 +275,33 @@ def api_history():
         now = datetime.now()
         start_time = now - timedelta(minutes=minutes)
         
-        # Format giống MongoDB: "2026-05-19T16:14:00"
-        start_str = start_time.strftime("%Y-%m-%dT%H:%M")
-        now_str = now.strftime("%Y-%m-%dT%H:%M")
+        # Format đầy đủ đến giây để so sánh chính xác
+        start_str = start_time.strftime("%Y-%m-%dT%H:%M:%S")
+        now_str   = now.strftime("%Y-%m-%dT%H:%M:%S")
         
-        print(f"🕐 NOW: {now_str}")
-        print(f"🕐 FROM: {start_str}")
+        print(f"📅 Từ: {start_str}  →  Đến: {now_str}")
         
-        # Dùng regex: tìm tất cả timestamp bắt đầu bằng ngày hôm nay
-        today_str = now.strftime("%Y-%m-%d")
-        
-        # Query tất cả dữ liệu hôm nay, sau đó lọc
-        query = {"mqtt_timestamp": {"$regex": f"^{today_str}"}}
+        # Query trực tiếp trên MongoDB, không cần lọc thủ công
+        query = {
+            "mqtt_timestamp": {
+                "$gte": start_str,
+                "$lte": now_str
+            }
+        }
         
         docs = list(collection.find(query).sort("mqtt_timestamp", 1))
-        print(f"📊 Found today: {len(docs)} records")
+        print(f"📊 Tìm được: {len(docs)} bản ghi")
         
-        # Lọc thủ công theo thời gian
-        filtered = []
-        for doc in docs:
-            ts = doc.get("mqtt_timestamp", "")
-            if ts >= start_str and ts <= now_str:
-                filtered.append(doc)
-        
-        print(f"📊 After filter: {len(filtered)} records")
-        
-        if len(filtered) == 0:
-            # Nếu không có, trả về tất cả dữ liệu hôm nay
-            filtered = docs[-100:] if len(docs) > 100 else docs
-            print(f"📊 Fallback: returning {len(filtered)} records")
-        
-        # Sample nếu quá nhiều
-        if len(filtered) > 2000:
-            step = len(filtered) // 2000
-            filtered = filtered[::step]
+        # Giảm mật độ nếu quá nhiều điểm
+        if len(docs) > 2000:
+            step = len(docs) // 2000
+            docs = docs[::step]
         
         return jsonify([{
             "time": d.get("mqtt_timestamp", ""),
             "temp": d.get("temp", 0),
             "load": d.get("load", 0)
-        } for d in filtered])
+        } for d in docs])
         
     except Exception as e:
         print(f"❌ Error: {e}")
