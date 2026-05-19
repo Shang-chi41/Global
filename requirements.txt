@@ -1,7 +1,7 @@
 # Flask server (app.py)
 flask
 pymongo[srv]
- 
+gunicorn
 # Desktop app (cnc_desktop.py)
 PyQt6
 requests
