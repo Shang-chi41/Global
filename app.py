@@ -369,37 +369,37 @@ def api_history():
         return jsonify([])
     try:
         minutes = int(request.args.get("minutes", 10))
-        now = datetime.now()
-        start_time = now - timedelta(minutes=minutes)
         
-        print(f"🕐 NOW: {now.strftime('%H:%M:%S')}")
-        print(f"🕐 FROM: {start_time.strftime('%H:%M:%S')} ({minutes} phút trước)")
+        # ===== TEST 1: Đếm tổng số bản ghi =====
+        total = collection.count_documents({})
+        print(f"📊 TOTAL documents in collection: {total}")
         
-        query = {
-            "mqtt_timestamp": {
-                "$gte": start_time.isoformat(),
-                "$lte": now.isoformat()
-            }
-        }
-        docs = list(collection.find(query).sort("mqtt_timestamp", 1))
+        # ===== TEST 2: Xem 1 bản ghi mới nhất =====
+        sample = collection.find_one()
+        if sample:
+            print(f"📊 SAMPLE document: {sample}")
+            print(f"📊 mqtt_timestamp value: {sample.get('mqtt_timestamp')}")
+            print(f"📊 Type: {type(sample.get('mqtt_timestamp'))}")
         
-        print(f"📊 Found: {len(docs)} records")
+        # ===== TEST 3: Lấy dữ liệu KHÔNG filter =====
+        docs = list(collection.find().sort("mqtt_timestamp", -1).limit(100))
+        docs.reverse()
         
-        # Giới hạn 500 điểm
-        if len(docs) > 500:
-            step = len(docs) // 500
-            docs = docs[::step]
+        print(f"📊 Returning {len(docs)} records (no time filter)")
         
         data = []
         for doc in docs:
             data.append({
-                "time": doc.get("mqtt_timestamp", ""),
+                "time": doc.get("mqtt_timestamp", str(doc.get("_id"))),
                 "temp": doc.get("temp", 0),
                 "load": doc.get("load", 0)
             })
         return jsonify(data)
+        
     except Exception as e:
         print(f"❌ Error: {e}")
+        import traceback
+        traceback.print_exc()
         return jsonify([])
 
 if __name__ == "__main__":
