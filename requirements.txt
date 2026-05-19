@@ -1,4 +1,7 @@
+# Flask server (app.py)
 flask
-gunicorn
-pymongo
-dnspython
+pymongo[srv]
+ 
+# Desktop app (cnc_desktop.py)
+PyQt6
+requests
