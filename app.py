@@ -1,4 +1,4 @@
-# app.py - Dashboard với nút thời gian + nút tải ảnh
+# app.py - Dashboard với tooltip khi chạm vào biểu đồ
 from flask import Flask, jsonify, request
 from pymongo import MongoClient
 from datetime import datetime, timedelta
@@ -24,27 +24,30 @@ def home():
     <head>
         <title>CNC Monitor</title>
         <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
         <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
         <style>
             * { margin: 0; padding: 0; box-sizing: border-box; }
-            body { font-family: Arial; background: #1a1a2e; color: white; padding: 15px; }
+            body { 
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+                background: #1a1a2e; color: white; padding: 10px;
+                -webkit-tap-highlight-color: transparent;
+            }
             .container { max-width: 1000px; margin: 0 auto; }
-            h1 { text-align: center; color: #4ecdc4; margin-bottom: 15px; font-size: 22px; }
+            h1 { text-align: center; color: #4ecdc4; margin-bottom: 10px; font-size: 20px; }
             
-            /* Gauge cards */
-            .gauges { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; }
-            .card { background: #16213e; padding: 15px; border-radius: 12px; text-align: center; }
-            .card-label { color: #888; font-size: 12px; margin-bottom: 5px; }
-            .card-value { font-size: 32px; font-weight: bold; }
+            /* Gauges */
+            .gauges { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px; }
+            .card { background: #16213e; padding: 12px; border-radius: 12px; text-align: center; }
+            .card-label { color: #888; font-size: 11px; margin-bottom: 4px; }
+            .card-value { font-size: 28px; font-weight: bold; }
             .temp-color { color: #ff6b6b; }
             .load-color { color: #4ecdc4; }
             
-            /* Status */
             .status-badge {
-                display: inline-block; padding: 6px 15px; border-radius: 15px;
-                font-size: 16px; font-weight: bold; margin-top: 5px;
+                display: inline-block; padding: 5px 12px; border-radius: 12px;
+                font-size: 14px; font-weight: bold; margin-top: 3px;
             }
             .running { background: #00b894; }
             .idle { background: #fdcb6e; color: #333; }
@@ -52,37 +55,48 @@ def home():
             .error { background: #d63031; animation: blink 0.5s infinite; }
             @keyframes blink { 50% { opacity: 0.5; } }
             
-            /* Time buttons */
+            /* Buttons */
             .btn-group { 
-                display: flex; gap: 8px; justify-content: center; 
-                margin-bottom: 15px; flex-wrap: wrap;
+                display: flex; gap: 6px; justify-content: center; 
+                margin-bottom: 10px; flex-wrap: wrap;
             }
             .btn {
                 background: #16213e; color: white; border: 2px solid #4ecdc4;
-                padding: 8px 16px; border-radius: 20px; cursor: pointer;
-                font-size: 14px; transition: all 0.3s;
+                padding: 6px 12px; border-radius: 15px; cursor: pointer;
+                font-size: 12px; transition: all 0.2s; touch-action: manipulation;
             }
-            .btn:hover { background: #4ecdc4; color: #1a1a2e; }
+            .btn:active { background: #4ecdc4; color: #1a1a2e; }
             .btn.active { background: #4ecdc4; color: #1a1a2e; font-weight: bold; }
             
             /* Chart */
-            .chart-box { background: #16213e; padding: 15px; border-radius: 12px; margin-bottom: 15px; }
-            .chart-box h3 { margin-bottom: 8px; color: #ddd; font-size: 16px; }
-            canvas { width: 100%; max-height: 280px; }
+            .chart-box { 
+                background: #16213e; padding: 12px; border-radius: 12px; margin-bottom: 10px;
+                position: relative;
+            }
+            .chart-box h3 { margin-bottom: 6px; color: #ddd; font-size: 14px; }
+            canvas { width: 100%; height: 250px !important; touch-action: none; }
             
-            /* Info bar */
+            /* Tooltip custom */
+            .chart-tooltip {
+                position: absolute; background: rgba(0,0,0,0.9); color: white;
+                padding: 8px 12px; border-radius: 8px; font-size: 13px;
+                pointer-events: none; z-index: 10; display: none;
+                border: 1px solid #4ecdc4; white-space: nowrap;
+            }
+            
+            /* Info */
             .info-bar { 
                 display: flex; justify-content: space-between; align-items: center;
-                color: #888; font-size: 12px; margin-bottom: 10px; flex-wrap: wrap; gap: 5px;
+                color: #888; font-size: 11px; margin-bottom: 8px; flex-wrap: wrap; gap: 4px;
             }
             
-            /* Download button */
             .download-btn {
                 background: #ff6b6b; color: white; border: none;
-                padding: 10px 20px; border-radius: 20px; cursor: pointer;
-                font-size: 14px; display: block; margin: 10px auto;
+                padding: 8px 16px; border-radius: 15px; cursor: pointer;
+                font-size: 12px; display: block; margin: 8px auto;
+                touch-action: manipulation;
             }
-            .download-btn:hover { opacity: 0.8; }
+            .download-btn:active { opacity: 0.7; }
         </style>
     </head>
     <body>
@@ -92,108 +106,162 @@ def home():
             <!-- TIME BUTTONS -->
             <div class="btn-group">
                 <button class="btn active" onclick="changeTime(10)">10 phút</button>
-                <button class="btn" onclick="changeTime(20)">20 phút</button>
                 <button class="btn" onclick="changeTime(30)">30 phút</button>
                 <button class="btn" onclick="changeTime(60)">1 giờ</button>
+                <button class="btn" onclick="changeTime(360)">6 giờ</button>
                 <button class="btn" onclick="changeTime(1440)">1 ngày</button>
-                <button class="btn" onclick="changeTime(10080)">1 tuần</button>
             </div>
             
             <!-- INFO BAR -->
             <div class="info-bar">
-                <span id="timeRange">Đang xem: 10 phút gần đây</span>
-                <span id="updateInfo">Đang tải...</span>
+                <span id="timeRange">📅 10 phút gần đây</span>
+                <span id="updateInfo">🔄 Đang tải...</span>
             </div>
             
             <!-- GAUGES -->
             <div class="gauges">
                 <div class="card">
-                    <div class="card-label">🌡️ TEMPERATURE</div>
+                    <div class="card-label">🌡️ NHIỆT ĐỘ</div>
                     <div class="card-value temp-color" id="tempValue">--°C</div>
                 </div>
                 <div class="card">
-                    <div class="card-label">⚙️ LOAD</div>
+                    <div class="card-label">⚙️ TẢI</div>
                     <div class="card-value load-color" id="loadValue">--%</div>
                 </div>
                 <div class="card">
-                    <div class="card-label">📌 STATUS</div>
+                    <div class="card-label">📌 TRẠNG THÁI</div>
                     <div id="statusValue"><span class="status-badge">--</span></div>
                 </div>
             </div>
             
-            <!-- CHARTS -->
-            <div class="chart-box">
-                <h3>📈 Temperature (°C)</h3>
+            <!-- TEMPERATURE CHART -->
+            <div class="chart-box" id="tempChartBox">
+                <h3>📈 Nhiệt độ (°C)</h3>
                 <canvas id="tempChart"></canvas>
+                <div class="chart-tooltip" id="tempTooltip"></div>
             </div>
             
-            <div class="chart-box">
-                <h3>📈 Load (%)</h3>
+            <!-- LOAD CHART -->
+            <div class="chart-box" id="loadChartBox">
+                <h3>📈 Tải (%)</h3>
                 <canvas id="loadChart"></canvas>
+                <div class="chart-tooltip" id="loadTooltip"></div>
             </div>
             
-            <!-- DOWNLOAD BUTTON -->
-            <button class="download-btn" onclick="downloadImage()">📸 Tải ảnh về điện thoại</button>
+            <!-- DOWNLOAD -->
+            <button class="download-btn" onclick="downloadImage()">📸 Tải ảnh về máy</button>
         </div>
 
         <script>
-            // ==========================================
-            // CHART SETUP
-            // ==========================================
-            let currentTimeRange = 10; // Mặc định 10 phút
+            let currentTimeRange = 10;
             
-            const tempCtx = document.getElementById('tempChart').getContext('2d');
-            const tempChart = new Chart(tempCtx, {
-                type: 'line',
-                data: { labels: [], datasets: [{
-                    data: [], borderColor: '#ff6b6b', backgroundColor: 'rgba(255,107,107,0.1)',
-                    borderWidth: 2, pointRadius: 0, tension: 0.3, fill: true
-                }]},
-                options: {
-                    responsive: true, animation: { duration: 200 },
-                    scales: {
-                        x: { ticks: { color: '#888', maxTicksLimit: 8 }, grid: { color: '#2d2d2d' } },
-                        y: { ticks: { color: '#888' }, grid: { color: '#2d2d2d' } }
+            // ==========================================
+            // CHART SETUP WITH TOOLTIP
+            // ==========================================
+            function createChart(canvasId, tooltipId, color, yMin, yMax) {
+                const ctx = document.getElementById(canvasId).getContext('2d');
+                const tooltip = document.getElementById(tooltipId);
+                const chartBox = tooltip.parentElement;
+                
+                const chart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: [],
+                        datasets: [{
+                            data: [],
+                            borderColor: color,
+                            backgroundColor: color.replace(')', ',0.1)').replace('rgb', 'rgba'),
+                            borderWidth: 2.5,
+                            pointRadius: 0,
+                            pointHoverRadius: 6,
+                            pointHoverBackgroundColor: 'white',
+                            pointHoverBorderColor: color,
+                            pointHoverBorderWidth: 2,
+                            tension: 0.3,
+                            fill: true
+                        }]
                     },
-                    plugins: { legend: { display: false } }
-                }
-            });
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        animation: { duration: 200 },
+                        interaction: {
+                            mode: 'index',
+                            intersect: false
+                        },
+                        scales: {
+                            x: { 
+                                ticks: { color: '#888', maxTicksLimit: 8, font: { size: 10 } },
+                                grid: { color: '#2d2d2d' }
+                            },
+                            y: { 
+                                ticks: { color: '#888', font: { size: 10 } },
+                                grid: { color: '#2d2d2d' },
+                                min: yMin, max: yMax
+                            }
+                        },
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                enabled: false,  // Tắt tooltip mặc định
+                                external: function(context) {
+                                    // Tooltip custom
+                                    const tooltipModel = context.tooltip;
+                                    
+                                    if (tooltipModel.opacity === 0) {
+                                        tooltip.style.display = 'none';
+                                        return;
+                                    }
+                                    
+                                    if (tooltipModel.dataPoints && tooltipModel.dataPoints.length > 0) {
+                                        const dp = tooltipModel.dataPoints[0];
+                                        const label = dp.label || '';
+                                        const value = dp.raw !== undefined ? dp.raw.toFixed(1) : '--';
+                                        const datasetLabel = context.chart.data.datasets[dp.datasetIndex].label || '';
+                                        
+                                        tooltip.innerHTML = `
+                                            <div style="color:#4ecdc4;margin-bottom:4px;">🕐 ${label}</div>
+                                            <div style="font-size:16px;font-weight:bold;color:${color};">
+                                                ${value}
+                                            </div>
+                                        `;
+                                        tooltip.style.display = 'block';
+                                        
+                                        // Vị trí tooltip
+                                        const rect = chartBox.getBoundingClientRect();
+                                        const canvasRect = context.chart.canvas.getBoundingClientRect();
+                                        const x = canvasRect.left - rect.left + tooltipModel.caretX;
+                                        const y = canvasRect.top - rect.top + tooltipModel.caretY - 60;
+                                        
+                                        tooltip.style.left = Math.min(x, rect.width - 120) + 'px';
+                                        tooltip.style.top = Math.max(y, 5) + 'px';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+                
+                return chart;
+            }
             
-            const loadCtx = document.getElementById('loadChart').getContext('2d');
-            const loadChart = new Chart(loadCtx, {
-                type: 'line',
-                data: { labels: [], datasets: [{
-                    data: [], borderColor: '#4ecdc4', backgroundColor: 'rgba(78,205,196,0.1)',
-                    borderWidth: 2, pointRadius: 0, tension: 0.3, fill: true
-                }]},
-                options: {
-                    responsive: true, animation: { duration: 200 },
-                    scales: {
-                        x: { ticks: { color: '#888', maxTicksLimit: 8 }, grid: { color: '#2d2d2d' } },
-                        y: { ticks: { color: '#888', grid: { color: '#2d2d2d' }, min: 0, max: 100 } }
-                    },
-                    plugins: { legend: { display: false } }
-                }
-            });
+            const tempChart = createChart('tempChart', 'tempTooltip', '#ff6b6b', 20, 60);
+            const loadChart = createChart('loadChart', 'loadTooltip', '#4ecdc4', 0, 100);
             
             // ==========================================
-            // CHANGE TIME RANGE
+            // CHANGE TIME
             // ==========================================
             function changeTime(minutes) {
                 currentTimeRange = minutes;
                 
-                // Update active button
                 document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
                 event.target.classList.add('active');
                 
-                // Update label
-                let label = minutes + ' phút gần đây';
-                if (minutes >= 1440) label = (minutes/1440).toFixed(0) + ' ngày gần đây';
-                else if (minutes >= 10080) label = (minutes/10080).toFixed(0) + ' tuần gần đây';
-                else if (minutes >= 60) label = (minutes/60).toFixed(0) + ' giờ gần đây';
-                document.getElementById('timeRange').textContent = 'Đang xem: ' + label;
+                let label = minutes + ' phút';
+                if (minutes >= 1440) label = (minutes/1440).toFixed(0) + ' ngày';
+                else if (minutes >= 60) label = (minutes/60).toFixed(0) + ' giờ';
+                document.getElementById('timeRange').textContent = '📅 ' + label + ' gần đây';
                 
-                // Reload data
                 fetchHistory();
             }
             
@@ -205,15 +273,18 @@ def home():
                     const res = await fetch('/api/history?minutes=' + currentTimeRange);
                     const data = await res.json();
                     
-                    // Clear old data
+                    // Clear
                     tempChart.data.labels = [];
                     tempChart.data.datasets[0].data = [];
                     loadChart.data.labels = [];
                     loadChart.data.datasets[0].data = [];
                     
-                    // Add new data
+                    // Add data
+                    const labels = [];
+                    const temps = [];
+                    const loads = [];
+                    
                     data.forEach(d => {
-                        // Format time
                         let time = '';
                         try {
                             const t = new Date(d.time);
@@ -222,17 +293,21 @@ def home():
                             time = d.time || '';
                         }
                         
-                        tempChart.data.labels.push(time);
-                        tempChart.data.datasets[0].data.push(d.temp || 0);
-                        loadChart.data.labels.push(time);
-                        loadChart.data.datasets[0].data.push(d.load || 0);
+                        labels.push(time);
+                        temps.push(d.temp || 0);
+                        loads.push(d.load || 0);
                     });
+                    
+                    tempChart.data.labels = labels;
+                    tempChart.data.datasets[0].data = temps;
+                    loadChart.data.labels = labels;
+                    loadChart.data.datasets[0].data = loads;
                     
                     tempChart.update();
                     loadChart.update();
                     
                     document.getElementById('updateInfo').textContent = 
-                        'Cập nhật: ' + new Date().toLocaleTimeString() + ' | ' + data.length + ' điểm';
+                        '🔄 ' + new Date().toLocaleTimeString() + ' | ' + data.length + ' điểm';
                     
                 } catch(e) {
                     console.error(e);
@@ -240,7 +315,7 @@ def home():
             }
             
             // ==========================================
-            // FETCH LATEST (gauges)
+            // FETCH LATEST
             // ==========================================
             async function fetchLatest() {
                 try {
@@ -264,9 +339,8 @@ def home():
                     backgroundColor: '#1a1a2e',
                     scale: 2
                 }).then(canvas => {
-                    // Tạo link download
                     const link = document.createElement('a');
-                    link.download = 'CNC_Monitor_' + new Date().toISOString().slice(0,16).replace(/:/g,'-') + '.png';
+                    link.download = 'CNC_' + new Date().toISOString().slice(0,16).replace(/:/g,'-') + '.png';
                     link.href = canvas.toDataURL('image/png');
                     link.click();
                 });
@@ -277,10 +351,7 @@ def home():
             // ==========================================
             fetchLatest();
             fetchHistory();
-            
-            // Update gauges every 3 seconds
             setInterval(fetchLatest, 3000);
-            // Update chart every 30 seconds
             setInterval(fetchHistory, 30000);
         </script>
     </body>
@@ -291,7 +362,6 @@ def home():
 def api_latest():
     if collection is None:
         return jsonify({"temp": 0, "load": 0, "status": "db_error"})
-    
     try:
         doc = collection.find_one(sort=[("mqtt_timestamp", -1)])
         if doc:
@@ -301,29 +371,19 @@ def api_latest():
                 "status": doc.get("status", "unknown")
             })
         return jsonify({"temp": 0, "load": 0, "status": "no_data"})
-    except Exception as e:
+    except:
         return jsonify({"temp": 0, "load": 0, "status": "error"})
 
 @app.route("/api/history")
 def api_history():
-    """API: Lấy dữ liệu lịch sử theo khoảng thời gian"""
     if collection is None:
         return jsonify([])
-    
     try:
-        # Lấy tham số minutes từ URL
         minutes = int(request.args.get("minutes", 10))
-        
-        # Tính thời gian bắt đầu
         start_time = datetime.now() - timedelta(minutes=minutes)
-        
-        # Query MongoDB: lấy dữ liệu từ start_time đến hiện tại
         query = {"mqtt_timestamp": {"$gte": start_time.isoformat()}}
-        
-        # Lấy dữ liệu, sắp xếp từ cũ đến mới
         docs = list(collection.find(query).sort("mqtt_timestamp", 1))
         
-        # Format response
         data = []
         for doc in docs:
             data.append({
@@ -332,10 +392,8 @@ def api_history():
                 "load": doc.get("load", 0),
                 "status": doc.get("status", "")
             })
-        
         return jsonify(data)
-        
-    except Exception as e:
+    except:
         return jsonify([])
 
 if __name__ == "__main__":
