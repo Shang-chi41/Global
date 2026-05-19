@@ -369,28 +369,47 @@ def api_history():
         return jsonify([])
     try:
         minutes = int(request.args.get("minutes", 10))
+        now = datetime.now()
+        start_time = now - timedelta(minutes=minutes)
         
-        # ===== TEST 1: Đếm tổng số bản ghi =====
-        total = collection.count_documents({})
-        print(f"📊 TOTAL documents in collection: {total}")
+        # Chuyển thành string format giống MongoDB
+        # MongoDB lưu dạng: "2026-05-15T16:21:41.602085"
+        start_str = start_time.isoformat()
+        now_str = now.isoformat()
         
-        # ===== TEST 2: Xem 1 bản ghi mới nhất =====
-        sample = collection.find_one()
-        if sample:
-            print(f"📊 SAMPLE document: {sample}")
-            print(f"📊 mqtt_timestamp value: {sample.get('mqtt_timestamp')}")
-            print(f"📊 Type: {type(sample.get('mqtt_timestamp'))}")
+        print(f"🕐 NOW: {now_str}")
+        print(f"🕐 START: {start_str}")
         
-        # ===== TEST 3: Lấy dữ liệu KHÔNG filter =====
-        docs = list(collection.find().sort("mqtt_timestamp", -1).limit(100))
-        docs.reverse()
+        # Query tất cả dữ liệu trong khoảng thời gian
+        query = {
+            "mqtt_timestamp": {
+                "$gte": start_str,
+                "$lte": now_str
+            }
+        }
         
-        print(f"📊 Returning {len(docs)} records (no time filter)")
+        docs = list(collection.find(query).sort("mqtt_timestamp", 1))
+        print(f"📊 Found: {len(docs)} records in {minutes} minutes")
+        
+        # Nếu vẫn không có, thử query không filter
+        if len(docs) == 0:
+            print("⚠️ No data with time filter, trying regex...")
+            # Thử query với regex cho ngày hiện tại
+            today_str = now.strftime("%Y-%m-%d")
+            query = {"mqtt_timestamp": {"$regex": f"^{today_str}"}}
+            docs = list(collection.find(query).sort("mqtt_timestamp", 1))
+            print(f"📊 Found with regex: {len(docs)} records")
+        
+        # Nếu > 1000 điểm, sample xuống
+        if len(docs) > 1000:
+            step = len(docs) // 1000
+            docs = docs[::step]
+            print(f"📊 Sampled to: {len(docs)} records")
         
         data = []
         for doc in docs:
             data.append({
-                "time": doc.get("mqtt_timestamp", str(doc.get("_id"))),
+                "time": doc.get("mqtt_timestamp", ""),
                 "temp": doc.get("temp", 0),
                 "load": doc.get("load", 0)
             })
@@ -398,8 +417,6 @@ def api_history():
         
     except Exception as e:
         print(f"❌ Error: {e}")
-        import traceback
-        traceback.print_exc()
         return jsonify([])
 
 if __name__ == "__main__":
