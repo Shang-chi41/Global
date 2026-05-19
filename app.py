@@ -275,24 +275,21 @@ def api_history():
         now = datetime.now()
         start_time = now - timedelta(minutes=minutes)
         
-        # Format đầy đủ đến giây để so sánh chính xác
-        start_str = start_time.strftime("%Y-%m-%dT%H:%M:%S")
-        now_str   = now.strftime("%Y-%m-%dT%H:%M:%S")
+        # ✅ Format có microseconds để khớp đúng với dữ liệu trong DB
+        start_str = start_time.strftime("%Y-%m-%dT%H:%M:%S.000000")
         
-        print(f"📅 Từ: {start_str}  →  Đến: {now_str}")
+        print(f"📅 Từ: {start_str}  →  Đến: now")
         
-        # Query trực tiếp trên MongoDB, không cần lọc thủ công
+        # ✅ Chỉ cần $gte, bỏ $lte vì không có dữ liệu tương lai
         query = {
             "mqtt_timestamp": {
-                "$gte": start_str,
-                "$lte": now_str
+                "$gte": start_str
             }
         }
         
         docs = list(collection.find(query).sort("mqtt_timestamp", 1))
         print(f"📊 Tìm được: {len(docs)} bản ghi")
         
-        # Giảm mật độ nếu quá nhiều điểm
         if len(docs) > 2000:
             step = len(docs) // 2000
             docs = docs[::step]
