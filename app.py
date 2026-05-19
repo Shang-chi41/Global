@@ -99,7 +99,6 @@ def home():
             }
             .download-btn:active { opacity: 0.7; }
             
-            /* Loading indicator */
             .loading {
                 display: inline-block;
                 width: 12px;
@@ -125,6 +124,7 @@ def home():
                 <button class="btn" onclick="changeTime(60, this)">1 giờ</button>
                 <button class="btn" onclick="changeTime(360, this)">6 giờ</button>
                 <button class="btn" onclick="changeTime(1440, this)">1 ngày</button>
+                <button class="btn" onclick="changeTime(10080, this)">1 tuần</button>
             </div>
             
             <!-- INFO BAR -->
@@ -275,7 +275,9 @@ def home():
                 
                 // Update label
                 let label = '';
-                if (minutes >= 1440) {
+                if (minutes >= 10080) {
+                    label = (minutes/10080).toFixed(0) + ' tuần';
+                } else if (minutes >= 1440) {
                     label = (minutes/1440).toFixed(0) + ' ngày';
                 } else if (minutes >= 360) {
                     label = (minutes/60).toFixed(0) + ' giờ';
@@ -284,14 +286,14 @@ def home():
                 } else {
                     label = minutes + ' phút';
                 }
-                document.getElementById('timeRange').textContent = '📅 ' + label + ' gần đây';
+                document.getElementById('timeRange').textContent = '📅 ' + label + ' gần đây (từ hiện tại)';
                 
                 // Fetch new data
                 fetchHistory();
             }
             
             // ==========================================
-            // FETCH HISTORY
+            // FETCH HISTORY - LẤY DỮ LIỆU TỪ HIỆN TẠI TRỞ VỀ
             // ==========================================
             async function fetchHistory() {
                 if (isLoading) return;
@@ -300,7 +302,10 @@ def home():
                 document.getElementById('updateInfo').innerHTML = '<span class="loading"></span> Đang tải dữ liệu...';
                 
                 try {
-                    const res = await fetch('/api/history?minutes=' + currentTimeRange);
+                    const now = new Date();
+                    const url = `/api/history?minutes=${currentTimeRange}&_t=${now.getTime()}`; // Thêm timestamp để tránh cache
+                    const res = await fetch(url);
+                    
                     if (!res.ok) {
                         throw new Error('Network response was not ok');
                     }
@@ -313,7 +318,7 @@ def home():
                     loadChart.data.datasets[0].data = [];
                     
                     if (data.length === 0) {
-                        document.getElementById('updateInfo').innerHTML = '⚠️ Không có dữ liệu trong khoảng thời gian này';
+                        document.getElementById('updateInfo').innerHTML = '⚠️ Không có dữ liệu trong ' + currentTimeRange + ' phút qua';
                         isLoading = false;
                         tempChart.update();
                         loadChart.update();
@@ -330,7 +335,10 @@ def home():
                         try {
                             const t = new Date(d.time);
                             // Format time based on range
-                            if (currentTimeRange >= 1440) {
+                            if (currentTimeRange >= 10080) {
+                                // For weeks, show date and hour
+                                time = t.toLocaleString('vi-VN', {month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit'});
+                            } else if (currentTimeRange >= 1440) {
                                 // For days, show date and hour
                                 time = t.toLocaleString('vi-VN', {month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit'});
                             } else if (currentTimeRange >= 360) {
@@ -354,14 +362,14 @@ def home():
                     loadChart.data.labels = labels;
                     loadChart.data.datasets[0].data = loads;
                     
-                    tempChart.update('none'); // 'none' for faster update
+                    tempChart.update('none');
                     loadChart.update('none');
                     
                     // Calculate time range text
                     let startTime = new Date(data[0].time);
                     let endTime = new Date(data[data.length-1].time);
                     document.getElementById('updateInfo').innerHTML = 
-                        `🔄 ${new Date().toLocaleTimeString('vi-VN')} | ${data.length} điểm dữ liệu | ${startTime.toLocaleTimeString('vi-VN')} → ${endTime.toLocaleTimeString('vi-VN')}`;
+                        `🔄 ${new Date().toLocaleTimeString('vi-VN')} | ${data.length} điểm | ${startTime.toLocaleTimeString('vi-VN')} → ${endTime.toLocaleTimeString('vi-VN')}`;
                     
                 } catch(e) {
                     console.error('Error fetching history:', e);
@@ -376,27 +384,27 @@ def home():
             // ==========================================
             async function fetchLatest() {
                 try {
-                    const res = await fetch('/api/latest');
+                    const res = await fetch('/api/latest?_t=' + new Date().getTime());
                     if (!res.ok) throw new Error('Network error');
                     const d = await res.json();
                     
-                    if (d.temp !== undefined && d.temp !== null) {
+                    if (d.temp !== undefined && d.temp !== null && d.temp !== 0) {
                         document.getElementById('tempValue').textContent = d.temp.toFixed(1) + '°C';
                     } else {
                         document.getElementById('tempValue').textContent = '--°C';
                     }
                     
-                    if (d.load !== undefined && d.load !== null) {
+                    if (d.load !== undefined && d.load !== null && d.load !== 0) {
                         document.getElementById('loadValue').textContent = d.load + '%';
                     } else {
                         document.getElementById('loadValue').textContent = '--%';
                     }
                     
                     const statusEl = document.getElementById('statusValue');
-                    if (d.status && d.status !== 'unknown' && d.status !== 'no_data') {
-                        statusEl.innerHTML = '<span class="status-badge ' + d.status + '">' + d.status + '</span>';
+                    if (d.status && d.status !== 'unknown' && d.status !== 'no_data' && d.status !== 'db_error') {
+                        statusEl.innerHTML = '<span class="status-badge ' + d.status + '">' + d.status.toUpperCase() + '</span>';
                     } else {
-                        statusEl.innerHTML = '<span class="status-badge">No Data</span>';
+                        statusEl.innerHTML = '<span class="status-badge">NO DATA</span>';
                     }
                     
                 } catch(e) {
@@ -420,7 +428,7 @@ def home():
                 }).then(canvas => {
                     const link = document.createElement('a');
                     const now = new Date();
-                    link.download = `CNC_${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()}_${now.getHours()}-${now.getMinutes()}.png`;
+                    link.download = `CNC_${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()}_${now.getHours()}-${now.getMinutes()}-${now.getSeconds()}.png`;
                     link.href = canvas.toDataURL('image/png');
                     link.click();
                     btn.textContent = '📸 Tải ảnh về máy';
@@ -445,7 +453,7 @@ def home():
             // Auto refresh latest data every 3 seconds
             setInterval(fetchLatest, 3000);
             
-            // Auto refresh history every 30 seconds
+            // Auto refresh history every 30 seconds (cập nhật dữ liệu mới nhất)
             setInterval(fetchHistory, 30000);
         </script>
     </body>
@@ -454,6 +462,7 @@ def home():
 
 @app.route("/api/latest")
 def api_latest():
+    """Lấy dữ liệu mới nhất"""
     if collection is None:
         return jsonify({"temp": 0, "load": 0, "status": "db_error"})
     try:
@@ -471,25 +480,36 @@ def api_latest():
 
 @app.route("/api/history")
 def api_history():
+    """Lấy dữ liệu trong khoảng thời gian từ hiện tại trở về trước"""
     if collection is None:
         return jsonify([])
     try:
         minutes = int(request.args.get("minutes", 10))
-        # Calculate start time
-        start_time = datetime.now() - timedelta(minutes=minutes)
         
-        # Query for data in the time range
-        # Note: Adjust field name based on your actual MongoDB document structure
-        query = {"mqtt_timestamp": {"$gte": start_time.isoformat()}}
+        # Lấy thời điểm hiện tại
+        now = datetime.now()
         
-        # Sort by timestamp ascending
+        # Tính thời điểm bắt đầu (hiện tại trừ đi số phút)
+        start_time = now - timedelta(minutes=minutes)
+        
+        print(f"📊 Query: {minutes} minutes ago")
+        print(f"   From: {start_time.strftime('%Y-%m-%d %H:%M:%S')}")
+        print(f"   To:   {now.strftime('%Y-%m-%d %H:%M:%S')}")
+        
+        # Query để lấy dữ liệu trong khoảng thời gian
+        # CẦN CHÚ Ý: Đảm bảo field 'mqtt_timestamp' tồn tại và đúng định dạng
+        query = {"mqtt_timestamp": {"$gte": start_time.isoformat(), "$lte": now.isoformat()}}
+        
+        # Sort theo thời gian tăng dần
         docs = list(collection.find(query).sort("mqtt_timestamp", 1))
         
-        # Limit data points for performance (max 500 points)
+        print(f"   Found: {len(docs)} records")
+        
+        # Nếu quá nhiều dữ liệu, lấy mẫu để hiển thị (tối đa 500 điểm)
         if len(docs) > 500:
-            # Take every nth point
             step = len(docs) // 500
             docs = docs[::step]
+            print(f"   Sampled: {len(docs)} records")
         
         data = []
         for doc in docs:
@@ -500,10 +520,12 @@ def api_history():
                 "status": doc.get("status", "")
             })
         
-        print(f"History query: {minutes} minutes, found {len(data)} records from {start_time.isoformat()}")
         return jsonify(data)
+        
     except Exception as e:
-        print(f"Error in api_history: {e}")
+        print(f"❌ Error in api_history: {e}")
+        import traceback
+        traceback.print_exc()
         return jsonify([])
 
 if __name__ == "__main__":
