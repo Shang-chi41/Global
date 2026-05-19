@@ -1,4 +1,5 @@
-# app.py - CNC Monitor với 2 chế độ: REAL-TIME + LỊCH SỬ
+# app.py - CNC Monitor HOÀN CHỈNH
+# 2 chế độ: LIVE (real-time) + LỊCH SỬ (query từ hiện tại trở về X phút)
 from flask import Flask, jsonify, request
 from pymongo import MongoClient
 from datetime import datetime, timedelta
@@ -34,20 +35,9 @@ def home():
             .container { max-width: 1000px; margin: 0 auto; }
             h1 { text-align: center; color: #4ecdc4; font-size: 20px; margin-bottom: 10px; }
             
-            /* MODE SWITCH */
-            .mode-switch {
-                display: flex; gap: 0; justify-content: center; margin-bottom: 12px;
-                background: #16213e; border-radius: 25px; overflow: hidden; width: fit-content; margin: 0 auto 12px auto;
-            }
-            .mode-btn {
-                padding: 10px 24px; cursor: pointer; font-size: 13px; font-weight: bold;
-                border: none; color: #888; background: transparent; transition: all 0.3s;
-            }
+            .mode-switch { display: flex; justify-content: center; margin-bottom: 12px; background: #16213e; border-radius: 25px; overflow: hidden; width: fit-content; margin: 0 auto 12px auto; }
+            .mode-btn { padding: 10px 24px; cursor: pointer; font-size: 13px; font-weight: bold; border: none; color: #888; background: transparent; }
             .mode-btn.active { background: #4ecdc4; color: #1a1a2e; }
-            
-            /* LIVE MODE */
-            #liveMode { display: block; }
-            #historyMode { display: none; }
             
             .gauges { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
             .card { background: #16213e; padding: 12px; border-radius: 12px; text-align: center; }
@@ -56,10 +46,7 @@ def home():
             .temp-color { color: #ff6b6b; }
             .load-color { color: #4ecdc4; }
             
-            .status-badge {
-                display: inline-block; padding: 5px 12px; border-radius: 12px;
-                font-size: 14px; font-weight: bold; margin-top: 4px;
-            }
+            .status-badge { display: inline-block; padding: 5px 12px; border-radius: 12px; font-size: 14px; font-weight: bold; margin-top: 4px; }
             .running { background: #00b894; }
             .idle { background: #fdcb6e; color: #333; }
             .maintenance { background: #e17055; }
@@ -67,61 +54,44 @@ def home():
             @keyframes blink { 50% { opacity: 0.5; } }
             
             .btn-group { display: flex; gap: 6px; justify-content: center; margin-bottom: 12px; flex-wrap: wrap; }
-            .btn {
-                background: #16213e; color: white; border: 2px solid #4ecdc4;
-                padding: 7px 14px; border-radius: 18px; cursor: pointer; font-size: 12px;
-            }
+            .btn { background: #16213e; color: white; border: 2px solid #4ecdc4; padding: 7px 14px; border-radius: 18px; cursor: pointer; font-size: 12px; }
             .btn.active { background: #4ecdc4; color: #1a1a2e; font-weight: bold; }
             
             .chart-box { background: #16213e; padding: 12px; border-radius: 12px; margin-bottom: 12px; position: relative; }
             .chart-box h3 { margin-bottom: 6px; color: #ddd; font-size: 14px; }
             canvas { width: 100%; height: 260px !important; touch-action: none; }
             
-            .chart-tooltip {
-                position: absolute; background: rgba(0,0,0,0.95); color: white;
-                padding: 10px 14px; border-radius: 10px; font-size: 13px;
-                pointer-events: none; z-index: 10; display: none;
-                border: 2px solid #4ecdc4; text-align: center;
-            }
+            .chart-tooltip { position: absolute; background: rgba(0,0,0,0.95); color: white; padding: 10px 14px; border-radius: 10px; font-size: 13px; pointer-events: none; z-index: 10; display: none; border: 2px solid #4ecdc4; text-align: center; }
             .chart-tooltip .tt-time { color: #4ecdc4; font-size: 12px; margin-bottom: 4px; }
             .chart-tooltip .tt-value { font-size: 20px; font-weight: bold; }
             
             .info-bar { display: flex; justify-content: space-between; color: #888; font-size: 11px; margin-bottom: 10px; }
-            
             .live-dot { width: 10px; height: 10px; background: #00b894; border-radius: 50%; display: inline-block; animation: pulse 1.5s infinite; }
             @keyframes pulse { 50% { opacity: 0.3; } }
             
-            .download-btn {
-                background: #ff6b6b; color: white; border: none;
-                padding: 10px 20px; border-radius: 20px; cursor: pointer;
-                font-size: 14px; display: block; margin: 10px auto;
-            }
+            .download-btn { background: #ff6b6b; color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-size: 14px; display: block; margin: 10px auto; }
         </style>
     </head>
     <body>
         <div class="container" id="dashboard">
             <h1>🏭 CNC Machine Monitor</h1>
             
-            <!-- MODE SWITCH -->
             <div class="mode-switch">
                 <button class="mode-btn active" onclick="switchMode('live')">🔴 LIVE</button>
                 <button class="mode-btn" onclick="switchMode('history')">📅 LỊCH SỬ</button>
             </div>
             
-            <!-- INFO BAR -->
             <div class="info-bar">
                 <span id="infoLeft"><span class="live-dot"></span> REAL-TIME</span>
                 <span id="infoRight">🔄 Đang tải...</span>
             </div>
             
-            <!-- GAUGES -->
             <div class="gauges">
                 <div class="card"><div class="card-label">🌡️ NHIỆT ĐỘ</div><div class="card-value temp-color" id="tempValue">--°C</div></div>
                 <div class="card"><div class="card-label">⚙️ TẢI</div><div class="card-value load-color" id="loadValue">--%</div></div>
                 <div class="card"><div class="card-label">📌 TRẠNG THÁI</div><div id="statusValue"><span class="status-badge">--</span></div></div>
             </div>
             
-            <!-- HISTORY BUTTONS (chỉ hiện ở chế độ lịch sử) -->
             <div class="btn-group" id="historyBtns" style="display:none;">
                 <button class="btn active" onclick="changeTime(10, this)">10 phút</button>
                 <button class="btn" onclick="changeTime(30, this)">30 phút</button>
@@ -130,14 +100,12 @@ def home():
                 <button class="btn" onclick="changeTime(1440, this)">1 ngày</button>
             </div>
             
-            <!-- TEMP CHART -->
             <div class="chart-box" id="tempChartBox">
                 <h3>📈 Nhiệt độ (°C)</h3>
                 <canvas id="tempChart"></canvas>
                 <div class="chart-tooltip" id="tempTooltip"><div class="tt-time"></div><div class="tt-value"></div></div>
             </div>
             
-            <!-- LOAD CHART -->
             <div class="chart-box" id="loadChartBox">
                 <h3>📈 Tải (%)</h3>
                 <canvas id="loadChart"></canvas>
@@ -148,18 +116,12 @@ def home():
         </div>
 
         <script>
-            // ==========================================
-            // GLOBAL STATE
-            // ==========================================
-            let currentMode = 'live';  // 'live' | 'history'
+            let currentMode = 'live';
             let historyMinutes = 10;
             let liveTimer = null;
             let historyTimer = null;
-            const MAX_LIVE_POINTS = 60;  // 5 phút (mỗi 5s = 60 điểm)
+            const MAX_LIVE_POINTS = 60;
             
-            // ==========================================
-            // CREATE CHART
-            // ==========================================
             function createChart(canvasId, tooltipId, color, yMin, yMax, unit) {
                 const canvas = document.getElementById(canvasId);
                 const ctx = canvas.getContext('2d');
@@ -168,23 +130,13 @@ def home():
                 
                 const chart = new Chart(ctx, {
                     type: 'line',
-                    data: { labels: [], datasets: [{
-                        data: [], borderColor: color,
-                        backgroundColor: color.replace(')', ',0.1)').replace('rgb', 'rgba'),
-                        borderWidth: 3, pointRadius: 0, pointHoverRadius: 8,
-                        pointHoverBackgroundColor: 'white', pointHoverBorderColor: color,
-                        pointHoverBorderWidth: 3, tension: 0.4, fill: true
-                    }]},
+                    data: { labels: [], datasets: [{ data: [], borderColor: color, backgroundColor: color.replace(')', ',0.1)').replace('rgb', 'rgba'), borderWidth: 3, pointRadius: 0, pointHoverRadius: 8, pointHoverBackgroundColor: 'white', pointHoverBorderColor: color, pointHoverBorderWidth: 3, tension: 0.4, fill: true }]},
                     options: {
-                        responsive: true, maintainAspectRatio: false,
-                        animation: currentMode === 'live' ? { duration: 200 } : { duration: 300 },
+                        responsive: true, maintainAspectRatio: false, animation: { duration: 200 },
                         interaction: { mode: 'index', intersect: false },
                         onClick: function(e, elements) {
                             if (elements.length > 0) {
                                 const idx = elements[0].index;
-                                const label = chart.data.labels[idx];
-                                const value = chart.data.datasets[0].data[idx];
-                                
                                 chart.data.datasets[0].pointRadius = Array(chart.data.labels.length).fill(0);
                                 chart.data.datasets[0].pointRadius[idx] = 8;
                                 chart.data.datasets[0].pointBackgroundColor = 'white';
@@ -197,25 +149,18 @@ def home():
                                 const x = canvasRect.left - rect.left + elements[0].element.x;
                                 const y = canvasRect.top - rect.top + elements[0].element.y - 75;
                                 
-                                tooltip.querySelector('.tt-time').textContent = '🕐 ' + label;
-                                tooltip.querySelector('.tt-value').textContent = value.toFixed(1) + ' ' + unit;
+                                tooltip.querySelector('.tt-time').textContent = '🕐 ' + chart.data.labels[idx];
+                                tooltip.querySelector('.tt-value').textContent = chart.data.datasets[0].data[idx].toFixed(1) + ' ' + unit;
                                 tooltip.querySelector('.tt-value').style.color = color;
                                 tooltip.style.display = 'block';
                                 tooltip.style.left = Math.min(Math.max(x - 60, 5), rect.width - 130) + 'px';
                                 tooltip.style.top = Math.max(y, 5) + 'px';
                                 
                                 clearTimeout(tooltip._timeout);
-                                tooltip._timeout = setTimeout(() => {
-                                    tooltip.style.display = 'none';
-                                    chart.data.datasets[0].pointRadius = 0;
-                                    chart.update();
-                                }, 3000);
+                                tooltip._timeout = setTimeout(() => { tooltip.style.display = 'none'; chart.data.datasets[0].pointRadius = 0; chart.update(); }, 3000);
                             }
                         },
-                        scales: {
-                            x: { ticks: { color: '#888', maxTicksLimit: 8, font:{size:10} }, grid: { color: '#2d2d2d' } },
-                            y: { ticks: { color: '#888', font:{size:10} }, grid: { color: '#2d2d2d' }, min: yMin, max: yMax }
-                        },
+                        scales: { x: { ticks: { color: '#888', maxTicksLimit: 8, font:{size:10} }, grid: { color: '#2d2d2d' } }, y: { ticks: { color: '#888', font:{size:10} }, grid: { color: '#2d2d2d' }, min: yMin, max: yMax } },
                         plugins: { legend: { display: false }, tooltip: { enabled: false } }
                     }
                 });
@@ -225,29 +170,16 @@ def home():
             const tempChart = createChart('tempChart', 'tempTooltip', '#ff6b6b', 30, 60, '°C');
             const loadChart = createChart('loadChart', 'loadTooltip', '#4ecdc4', 0, 100, '%');
             
-            // ==========================================
-            // SWITCH MODE
-            // ==========================================
             function switchMode(mode) {
                 currentMode = mode;
-                
-                // Update buttons
                 document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
                 event.target.classList.add('active');
-                
-                // Stop all timers
                 if (liveTimer) clearInterval(liveTimer);
                 if (historyTimer) clearInterval(historyTimer);
                 
-                // Clear charts
-                tempChart.data.labels = [];
-                tempChart.data.datasets[0].data = [];
-                tempChart.data.datasets[0].pointRadius = 0;
-                loadChart.data.labels = [];
-                loadChart.data.datasets[0].data = [];
-                loadChart.data.datasets[0].pointRadius = 0;
-                tempChart.update();
-                loadChart.update();
+                tempChart.data.labels = []; tempChart.data.datasets[0].data = []; tempChart.data.datasets[0].pointRadius = 0;
+                loadChart.data.labels = []; loadChart.data.datasets[0].data = []; loadChart.data.datasets[0].pointRadius = 0;
+                tempChart.update(); loadChart.update();
                 
                 if (mode === 'live') {
                     document.getElementById('historyBtns').style.display = 'none';
@@ -260,55 +192,27 @@ def home():
                 }
             }
             
-            // ==========================================
-            // LIVE MODE - Real-time
-            // ==========================================
             function startLiveMode() {
                 function fetchLiveData() {
-                    fetch('/api/latest?_t=' + Date.now())
-                        .then(r => r.json())
-                        .then(d => {
-                            // Update gauges
-                            document.getElementById('tempValue').textContent = d.temp ? d.temp.toFixed(1) + '°C' : '--°C';
-                            document.getElementById('loadValue').textContent = d.load ? d.load + '%' : '--%';
-                            document.getElementById('statusValue').innerHTML = '<span class="status-badge ' + (d.status||'') + '">' + (d.status||'--').toUpperCase() + '</span>';
-                            
-                            if (d.temp === 0 && d.load === 0) return;
-                这样做
-                            // Add to charts
-                            const now = new Date().toLocaleTimeString('vi-VN', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
-                            
-                            tempChart.data.labels.push(now);
-                            tempChart.data.datasets[0].data.push(d.temp || 0);
-                            loadChart.data.labels.push(now);
-                            loadChart.data.datasets[0].data.push(d.load || 0);
-                            
-                            // Limit points
-                            if (tempChart.data.labels.length > MAX_LIVE_POINTS) {
-                                tempChart.data.labels.shift();
-                                tempChart.data.datasets[0].data.shift();
-                                loadChart.data.labels.shift();
-                                loadChart.data.datasets[0].data.shift();
-                            }
-                            
-                            tempChart.update('none');
-                            loadChart.update('none');
-                            
-                            document.getElementById('infoRight').textContent = '🔄 ' + now + ' | ' + tempChart.data.labels.length + ' điểm';
-                        });
+                    fetch('/api/latest?_t=' + Date.now()).then(r => r.json()).then(d => {
+                        document.getElementById('tempValue').textContent = d.temp ? d.temp.toFixed(1) + '°C' : '--°C';
+                        document.getElementById('loadValue').textContent = d.load ? d.load + '%' : '--%';
+                        document.getElementById('statusValue').innerHTML = '<span class="status-badge ' + (d.status||'') + '">' + (d.status||'--').toUpperCase() + '</span>';
+                        if (d.temp === 0 && d.load === 0) return;
+                        
+                        const now = new Date().toLocaleTimeString('vi-VN', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+                        tempChart.data.labels.push(now); tempChart.data.datasets[0].data.push(d.temp || 0);
+                        loadChart.data.labels.push(now); loadChart.data.datasets[0].data.push(d.load || 0);
+                        if (tempChart.data.labels.length > MAX_LIVE_POINTS) { tempChart.data.labels.shift(); tempChart.data.datasets[0].data.shift(); loadChart.data.labels.shift(); loadChart.data.datasets[0].data.shift(); }
+                        tempChart.update('none'); loadChart.update('none');
+                        document.getElementById('infoRight').textContent = '🔄 ' + now + ' | ' + tempChart.data.labels.length + ' điểm';
+                    });
                 }
-                
                 fetchLiveData();
-                liveTimer = setInterval(fetchLiveData, 5000);  // Mỗi 5 giây
+                liveTimer = setInterval(fetchLiveData, 5000);
             }
             
-            // ==========================================
-            // HISTORY MODE
-            // ==========================================
-            function startHistoryMode() {
-                fetchHistory();
-                historyTimer = setInterval(fetchHistory, 30000);  // Refresh mỗi 30s
-            }
+            function startHistoryMode() { fetchHistory(); historyTimer = setInterval(fetchHistory, 30000); }
             
             function changeTime(minutes, btn) {
                 historyMinutes = minutes;
@@ -319,60 +223,36 @@ def home():
             
             function fetchHistory() {
                 document.getElementById('infoRight').textContent = '🔄 Đang tải...';
-                
-                fetch('/api/history?minutes=' + historyMinutes + '&_t=' + Date.now())
-                    .then(r => r.json())
-                    .then(data => {
-                        tempChart.data.labels = [];
-                        tempChart.data.datasets[0].data = [];
-                        loadChart.data.labels = [];
-                        loadChart.data.datasets[0].data = [];
-                        
-                        data.forEach(d => {
-                            let time = '';
-                            try { time = new Date(d.time).toLocaleTimeString('vi-VN', {hour:'2-digit', minute:'2-digit'}); }
-                            catch(e) { time = d.time || ''; }
-                            tempChart.data.labels.push(time);
-                            tempChart.data.datasets[0].data.push(d.temp || 0);
-                            loadChart.data.labels.push(time);
-                            loadChart.data.datasets[0].data.push(d.load || 0);
-                        });
-                        
-                        tempChart.update();
-                        loadChart.update();
-                        document.getElementById('infoRight').textContent = '🔄 ' + new Date().toLocaleTimeString('vi-VN') + ' | ' + data.length + ' điểm';
+                fetch('/api/history?minutes=' + historyMinutes + '&_t=' + Date.now()).then(r => r.json()).then(data => {
+                    tempChart.data.labels = []; tempChart.data.datasets[0].data = [];
+                    loadChart.data.labels = []; loadChart.data.datasets[0].data = [];
+                    data.forEach(d => {
+                        let time = ''; try { time = new Date(d.time).toLocaleTimeString('vi-VN', {hour:'2-digit', minute:'2-digit'}); } catch(e) { time = d.time || ''; }
+                        tempChart.data.labels.push(time); tempChart.data.datasets[0].data.push(d.temp || 0);
+                        loadChart.data.labels.push(time); loadChart.data.datasets[0].data.push(d.load || 0);
                     });
+                    tempChart.update(); loadChart.update();
+                    document.getElementById('infoRight').textContent = '🔄 ' + new Date().toLocaleTimeString('vi-VN') + ' | ' + data.length + ' điểm';
+                });
             }
             
-            // ==========================================
-            // FETCH LATEST GAUGES
-            // ==========================================
             function fetchLatest() {
-                fetch('/api/latest?_t=' + Date.now())
-                    .then(r => r.json())
-                    .then(d => {
-                        document.getElementById('tempValue').textContent = d.temp ? d.temp.toFixed(1) + '°C' : '--°C';
-                        document.getElementById('loadValue').textContent = d.load ? d.load + '%' : '--%';
-                        document.getElementById('statusValue').innerHTML = '<span class="status-badge ' + (d.status||'') + '">' + (d.status||'--').toUpperCase() + '</span>';
-                    });
+                fetch('/api/latest?_t=' + Date.now()).then(r => r.json()).then(d => {
+                    document.getElementById('tempValue').textContent = d.temp ? d.temp.toFixed(1) + '°C' : '--°C';
+                    document.getElementById('loadValue').textContent = d.load ? d.load + '%' : '--%';
+                    document.getElementById('statusValue').innerHTML = '<span class="status-badge ' + (d.status||'') + '">' + (d.status||'--').toUpperCase() + '</span>';
+                });
             }
             
             function downloadImage() {
-                html2canvas(document.getElementById('dashboard'), { backgroundColor: '#1a1a2e', scale: 2 })
-                    .then(canvas => {
-                        const a = document.createElement('a');
-                        a.download = 'CNC_' + new Date().toISOString().slice(0,19).replace(/:/g,'-') + '.png';
-                        a.href = canvas.toDataURL('image/png');
-                        a.click();
-                    });
+                html2canvas(document.getElementById('dashboard'), { backgroundColor: '#1a1a2e', scale: 2 }).then(canvas => {
+                    const a = document.createElement('a');
+                    a.download = 'CNC_' + new Date().toISOString().slice(0,19).replace(/:/g,'-') + '.png';
+                    a.href = canvas.toDataURL('image/png'); a.click();
+                });
             }
             
-            // ==========================================
-            // INIT
-            // ==========================================
-            fetchLatest();
-            startLiveMode();
-            setInterval(fetchLatest, 3000);
+            fetchLatest(); startLiveMode(); setInterval(fetchLatest, 3000);
         </script>
     </body>
     </html>
@@ -380,35 +260,40 @@ def home():
 
 @app.route("/api/latest")
 def api_latest():
-    if collection is None:
-        return jsonify({"temp": 0, "load": 0, "status": "db_error"})
+    if collection is None: return jsonify({"temp": 0, "load": 0, "status": "db_error"})
     try:
         doc = collection.find_one(sort=[("mqtt_timestamp", -1)])
-        if doc:
-            return jsonify({"temp": doc.get("temp", 0), "load": doc.get("load", 0), "status": doc.get("status", "unknown")})
+        if doc: return jsonify({"temp": doc.get("temp", 0), "load": doc.get("load", 0), "status": doc.get("status", "unknown")})
         return jsonify({"temp": 0, "load": 0, "status": "no_data"})
-    except:
-        return jsonify({"temp": 0, "load": 0, "status": "error"})
+    except: return jsonify({"temp": 0, "load": 0, "status": "error"})
 
 @app.route("/api/history")
 def api_history():
-    if collection is None:
-        return jsonify([])
+    """Lấy dữ liệu từ HIỆN TẠI trở về X PHÚT TRƯỚC"""
+    if collection is None: return jsonify([])
     try:
         minutes = int(request.args.get("minutes", 10))
+        
+        # THỜI ĐIỂM HIỆN TẠI
         now = datetime.now()
+        # X PHÚT TRƯỚC
         start_time = now - timedelta(minutes=minutes)
         
-        # Lấy TẤT CẢ dữ liệu trong khoảng thời gian (không giới hạn)
+        print(f"🕐 NOW: {now.strftime('%H:%M:%S')}")
+        print(f"🕐 {minutes} PHÚT TRƯỚC: {start_time.strftime('%H:%M:%S')}")
+        
+        # Query: từ start_time đến now
         query = {
             "mqtt_timestamp": {
                 "$gte": start_time.isoformat(),
                 "$lte": now.isoformat()
             }
         }
-        docs = list(collection.find(query).sort("mqtt_timestamp", 1))
         
-        # Nếu > 2000 điểm, sample xuống
+        docs = list(collection.find(query).sort("mqtt_timestamp", 1))
+        print(f"📊 Tìm thấy: {len(docs)} bản ghi")
+        
+        # Nếu > 2000 điểm, sample
         if len(docs) > 2000:
             step = len(docs) // 2000
             docs = docs[::step]
@@ -418,7 +303,9 @@ def api_history():
             "temp": d.get("temp", 0),
             "load": d.get("load", 0)
         } for d in docs])
-    except:
+        
+    except Exception as e:
+        print(f"❌ Error: {e}")
         return jsonify([])
 
 if __name__ == "__main__":
