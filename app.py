@@ -1,27 +1,35 @@
-# app.py - Dashboard với tooltip khi chạm vào biểu đồ
+# app.py - CNC Monitor Dashboard - HOÀN CHỈNH
 from flask import Flask, jsonify, request
 from pymongo import MongoClient
 from datetime import datetime, timedelta
 
-
 app = Flask(__name__)
 
+# ============================================
+# MONGODB ATLAS CONFIG
+# ============================================
 MONGO_URI = "mongodb+srv://tn042182_db_user:pRCe.YNp34hL8v4@cluster0.rk7eki0.mongodb.net/"
+DATABASE = "CNC_Database"
+COLLECTION = "Sensor_Data"
 
 try:
     client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=10000)
-    db = client["CNC_Database"]
-    collection = db["Sensor_Data"]
-    print("✅ MongoDB connected!")
+    db = client[DATABASE]
+    collection = db[COLLECTION]
+    client.admin.command('ping')
+    print("✅ MongoDB Atlas connected!")
 except Exception as e:
     print(f"❌ MongoDB error: {e}")
     collection = None
 
+# ============================================
+# ROUTES
+# ============================================
 @app.route("/")
 def home():
     return """
     <!DOCTYPE html>
-    <html>
+    <html lang="vi">
     <head>
         <title>CNC Monitor</title>
         <meta charset="UTF-8">
@@ -31,24 +39,23 @@ def home():
         <style>
             * { margin: 0; padding: 0; box-sizing: border-box; }
             body { 
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+                font-family: -apple-system, Arial, sans-serif;
                 background: #1a1a2e; color: white; padding: 10px;
                 -webkit-tap-highlight-color: transparent;
             }
             .container { max-width: 1000px; margin: 0 auto; }
-            h1 { text-align: center; color: #4ecdc4; margin-bottom: 10px; font-size: 20px; }
+            h1 { text-align: center; color: #4ecdc4; margin-bottom: 12px; font-size: 22px; }
             
-            /* Gauges */
-            .gauges { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px; }
+            .gauges { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
             .card { background: #16213e; padding: 12px; border-radius: 12px; text-align: center; }
-            .card-label { color: #888; font-size: 11px; margin-bottom: 4px; }
-            .card-value { font-size: 28px; font-weight: bold; }
+            .card-label { color: #888; font-size: 11px; }
+            .card-value { font-size: 28px; font-weight: bold; margin-top: 4px; }
             .temp-color { color: #ff6b6b; }
             .load-color { color: #4ecdc4; }
             
             .status-badge {
                 display: inline-block; padding: 5px 12px; border-radius: 12px;
-                font-size: 14px; font-weight: bold; margin-top: 3px;
+                font-size: 14px; font-weight: bold; margin-top: 4px;
             }
             .running { background: #00b894; }
             .idle { background: #fdcb6e; color: #333; }
@@ -56,61 +63,54 @@ def home():
             .error { background: #d63031; animation: blink 0.5s infinite; }
             @keyframes blink { 50% { opacity: 0.5; } }
             
-            /* Buttons */
             .btn-group { 
                 display: flex; gap: 6px; justify-content: center; 
-                margin-bottom: 10px; flex-wrap: wrap;
+                margin-bottom: 12px; flex-wrap: wrap;
             }
             .btn {
                 background: #16213e; color: white; border: 2px solid #4ecdc4;
-                padding: 6px 12px; border-radius: 15px; cursor: pointer;
+                padding: 7px 14px; border-radius: 18px; cursor: pointer;
                 font-size: 12px; transition: all 0.2s; touch-action: manipulation;
             }
-            .btn:active { background: #4ecdc4; color: #1a1a2e; }
+            .btn:hover, .btn:active { background: #4ecdc4; color: #1a1a2e; }
             .btn.active { background: #4ecdc4; color: #1a1a2e; font-weight: bold; }
             
-            /* Chart */
             .chart-box { 
-                background: #16213e; padding: 12px; border-radius: 12px; margin-bottom: 10px;
+                background: #16213e; padding: 12px; border-radius: 12px; margin-bottom: 12px;
                 position: relative;
             }
             .chart-box h3 { margin-bottom: 6px; color: #ddd; font-size: 14px; }
-            canvas { width: 100%; height: 250px !important; touch-action: none; }
+            canvas { width: 100%; height: 260px !important; touch-action: none; }
             
-            /* Tooltip custom */
             .chart-tooltip {
-                position: absolute; background: rgba(0,0,0,0.9); color: white;
-                padding: 8px 12px; border-radius: 8px; font-size: 13px;
+                position: absolute; background: rgba(0,0,0,0.95); color: white;
+                padding: 10px 14px; border-radius: 10px; font-size: 13px;
                 pointer-events: none; z-index: 10; display: none;
-                border: 1px solid #4ecdc4; white-space: nowrap;
+                border: 2px solid #4ecdc4; text-align: center;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.5);
             }
+            .chart-tooltip .tt-time { color: #4ecdc4; font-size: 12px; margin-bottom: 4px; }
+            .chart-tooltip .tt-value { font-size: 20px; font-weight: bold; }
             
-            /* Info */
             .info-bar { 
                 display: flex; justify-content: space-between; align-items: center;
-                color: #888; font-size: 11px; margin-bottom: 8px; flex-wrap: wrap; gap: 4px;
+                color: #888; font-size: 11px; margin-bottom: 10px; flex-wrap: wrap; gap: 4px;
             }
             
             .download-btn {
                 background: #ff6b6b; color: white; border: none;
-                padding: 8px 16px; border-radius: 15px; cursor: pointer;
-                font-size: 12px; display: block; margin: 8px auto;
+                padding: 10px 20px; border-radius: 20px; cursor: pointer;
+                font-size: 14px; display: block; margin: 10px auto;
                 touch-action: manipulation;
             }
             .download-btn:active { opacity: 0.7; }
             
-            .loading {
-                display: inline-block;
-                width: 12px;
-                height: 12px;
-                border: 2px solid #4ecdc4;
-                border-top-color: transparent;
-                border-radius: 50%;
-                animation: spin 0.6s linear infinite;
+            .loading-spinner {
+                display: inline-block; width: 12px; height: 12px;
+                border: 2px solid #4ecdc4; border-top-color: transparent;
+                border-radius: 50%; animation: spin 0.6s linear infinite;
             }
-            @keyframes spin {
-                to { transform: rotate(360deg); }
-            }
+            @keyframes spin { to { transform: rotate(360deg); } }
         </style>
     </head>
     <body>
@@ -149,21 +149,26 @@ def home():
                 </div>
             </div>
             
-            <!-- TEMPERATURE CHART -->
+            <!-- TEMP CHART -->
             <div class="chart-box" id="tempChartBox">
-                <h3>📈 Nhiệt độ (°C)</h3>
+                <h3>📈 Nhiệt độ (°C) — Chạm vào đồ thị để xem chi tiết</h3>
                 <canvas id="tempChart"></canvas>
-                <div class="chart-tooltip" id="tempTooltip"></div>
+                <div class="chart-tooltip" id="tempTooltip">
+                    <div class="tt-time"></div>
+                    <div class="tt-value"></div>
+                </div>
             </div>
             
             <!-- LOAD CHART -->
             <div class="chart-box" id="loadChartBox">
-                <h3>📈 Tải (%)</h3>
+                <h3>📈 Tải (%) — Chạm vào đồ thị để xem chi tiết</h3>
                 <canvas id="loadChart"></canvas>
-                <div class="chart-tooltip" id="loadTooltip"></div>
+                <div class="chart-tooltip" id="loadTooltip">
+                    <div class="tt-time"></div>
+                    <div class="tt-value"></div>
+                </div>
             </div>
             
-            <!-- DOWNLOAD -->
             <button class="download-btn" onclick="downloadImage()">📸 Tải ảnh về máy</button>
         </div>
 
@@ -172,186 +177,124 @@ def home():
             let isLoading = false;
             
             // ==========================================
-            // CHART SETUP WITH TOOLTIP
+            // CREATE CHART
             // ==========================================
-            function createChart(canvasId, tooltipId, color, yMin, yMax) {
-                const ctx = document.getElementById(canvasId).getContext('2d');
+            function createChart(canvasId, tooltipId, color, yMin, yMax, unit) {
+                const canvas = document.getElementById(canvasId);
+                const ctx = canvas.getContext('2d');
                 const tooltip = document.getElementById(tooltipId);
                 const chartBox = tooltip.parentElement;
                 
                 const chart = new Chart(ctx, {
                     type: 'line',
-                    data: {
-                        labels: [],
-                        datasets: [{
-                            data: [],
-                            borderColor: color,
-                            backgroundColor: color.replace(')', ',0.1)').replace('rgb', 'rgba'),
-                            borderWidth: 2.5,
-                            pointRadius: 0,
-                            pointHoverRadius: 6,
-                            pointHoverBackgroundColor: 'white',
-                            pointHoverBorderColor: color,
-                            pointHoverBorderWidth: 2,
-                            tension: 0.3,
-                            fill: true
-                        }]
-                    },
+                    data: { labels: [], datasets: [{
+                        data: [], borderColor: color,
+                        backgroundColor: color.replace(')', ',0.1)').replace('rgb', 'rgba'),
+                        borderWidth: 3, pointRadius: 0, pointHoverRadius: 8,
+                        pointHoverBackgroundColor: 'white', pointHoverBorderColor: color,
+                        pointHoverBorderWidth: 3, tension: 0.4, fill: true
+                    }]},
                     options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        animation: { duration: 200 },
-                        interaction: {
-                            mode: 'index',
-                            intersect: false
+                        responsive: true, maintainAspectRatio: false,
+                        animation: { duration: 300 },
+                        interaction: { mode: 'index', intersect: false },
+                        onClick: function(e, elements) {
+                            if (elements.length > 0) {
+                                const idx = elements[0].index;
+                                const label = chart.data.labels[idx];
+                                const value = chart.data.datasets[0].data[idx];
+                                
+                                chart.data.datasets[0].pointRadius = Array(chart.data.labels.length).fill(0);
+                                chart.data.datasets[0].pointRadius[idx] = 8;
+                                chart.data.datasets[0].pointBackgroundColor = 'white';
+                                chart.data.datasets[0].pointBorderColor = color;
+                                chart.data.datasets[0].pointBorderWidth = 3;
+                                chart.update();
+                                
+                                const rect = chartBox.getBoundingClientRect();
+                                const canvasRect = canvas.getBoundingClientRect();
+                                const x = canvasRect.left - rect.left + elements[0].element.x;
+                                const y = canvasRect.top - rect.top + elements[0].element.y - 75;
+                                
+                                tooltip.querySelector('.tt-time').textContent = '🕐 ' + label;
+                                tooltip.querySelector('.tt-value').textContent = value.toFixed(1) + ' ' + unit;
+                                tooltip.querySelector('.tt-value').style.color = color;
+                                tooltip.style.display = 'block';
+                                tooltip.style.left = Math.min(Math.max(x - 60, 5), rect.width - 130) + 'px';
+                                tooltip.style.top = Math.max(y, 5) + 'px';
+                                
+                                clearTimeout(tooltip._timeout);
+                                tooltip._timeout = setTimeout(() => {
+                                    tooltip.style.display = 'none';
+                                    chart.data.datasets[0].pointRadius = 0;
+                                    chart.update();
+                                }, 3000);
+                            }
                         },
                         scales: {
-                            x: { 
-                                ticks: { color: '#888', maxTicksLimit: 8, font: { size: 10 } },
-                                grid: { color: '#2d2d2d' }
-                            },
-                            y: { 
-                                ticks: { color: '#888', font: { size: 10 } },
-                                grid: { color: '#2d2d2d' },
-                                min: yMin, max: yMax
-                            }
+                            x: { ticks: { color: '#888', maxTicksLimit: 8, font:{size:10} }, grid: { color: '#2d2d2d' } },
+                            y: { ticks: { color: '#888', font:{size:10} }, grid: { color: '#2d2d2d' }, min: yMin, max: yMax }
                         },
-                        plugins: {
-                            legend: { display: false },
-                            tooltip: {
-                                enabled: false,
-                                external: function(context) {
-                                    const tooltipModel = context.tooltip;
-                                    
-                                    if (tooltipModel.opacity === 0) {
-                                        tooltip.style.display = 'none';
-                                        return;
-                                    }
-                                    
-                                    if (tooltipModel.dataPoints && tooltipModel.dataPoints.length > 0) {
-                                        const dp = tooltipModel.dataPoints[0];
-                                        const label = dp.label || '';
-                                        const value = dp.raw !== undefined ? dp.raw.toFixed(1) : '--';
-                                        
-                                        tooltip.innerHTML = `
-                                            <div style="color:#4ecdc4;margin-bottom:4px;">🕐 ${label}</div>
-                                            <div style="font-size:16px;font-weight:bold;color:${color};">
-                                                ${value}
-                                            </div>
-                                        `;
-                                        tooltip.style.display = 'block';
-                                        
-                                        const rect = chartBox.getBoundingClientRect();
-                                        const canvasRect = context.chart.canvas.getBoundingClientRect();
-                                        const x = canvasRect.left - rect.left + tooltipModel.caretX;
-                                        const y = canvasRect.top - rect.top + tooltipModel.caretY - 60;
-                                        
-                                        tooltip.style.left = Math.min(x, rect.width - 120) + 'px';
-                                        tooltip.style.top = Math.max(y, 5) + 'px';
-                                    }
-                                }
-                            }
-                        }
+                        plugins: { legend: { display: false }, tooltip: { enabled: false } }
                     }
                 });
-                
                 return chart;
             }
             
-            const tempChart = createChart('tempChart', 'tempTooltip', '#ff6b6b', 20, 60);
-            const loadChart = createChart('loadChart', 'loadTooltip', '#4ecdc4', 0, 100);
+            const tempChart = createChart('tempChart', 'tempTooltip', '#ff6b6b', 30, 60, '°C');
+            const loadChart = createChart('loadChart', 'loadTooltip', '#4ecdc4', 0, 100, '%');
             
             // ==========================================
             // CHANGE TIME
             // ==========================================
-            function changeTime(minutes, btnElement) {
+            function changeTime(minutes, btn) {
                 if (isLoading) return;
-                
                 currentTimeRange = minutes;
-                
-                // Update active button
                 document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
-                btnElement.classList.add('active');
+                btn.classList.add('active');
                 
-                // Update label
                 let label = '';
-                if (minutes >= 10080) {
-                    label = (minutes/10080).toFixed(0) + ' tuần';
-                } else if (minutes >= 1440) {
-                    label = (minutes/1440).toFixed(0) + ' ngày';
-                } else if (minutes >= 360) {
-                    label = (minutes/60).toFixed(0) + ' giờ';
-                } else if (minutes >= 60) {
-                    label = (minutes/60).toFixed(0) + ' giờ';
-                } else {
-                    label = minutes + ' phút';
-                }
-                document.getElementById('timeRange').textContent = '📅 ' + label + ' gần đây (từ hiện tại)';
+                if (minutes >= 10080) label = Math.round(minutes/10080) + ' tuần';
+                else if (minutes >= 1440) label = Math.round(minutes/1440) + ' ngày';
+                else if (minutes >= 60) label = Math.round(minutes/60) + ' giờ';
+                else label = minutes + ' phút';
+                document.getElementById('timeRange').textContent = '📅 ' + label + ' gần đây';
                 
-                // Fetch new data
                 fetchHistory();
             }
             
             // ==========================================
-            // FETCH HISTORY - LẤY DỮ LIỆU TỪ HIỆN TẠI TRỞ VỀ
+            // FETCH HISTORY
             // ==========================================
             async function fetchHistory() {
                 if (isLoading) return;
-                
                 isLoading = true;
-                document.getElementById('updateInfo').innerHTML = '<span class="loading"></span> Đang tải dữ liệu...';
+                document.getElementById('updateInfo').innerHTML = '<span class="loading-spinner"></span> Đang tải...';
                 
                 try {
-                    const now = new Date();
-                    const url = `/api/history?minutes=${currentTimeRange}&_t=${now.getTime()}`; // Thêm timestamp để tránh cache
+                    const url = '/api/history?minutes=' + currentTimeRange + '&_t=' + Date.now();
                     const res = await fetch(url);
-                    
-                    if (!res.ok) {
-                        throw new Error('Network response was not ok');
-                    }
                     const data = await res.json();
                     
-                    // Clear existing data
                     tempChart.data.labels = [];
                     tempChart.data.datasets[0].data = [];
                     loadChart.data.labels = [];
                     loadChart.data.datasets[0].data = [];
                     
-                    if (data.length === 0) {
-                        document.getElementById('updateInfo').innerHTML = '⚠️ Không có dữ liệu trong ' + currentTimeRange + ' phút qua';
+                    if (!data.length) {
+                        document.getElementById('updateInfo').textContent = '⚠️ Không có dữ liệu';
                         isLoading = false;
-                        tempChart.update();
-                        loadChart.update();
+                        tempChart.update(); loadChart.update();
                         return;
                     }
                     
-                    // Process data
-                    const labels = [];
-                    const temps = [];
-                    const loads = [];
-                    
+                    const labels = [], temps = [], loads = [];
                     data.forEach(d => {
                         let time = '';
                         try {
                             const t = new Date(d.time);
-                            // Format time based on range
-                            if (currentTimeRange >= 10080) {
-                                // For weeks, show date and hour
-                                time = t.toLocaleString('vi-VN', {month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit'});
-                            } else if (currentTimeRange >= 1440) {
-                                // For days, show date and hour
-                                time = t.toLocaleString('vi-VN', {month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit'});
-                            } else if (currentTimeRange >= 360) {
-                                // For hours, show hour:minute
-                                time = t.toLocaleTimeString('vi-VN', {hour:'2-digit', minute:'2-digit'});
-                            } else {
-                                // For minutes, show hour:minute:second
-                                time = t.toLocaleTimeString('vi-VN', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
-                            }
-                        } catch(e) {
-                            time = d.time || '';
-                        }
-                        
+                            time = t.toLocaleTimeString('vi-VN', {hour:'2-digit', minute:'2-digit'});
+                        } catch(e) { time = d.time || ''; }
                         labels.push(time);
                         temps.push(d.temp || 0);
                         loads.push(d.load || 0);
@@ -361,19 +304,12 @@ def home():
                     tempChart.data.datasets[0].data = temps;
                     loadChart.data.labels = labels;
                     loadChart.data.datasets[0].data = loads;
+                    tempChart.update(); loadChart.update();
                     
-                    tempChart.update('none');
-                    loadChart.update('none');
-                    
-                    // Calculate time range text
-                    let startTime = new Date(data[0].time);
-                    let endTime = new Date(data[data.length-1].time);
-                    document.getElementById('updateInfo').innerHTML = 
-                        `🔄 ${new Date().toLocaleTimeString('vi-VN')} | ${data.length} điểm | ${startTime.toLocaleTimeString('vi-VN')} → ${endTime.toLocaleTimeString('vi-VN')}`;
-                    
+                    document.getElementById('updateInfo').textContent = 
+                        '🔄 ' + new Date().toLocaleTimeString('vi-VN') + ' | ' + data.length + ' điểm';
                 } catch(e) {
-                    console.error('Error fetching history:', e);
-                    document.getElementById('updateInfo').innerHTML = '❌ Lỗi kết nối, thử lại sau...';
+                    document.getElementById('updateInfo').textContent = '❌ Lỗi tải dữ liệu';
                 } finally {
                     isLoading = false;
                 }
@@ -384,76 +320,27 @@ def home():
             // ==========================================
             async function fetchLatest() {
                 try {
-                    const res = await fetch('/api/latest?_t=' + new Date().getTime());
-                    if (!res.ok) throw new Error('Network error');
+                    const res = await fetch('/api/latest?_t=' + Date.now());
                     const d = await res.json();
-                    
-                    if (d.temp !== undefined && d.temp !== null && d.temp !== 0) {
-                        document.getElementById('tempValue').textContent = d.temp.toFixed(1) + '°C';
-                    } else {
-                        document.getElementById('tempValue').textContent = '--°C';
-                    }
-                    
-                    if (d.load !== undefined && d.load !== null && d.load !== 0) {
-                        document.getElementById('loadValue').textContent = d.load + '%';
-                    } else {
-                        document.getElementById('loadValue').textContent = '--%';
-                    }
-                    
-                    const statusEl = document.getElementById('statusValue');
-                    if (d.status && d.status !== 'unknown' && d.status !== 'no_data' && d.status !== 'db_error') {
-                        statusEl.innerHTML = '<span class="status-badge ' + d.status + '">' + d.status.toUpperCase() + '</span>';
-                    } else {
-                        statusEl.innerHTML = '<span class="status-badge">NO DATA</span>';
-                    }
-                    
-                } catch(e) {
-                    console.error('Error fetching latest:', e);
-                }
+                    document.getElementById('tempValue').textContent = d.temp ? d.temp.toFixed(1) + '°C' : '--°C';
+                    document.getElementById('loadValue').textContent = d.load ? d.load + '%' : '--%';
+                    document.getElementById('statusValue').innerHTML = 
+                        '<span class="status-badge ' + (d.status||'') + '">' + (d.status||'--').toUpperCase() + '</span>';
+                } catch(e) {}
             }
             
-            // ==========================================
-            // DOWNLOAD IMAGE
-            // ==========================================
             function downloadImage() {
-                const btn = document.querySelector('.download-btn');
-                btn.textContent = '📸 Đang xử lý...';
-                btn.disabled = true;
-                
-                html2canvas(document.getElementById('dashboard'), {
-                    backgroundColor: '#1a1a2e',
-                    scale: 2,
-                    logging: false,
-                    useCORS: false
-                }).then(canvas => {
-                    const link = document.createElement('a');
-                    const now = new Date();
-                    link.download = `CNC_${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()}_${now.getHours()}-${now.getMinutes()}-${now.getSeconds()}.png`;
-                    link.href = canvas.toDataURL('image/png');
-                    link.click();
-                    btn.textContent = '📸 Tải ảnh về máy';
-                    btn.disabled = false;
-                }).catch(error => {
-                    console.error('Error generating image:', error);
-                    btn.textContent = '📸 Lỗi, thử lại';
-                    btn.disabled = false;
-                    setTimeout(() => {
-                        btn.textContent = '📸 Tải ảnh về máy';
-                    }, 2000);
-                });
+                html2canvas(document.getElementById('dashboard'), { backgroundColor: '#1a1a2e', scale: 2 })
+                    .then(canvas => {
+                        const a = document.createElement('a');
+                        a.download = 'CNC_' + new Date().toISOString().slice(0,19).replace(/:/g,'-') + '.png';
+                        a.href = canvas.toDataURL('image/png');
+                        a.click();
+                    });
             }
             
-            // ==========================================
-            // INIT & AUTO REFRESH
-            // ==========================================
-            // Initial load
-            fetchLatest();
-            fetchHistory();
-            
-            // Auto refresh latest data every 3 seconds
+            fetchLatest(); fetchHistory();
             setInterval(fetchLatest, 3000);
-            
-            // Auto refresh history every 30 seconds (cập nhật dữ liệu mới nhất)
             setInterval(fetchHistory, 30000);
         </script>
     </body>
@@ -462,7 +349,6 @@ def home():
 
 @app.route("/api/latest")
 def api_latest():
-    """Lấy dữ liệu mới nhất"""
     if collection is None:
         return jsonify({"temp": 0, "load": 0, "status": "db_error"})
     try:
@@ -475,58 +361,46 @@ def api_latest():
             })
         return jsonify({"temp": 0, "load": 0, "status": "no_data"})
     except Exception as e:
-        print(f"Error in api_latest: {e}")
         return jsonify({"temp": 0, "load": 0, "status": "error"})
 
 @app.route("/api/history")
 def api_history():
-    """Lấy dữ liệu trong khoảng thời gian từ hiện tại trở về trước"""
     if collection is None:
         return jsonify([])
     try:
         minutes = int(request.args.get("minutes", 10))
-        
-        # Lấy thời điểm hiện tại
         now = datetime.now()
-        
-        # Tính thời điểm bắt đầu (hiện tại trừ đi số phút)
         start_time = now - timedelta(minutes=minutes)
         
-        print(f"📊 Query: {minutes} minutes ago")
-        print(f"   From: {start_time.strftime('%Y-%m-%d %H:%M:%S')}")
-        print(f"   To:   {now.strftime('%Y-%m-%d %H:%M:%S')}")
+        print(f"🕐 NOW: {now.strftime('%H:%M:%S')}")
+        print(f"🕐 FROM: {start_time.strftime('%H:%M:%S')} ({minutes} phút trước)")
         
-        # Query để lấy dữ liệu trong khoảng thời gian
-        # CẦN CHÚ Ý: Đảm bảo field 'mqtt_timestamp' tồn tại và đúng định dạng
-        query = {"mqtt_timestamp": {"$gte": start_time.isoformat(), "$lte": now.isoformat()}}
-        
-        # Sort theo thời gian tăng dần
+        query = {
+            "mqtt_timestamp": {
+                "$gte": start_time.isoformat(),
+                "$lte": now.isoformat()
+            }
+        }
         docs = list(collection.find(query).sort("mqtt_timestamp", 1))
         
-        print(f"   Found: {len(docs)} records")
+        print(f"📊 Found: {len(docs)} records")
         
-        # Nếu quá nhiều dữ liệu, lấy mẫu để hiển thị (tối đa 500 điểm)
+        # Giới hạn 500 điểm
         if len(docs) > 500:
             step = len(docs) // 500
             docs = docs[::step]
-            print(f"   Sampled: {len(docs)} records")
         
         data = []
         for doc in docs:
             data.append({
                 "time": doc.get("mqtt_timestamp", ""),
                 "temp": doc.get("temp", 0),
-                "load": doc.get("load", 0),
-                "status": doc.get("status", "")
+                "load": doc.get("load", 0)
             })
-        
         return jsonify(data)
-        
     except Exception as e:
-        print(f"❌ Error in api_history: {e}")
-        import traceback
-        traceback.print_exc()
+        print(f"❌ Error: {e}")
         return jsonify([])
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=5000)
