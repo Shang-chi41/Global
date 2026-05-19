@@ -2,6 +2,7 @@
 from flask import Flask, jsonify, request
 from pymongo import MongoClient
 from datetime import datetime, timedelta
+import pytz
 
 app = Flask(__name__)
 
@@ -97,6 +98,20 @@ def home():
                 touch-action: manipulation;
             }
             .download-btn:active { opacity: 0.7; }
+            
+            /* Loading indicator */
+            .loading {
+                display: inline-block;
+                width: 12px;
+                height: 12px;
+                border: 2px solid #4ecdc4;
+                border-top-color: transparent;
+                border-radius: 50%;
+                animation: spin 0.6s linear infinite;
+            }
+            @keyframes spin {
+                to { transform: rotate(360deg); }
+            }
         </style>
     </head>
     <body>
@@ -105,11 +120,11 @@ def home():
             
             <!-- TIME BUTTONS -->
             <div class="btn-group">
-                <button class="btn active" onclick="changeTime(10)">10 phút</button>
-                <button class="btn" onclick="changeTime(30)">30 phút</button>
-                <button class="btn" onclick="changeTime(60)">1 giờ</button>
-                <button class="btn" onclick="changeTime(360)">6 giờ</button>
-                <button class="btn" onclick="changeTime(1440)">1 ngày</button>
+                <button class="btn active" onclick="changeTime(10, this)">10 phút</button>
+                <button class="btn" onclick="changeTime(30, this)">30 phút</button>
+                <button class="btn" onclick="changeTime(60, this)">1 giờ</button>
+                <button class="btn" onclick="changeTime(360, this)">6 giờ</button>
+                <button class="btn" onclick="changeTime(1440, this)">1 ngày</button>
             </div>
             
             <!-- INFO BAR -->
@@ -154,6 +169,7 @@ def home():
 
         <script>
             let currentTimeRange = 10;
+            let isLoading = false;
             
             // ==========================================
             // CHART SETUP WITH TOOLTIP
@@ -203,9 +219,8 @@ def home():
                         plugins: {
                             legend: { display: false },
                             tooltip: {
-                                enabled: false,  // Tắt tooltip mặc định
+                                enabled: false,
                                 external: function(context) {
-                                    // Tooltip custom
                                     const tooltipModel = context.tooltip;
                                     
                                     if (tooltipModel.opacity === 0) {
@@ -217,7 +232,6 @@ def home():
                                         const dp = tooltipModel.dataPoints[0];
                                         const label = dp.label || '';
                                         const value = dp.raw !== undefined ? dp.raw.toFixed(1) : '--';
-                                        const datasetLabel = context.chart.data.datasets[dp.datasetIndex].label || '';
                                         
                                         tooltip.innerHTML = `
                                             <div style="color:#4ecdc4;margin-bottom:4px;">🕐 ${label}</div>
@@ -227,7 +241,6 @@ def home():
                                         `;
                                         tooltip.style.display = 'block';
                                         
-                                        // Vị trí tooltip
                                         const rect = chartBox.getBoundingClientRect();
                                         const canvasRect = context.chart.canvas.getBoundingClientRect();
                                         const x = canvasRect.left - rect.left + tooltipModel.caretX;
@@ -251,17 +264,29 @@ def home():
             // ==========================================
             // CHANGE TIME
             // ==========================================
-            function changeTime(minutes) {
+            function changeTime(minutes, btnElement) {
+                if (isLoading) return;
+                
                 currentTimeRange = minutes;
                 
+                // Update active button
                 document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
-                event.target.classList.add('active');
+                btnElement.classList.add('active');
                 
-                let label = minutes + ' phút';
-                if (minutes >= 1440) label = (minutes/1440).toFixed(0) + ' ngày';
-                else if (minutes >= 60) label = (minutes/60).toFixed(0) + ' giờ';
+                // Update label
+                let label = '';
+                if (minutes >= 1440) {
+                    label = (minutes/1440).toFixed(0) + ' ngày';
+                } else if (minutes >= 360) {
+                    label = (minutes/60).toFixed(0) + ' giờ';
+                } else if (minutes >= 60) {
+                    label = (minutes/60).toFixed(0) + ' giờ';
+                } else {
+                    label = minutes + ' phút';
+                }
                 document.getElementById('timeRange').textContent = '📅 ' + label + ' gần đây';
                 
+                // Fetch new data
                 fetchHistory();
             }
             
@@ -269,17 +294,33 @@ def home():
             // FETCH HISTORY
             // ==========================================
             async function fetchHistory() {
+                if (isLoading) return;
+                
+                isLoading = true;
+                document.getElementById('updateInfo').innerHTML = '<span class="loading"></span> Đang tải dữ liệu...';
+                
                 try {
                     const res = await fetch('/api/history?minutes=' + currentTimeRange);
+                    if (!res.ok) {
+                        throw new Error('Network response was not ok');
+                    }
                     const data = await res.json();
                     
-                    // Clear
+                    // Clear existing data
                     tempChart.data.labels = [];
                     tempChart.data.datasets[0].data = [];
                     loadChart.data.labels = [];
                     loadChart.data.datasets[0].data = [];
                     
-                    // Add data
+                    if (data.length === 0) {
+                        document.getElementById('updateInfo').innerHTML = '⚠️ Không có dữ liệu trong khoảng thời gian này';
+                        isLoading = false;
+                        tempChart.update();
+                        loadChart.update();
+                        return;
+                    }
+                    
+                    // Process data
                     const labels = [];
                     const temps = [];
                     const loads = [];
@@ -288,7 +329,17 @@ def home():
                         let time = '';
                         try {
                             const t = new Date(d.time);
-                            time = t.toLocaleTimeString('vi-VN', {hour:'2-digit', minute:'2-digit'});
+                            // Format time based on range
+                            if (currentTimeRange >= 1440) {
+                                // For days, show date and hour
+                                time = t.toLocaleString('vi-VN', {month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit'});
+                            } else if (currentTimeRange >= 360) {
+                                // For hours, show hour:minute
+                                time = t.toLocaleTimeString('vi-VN', {hour:'2-digit', minute:'2-digit'});
+                            } else {
+                                // For minutes, show hour:minute:second
+                                time = t.toLocaleTimeString('vi-VN', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+                            }
                         } catch(e) {
                             time = d.time || '';
                         }
@@ -303,14 +354,20 @@ def home():
                     loadChart.data.labels = labels;
                     loadChart.data.datasets[0].data = loads;
                     
-                    tempChart.update();
-                    loadChart.update();
+                    tempChart.update('none'); // 'none' for faster update
+                    loadChart.update('none');
                     
-                    document.getElementById('updateInfo').textContent = 
-                        '🔄 ' + new Date().toLocaleTimeString() + ' | ' + data.length + ' điểm';
+                    // Calculate time range text
+                    let startTime = new Date(data[0].time);
+                    let endTime = new Date(data[data.length-1].time);
+                    document.getElementById('updateInfo').innerHTML = 
+                        `🔄 ${new Date().toLocaleTimeString('vi-VN')} | ${data.length} điểm dữ liệu | ${startTime.toLocaleTimeString('vi-VN')} → ${endTime.toLocaleTimeString('vi-VN')}`;
                     
                 } catch(e) {
-                    console.error(e);
+                    console.error('Error fetching history:', e);
+                    document.getElementById('updateInfo').innerHTML = '❌ Lỗi kết nối, thử lại sau...';
+                } finally {
+                    isLoading = false;
                 }
             }
             
@@ -320,38 +377,75 @@ def home():
             async function fetchLatest() {
                 try {
                     const res = await fetch('/api/latest');
+                    if (!res.ok) throw new Error('Network error');
                     const d = await res.json();
                     
-                    document.getElementById('tempValue').textContent = d.temp ? d.temp.toFixed(1) + '°C' : '--°C';
-                    document.getElementById('loadValue').textContent = d.load ? d.load + '%' : '--%';
+                    if (d.temp !== undefined && d.temp !== null) {
+                        document.getElementById('tempValue').textContent = d.temp.toFixed(1) + '°C';
+                    } else {
+                        document.getElementById('tempValue').textContent = '--°C';
+                    }
+                    
+                    if (d.load !== undefined && d.load !== null) {
+                        document.getElementById('loadValue').textContent = d.load + '%';
+                    } else {
+                        document.getElementById('loadValue').textContent = '--%';
+                    }
                     
                     const statusEl = document.getElementById('statusValue');
-                    statusEl.innerHTML = '<span class="status-badge ' + d.status + '">' + d.status + '</span>';
+                    if (d.status && d.status !== 'unknown' && d.status !== 'no_data') {
+                        statusEl.innerHTML = '<span class="status-badge ' + d.status + '">' + d.status + '</span>';
+                    } else {
+                        statusEl.innerHTML = '<span class="status-badge">No Data</span>';
+                    }
                     
-                } catch(e) {}
+                } catch(e) {
+                    console.error('Error fetching latest:', e);
+                }
             }
             
             // ==========================================
             // DOWNLOAD IMAGE
             // ==========================================
             function downloadImage() {
+                const btn = document.querySelector('.download-btn');
+                btn.textContent = '📸 Đang xử lý...';
+                btn.disabled = true;
+                
                 html2canvas(document.getElementById('dashboard'), {
                     backgroundColor: '#1a1a2e',
-                    scale: 2
+                    scale: 2,
+                    logging: false,
+                    useCORS: false
                 }).then(canvas => {
                     const link = document.createElement('a');
-                    link.download = 'CNC_' + new Date().toISOString().slice(0,16).replace(/:/g,'-') + '.png';
+                    const now = new Date();
+                    link.download = `CNC_${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()}_${now.getHours()}-${now.getMinutes()}.png`;
                     link.href = canvas.toDataURL('image/png');
                     link.click();
+                    btn.textContent = '📸 Tải ảnh về máy';
+                    btn.disabled = false;
+                }).catch(error => {
+                    console.error('Error generating image:', error);
+                    btn.textContent = '📸 Lỗi, thử lại';
+                    btn.disabled = false;
+                    setTimeout(() => {
+                        btn.textContent = '📸 Tải ảnh về máy';
+                    }, 2000);
                 });
             }
             
             // ==========================================
-            // INIT
+            // INIT & AUTO REFRESH
             // ==========================================
+            // Initial load
             fetchLatest();
             fetchHistory();
+            
+            // Auto refresh latest data every 3 seconds
             setInterval(fetchLatest, 3000);
+            
+            // Auto refresh history every 30 seconds
             setInterval(fetchHistory, 30000);
         </script>
     </body>
@@ -371,7 +465,8 @@ def api_latest():
                 "status": doc.get("status", "unknown")
             })
         return jsonify({"temp": 0, "load": 0, "status": "no_data"})
-    except:
+    except Exception as e:
+        print(f"Error in api_latest: {e}")
         return jsonify({"temp": 0, "load": 0, "status": "error"})
 
 @app.route("/api/history")
@@ -380,9 +475,21 @@ def api_history():
         return jsonify([])
     try:
         minutes = int(request.args.get("minutes", 10))
+        # Calculate start time
         start_time = datetime.now() - timedelta(minutes=minutes)
+        
+        # Query for data in the time range
+        # Note: Adjust field name based on your actual MongoDB document structure
         query = {"mqtt_timestamp": {"$gte": start_time.isoformat()}}
+        
+        # Sort by timestamp ascending
         docs = list(collection.find(query).sort("mqtt_timestamp", 1))
+        
+        # Limit data points for performance (max 500 points)
+        if len(docs) > 500:
+            # Take every nth point
+            step = len(docs) // 500
+            docs = docs[::step]
         
         data = []
         for doc in docs:
@@ -392,9 +499,12 @@ def api_history():
                 "load": doc.get("load", 0),
                 "status": doc.get("status", "")
             })
+        
+        print(f"History query: {minutes} minutes, found {len(data)} records from {start_time.isoformat()}")
         return jsonify(data)
-    except:
+    except Exception as e:
+        print(f"Error in api_history: {e}")
         return jsonify([])
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    app.run(host="0.0.0.0", port=5000, debug=True)
