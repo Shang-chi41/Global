@@ -1,30 +1,22 @@
-# app.py - CNC Monitor Dashboard - HOÀN CHỈNH
+# app.py - CNC Monitor với 2 chế độ: REAL-TIME + LỊCH SỬ
 from flask import Flask, jsonify, request
 from pymongo import MongoClient
 from datetime import datetime, timedelta
 
 app = Flask(__name__)
 
-# ============================================
-# MONGODB ATLAS CONFIG
-# ============================================
 MONGO_URI = "mongodb+srv://tn042182_db_user:pRCe.YNp34hL8v4@cluster0.rk7eki0.mongodb.net/"
-DATABASE = "CNC_Database"
-COLLECTION = "Sensor_Data"
 
 try:
     client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=10000)
-    db = client[DATABASE]
-    collection = db[COLLECTION]
+    db = client["CNC_Database"]
+    collection = db["Sensor_Data"]
     client.admin.command('ping')
     print("✅ MongoDB Atlas connected!")
 except Exception as e:
     print(f"❌ MongoDB error: {e}")
     collection = None
 
-# ============================================
-# ROUTES
-# ============================================
 @app.route("/")
 def home():
     return """
@@ -38,13 +30,24 @@ def home():
         <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
         <style>
             * { margin: 0; padding: 0; box-sizing: border-box; }
-            body { 
-                font-family: -apple-system, Arial, sans-serif;
-                background: #1a1a2e; color: white; padding: 10px;
-                -webkit-tap-highlight-color: transparent;
-            }
+            body { font-family: -apple-system, Arial, sans-serif; background: #1a1a2e; color: white; padding: 10px; }
             .container { max-width: 1000px; margin: 0 auto; }
-            h1 { text-align: center; color: #4ecdc4; margin-bottom: 12px; font-size: 22px; }
+            h1 { text-align: center; color: #4ecdc4; font-size: 20px; margin-bottom: 10px; }
+            
+            /* MODE SWITCH */
+            .mode-switch {
+                display: flex; gap: 0; justify-content: center; margin-bottom: 12px;
+                background: #16213e; border-radius: 25px; overflow: hidden; width: fit-content; margin: 0 auto 12px auto;
+            }
+            .mode-btn {
+                padding: 10px 24px; cursor: pointer; font-size: 13px; font-weight: bold;
+                border: none; color: #888; background: transparent; transition: all 0.3s;
+            }
+            .mode-btn.active { background: #4ecdc4; color: #1a1a2e; }
+            
+            /* LIVE MODE */
+            #liveMode { display: block; }
+            #historyMode { display: none; }
             
             .gauges { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
             .card { background: #16213e; padding: 12px; border-radius: 12px; text-align: center; }
@@ -63,22 +66,14 @@ def home():
             .error { background: #d63031; animation: blink 0.5s infinite; }
             @keyframes blink { 50% { opacity: 0.5; } }
             
-            .btn-group { 
-                display: flex; gap: 6px; justify-content: center; 
-                margin-bottom: 12px; flex-wrap: wrap;
-            }
+            .btn-group { display: flex; gap: 6px; justify-content: center; margin-bottom: 12px; flex-wrap: wrap; }
             .btn {
                 background: #16213e; color: white; border: 2px solid #4ecdc4;
-                padding: 7px 14px; border-radius: 18px; cursor: pointer;
-                font-size: 12px; transition: all 0.2s; touch-action: manipulation;
+                padding: 7px 14px; border-radius: 18px; cursor: pointer; font-size: 12px;
             }
-            .btn:hover, .btn:active { background: #4ecdc4; color: #1a1a2e; }
             .btn.active { background: #4ecdc4; color: #1a1a2e; font-weight: bold; }
             
-            .chart-box { 
-                background: #16213e; padding: 12px; border-radius: 12px; margin-bottom: 12px;
-                position: relative;
-            }
+            .chart-box { background: #16213e; padding: 12px; border-radius: 12px; margin-bottom: 12px; position: relative; }
             .chart-box h3 { margin-bottom: 6px; color: #ddd; font-size: 14px; }
             canvas { width: 100%; height: 260px !important; touch-action: none; }
             
@@ -87,94 +82,80 @@ def home():
                 padding: 10px 14px; border-radius: 10px; font-size: 13px;
                 pointer-events: none; z-index: 10; display: none;
                 border: 2px solid #4ecdc4; text-align: center;
-                box-shadow: 0 4px 20px rgba(0,0,0,0.5);
             }
             .chart-tooltip .tt-time { color: #4ecdc4; font-size: 12px; margin-bottom: 4px; }
             .chart-tooltip .tt-value { font-size: 20px; font-weight: bold; }
             
-            .info-bar { 
-                display: flex; justify-content: space-between; align-items: center;
-                color: #888; font-size: 11px; margin-bottom: 10px; flex-wrap: wrap; gap: 4px;
-            }
+            .info-bar { display: flex; justify-content: space-between; color: #888; font-size: 11px; margin-bottom: 10px; }
+            
+            .live-dot { width: 10px; height: 10px; background: #00b894; border-radius: 50%; display: inline-block; animation: pulse 1.5s infinite; }
+            @keyframes pulse { 50% { opacity: 0.3; } }
             
             .download-btn {
                 background: #ff6b6b; color: white; border: none;
                 padding: 10px 20px; border-radius: 20px; cursor: pointer;
                 font-size: 14px; display: block; margin: 10px auto;
-                touch-action: manipulation;
             }
-            .download-btn:active { opacity: 0.7; }
-            
-            .loading-spinner {
-                display: inline-block; width: 12px; height: 12px;
-                border: 2px solid #4ecdc4; border-top-color: transparent;
-                border-radius: 50%; animation: spin 0.6s linear infinite;
-            }
-            @keyframes spin { to { transform: rotate(360deg); } }
         </style>
     </head>
     <body>
         <div class="container" id="dashboard">
             <h1>🏭 CNC Machine Monitor</h1>
             
-            <!-- TIME BUTTONS -->
-            <div class="btn-group">
+            <!-- MODE SWITCH -->
+            <div class="mode-switch">
+                <button class="mode-btn active" onclick="switchMode('live')">🔴 LIVE</button>
+                <button class="mode-btn" onclick="switchMode('history')">📅 LỊCH SỬ</button>
+            </div>
+            
+            <!-- INFO BAR -->
+            <div class="info-bar">
+                <span id="infoLeft"><span class="live-dot"></span> REAL-TIME</span>
+                <span id="infoRight">🔄 Đang tải...</span>
+            </div>
+            
+            <!-- GAUGES -->
+            <div class="gauges">
+                <div class="card"><div class="card-label">🌡️ NHIỆT ĐỘ</div><div class="card-value temp-color" id="tempValue">--°C</div></div>
+                <div class="card"><div class="card-label">⚙️ TẢI</div><div class="card-value load-color" id="loadValue">--%</div></div>
+                <div class="card"><div class="card-label">📌 TRẠNG THÁI</div><div id="statusValue"><span class="status-badge">--</span></div></div>
+            </div>
+            
+            <!-- HISTORY BUTTONS (chỉ hiện ở chế độ lịch sử) -->
+            <div class="btn-group" id="historyBtns" style="display:none;">
                 <button class="btn active" onclick="changeTime(10, this)">10 phút</button>
                 <button class="btn" onclick="changeTime(30, this)">30 phút</button>
                 <button class="btn" onclick="changeTime(60, this)">1 giờ</button>
                 <button class="btn" onclick="changeTime(360, this)">6 giờ</button>
                 <button class="btn" onclick="changeTime(1440, this)">1 ngày</button>
-                <button class="btn" onclick="changeTime(10080, this)">1 tuần</button>
-            </div>
-            
-            <!-- INFO BAR -->
-            <div class="info-bar">
-                <span id="timeRange">📅 10 phút gần đây</span>
-                <span id="updateInfo">🔄 Đang tải...</span>
-            </div>
-            
-            <!-- GAUGES -->
-            <div class="gauges">
-                <div class="card">
-                    <div class="card-label">🌡️ NHIỆT ĐỘ</div>
-                    <div class="card-value temp-color" id="tempValue">--°C</div>
-                </div>
-                <div class="card">
-                    <div class="card-label">⚙️ TẢI</div>
-                    <div class="card-value load-color" id="loadValue">--%</div>
-                </div>
-                <div class="card">
-                    <div class="card-label">📌 TRẠNG THÁI</div>
-                    <div id="statusValue"><span class="status-badge">--</span></div>
-                </div>
             </div>
             
             <!-- TEMP CHART -->
             <div class="chart-box" id="tempChartBox">
-                <h3>📈 Nhiệt độ (°C) — Chạm vào đồ thị để xem chi tiết</h3>
+                <h3>📈 Nhiệt độ (°C)</h3>
                 <canvas id="tempChart"></canvas>
-                <div class="chart-tooltip" id="tempTooltip">
-                    <div class="tt-time"></div>
-                    <div class="tt-value"></div>
-                </div>
+                <div class="chart-tooltip" id="tempTooltip"><div class="tt-time"></div><div class="tt-value"></div></div>
             </div>
             
             <!-- LOAD CHART -->
             <div class="chart-box" id="loadChartBox">
-                <h3>📈 Tải (%) — Chạm vào đồ thị để xem chi tiết</h3>
+                <h3>📈 Tải (%)</h3>
                 <canvas id="loadChart"></canvas>
-                <div class="chart-tooltip" id="loadTooltip">
-                    <div class="tt-time"></div>
-                    <div class="tt-value"></div>
-                </div>
+                <div class="chart-tooltip" id="loadTooltip"><div class="tt-time"></div><div class="tt-value"></div></div>
             </div>
             
             <button class="download-btn" onclick="downloadImage()">📸 Tải ảnh về máy</button>
         </div>
 
         <script>
-            let currentTimeRange = 10;
-            let isLoading = false;
+            // ==========================================
+            // GLOBAL STATE
+            // ==========================================
+            let currentMode = 'live';  // 'live' | 'history'
+            let historyMinutes = 10;
+            let liveTimer = null;
+            let historyTimer = null;
+            const MAX_LIVE_POINTS = 60;  // 5 phút (mỗi 5s = 60 điểm)
             
             // ==========================================
             // CREATE CHART
@@ -196,7 +177,7 @@ def home():
                     }]},
                     options: {
                         responsive: true, maintainAspectRatio: false,
-                        animation: { duration: 300 },
+                        animation: currentMode === 'live' ? { duration: 200 } : { duration: 300 },
                         interaction: { mode: 'index', intersect: false },
                         onClick: function(e, elements) {
                             if (elements.length > 0) {
@@ -245,88 +226,135 @@ def home():
             const loadChart = createChart('loadChart', 'loadTooltip', '#4ecdc4', 0, 100, '%');
             
             // ==========================================
-            // CHANGE TIME
+            // SWITCH MODE
             // ==========================================
-            function changeTime(minutes, btn) {
-                if (isLoading) return;
-                currentTimeRange = minutes;
-                document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
+            function switchMode(mode) {
+                currentMode = mode;
                 
-                let label = '';
-                if (minutes >= 10080) label = Math.round(minutes/10080) + ' tuần';
-                else if (minutes >= 1440) label = Math.round(minutes/1440) + ' ngày';
-                else if (minutes >= 60) label = Math.round(minutes/60) + ' giờ';
-                else label = minutes + ' phút';
-                document.getElementById('timeRange').textContent = '📅 ' + label + ' gần đây';
+                // Update buttons
+                document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+                event.target.classList.add('active');
                 
-                fetchHistory();
-            }
-            
-            // ==========================================
-            // FETCH HISTORY
-            // ==========================================
-            async function fetchHistory() {
-                if (isLoading) return;
-                isLoading = true;
-                document.getElementById('updateInfo').innerHTML = '<span class="loading-spinner"></span> Đang tải...';
+                // Stop all timers
+                if (liveTimer) clearInterval(liveTimer);
+                if (historyTimer) clearInterval(historyTimer);
                 
-                try {
-                    const url = '/api/history?minutes=' + currentTimeRange + '&_t=' + Date.now();
-                    const res = await fetch(url);
-                    const data = await res.json();
-                    
-                    tempChart.data.labels = [];
-                    tempChart.data.datasets[0].data = [];
-                    loadChart.data.labels = [];
-                    loadChart.data.datasets[0].data = [];
-                    
-                    if (!data.length) {
-                        document.getElementById('updateInfo').textContent = '⚠️ Không có dữ liệu';
-                        isLoading = false;
-                        tempChart.update(); loadChart.update();
-                        return;
-                    }
-                    
-                    const labels = [], temps = [], loads = [];
-                    data.forEach(d => {
-                        let time = '';
-                        try {
-                            const t = new Date(d.time);
-                            time = t.toLocaleTimeString('vi-VN', {hour:'2-digit', minute:'2-digit'});
-                        } catch(e) { time = d.time || ''; }
-                        labels.push(time);
-                        temps.push(d.temp || 0);
-                        loads.push(d.load || 0);
-                    });
-                    
-                    tempChart.data.labels = labels;
-                    tempChart.data.datasets[0].data = temps;
-                    loadChart.data.labels = labels;
-                    loadChart.data.datasets[0].data = loads;
-                    tempChart.update(); loadChart.update();
-                    
-                    document.getElementById('updateInfo').textContent = 
-                        '🔄 ' + new Date().toLocaleTimeString('vi-VN') + ' | ' + data.length + ' điểm';
-                } catch(e) {
-                    document.getElementById('updateInfo').textContent = '❌ Lỗi tải dữ liệu';
-                } finally {
-                    isLoading = false;
+                // Clear charts
+                tempChart.data.labels = [];
+                tempChart.data.datasets[0].data = [];
+                tempChart.data.datasets[0].pointRadius = 0;
+                loadChart.data.labels = [];
+                loadChart.data.datasets[0].data = [];
+                loadChart.data.datasets[0].pointRadius = 0;
+                tempChart.update();
+                loadChart.update();
+                
+                if (mode === 'live') {
+                    document.getElementById('historyBtns').style.display = 'none';
+                    document.getElementById('infoLeft').innerHTML = '<span class="live-dot"></span> REAL-TIME';
+                    startLiveMode();
+                } else {
+                    document.getElementById('historyBtns').style.display = 'flex';
+                    document.getElementById('infoLeft').textContent = '📅 LỊCH SỬ';
+                    startHistoryMode();
                 }
             }
             
             // ==========================================
-            // FETCH LATEST
+            // LIVE MODE - Real-time
             // ==========================================
-            async function fetchLatest() {
-                try {
-                    const res = await fetch('/api/latest?_t=' + Date.now());
-                    const d = await res.json();
-                    document.getElementById('tempValue').textContent = d.temp ? d.temp.toFixed(1) + '°C' : '--°C';
-                    document.getElementById('loadValue').textContent = d.load ? d.load + '%' : '--%';
-                    document.getElementById('statusValue').innerHTML = 
-                        '<span class="status-badge ' + (d.status||'') + '">' + (d.status||'--').toUpperCase() + '</span>';
-                } catch(e) {}
+            function startLiveMode() {
+                function fetchLiveData() {
+                    fetch('/api/latest?_t=' + Date.now())
+                        .then(r => r.json())
+                        .then(d => {
+                            // Update gauges
+                            document.getElementById('tempValue').textContent = d.temp ? d.temp.toFixed(1) + '°C' : '--°C';
+                            document.getElementById('loadValue').textContent = d.load ? d.load + '%' : '--%';
+                            document.getElementById('statusValue').innerHTML = '<span class="status-badge ' + (d.status||'') + '">' + (d.status||'--').toUpperCase() + '</span>';
+                            
+                            if (d.temp === 0 && d.load === 0) return;
+                这样做
+                            // Add to charts
+                            const now = new Date().toLocaleTimeString('vi-VN', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+                            
+                            tempChart.data.labels.push(now);
+                            tempChart.data.datasets[0].data.push(d.temp || 0);
+                            loadChart.data.labels.push(now);
+                            loadChart.data.datasets[0].data.push(d.load || 0);
+                            
+                            // Limit points
+                            if (tempChart.data.labels.length > MAX_LIVE_POINTS) {
+                                tempChart.data.labels.shift();
+                                tempChart.data.datasets[0].data.shift();
+                                loadChart.data.labels.shift();
+                                loadChart.data.datasets[0].data.shift();
+                            }
+                            
+                            tempChart.update('none');
+                            loadChart.update('none');
+                            
+                            document.getElementById('infoRight').textContent = '🔄 ' + now + ' | ' + tempChart.data.labels.length + ' điểm';
+                        });
+                }
+                
+                fetchLiveData();
+                liveTimer = setInterval(fetchLiveData, 5000);  // Mỗi 5 giây
+            }
+            
+            // ==========================================
+            // HISTORY MODE
+            // ==========================================
+            function startHistoryMode() {
+                fetchHistory();
+                historyTimer = setInterval(fetchHistory, 30000);  // Refresh mỗi 30s
+            }
+            
+            function changeTime(minutes, btn) {
+                historyMinutes = minutes;
+                document.querySelectorAll('#historyBtns .btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                fetchHistory();
+            }
+            
+            function fetchHistory() {
+                document.getElementById('infoRight').textContent = '🔄 Đang tải...';
+                
+                fetch('/api/history?minutes=' + historyMinutes + '&_t=' + Date.now())
+                    .then(r => r.json())
+                    .then(data => {
+                        tempChart.data.labels = [];
+                        tempChart.data.datasets[0].data = [];
+                        loadChart.data.labels = [];
+                        loadChart.data.datasets[0].data = [];
+                        
+                        data.forEach(d => {
+                            let time = '';
+                            try { time = new Date(d.time).toLocaleTimeString('vi-VN', {hour:'2-digit', minute:'2-digit'}); }
+                            catch(e) { time = d.time || ''; }
+                            tempChart.data.labels.push(time);
+                            tempChart.data.datasets[0].data.push(d.temp || 0);
+                            loadChart.data.labels.push(time);
+                            loadChart.data.datasets[0].data.push(d.load || 0);
+                        });
+                        
+                        tempChart.update();
+                        loadChart.update();
+                        document.getElementById('infoRight').textContent = '🔄 ' + new Date().toLocaleTimeString('vi-VN') + ' | ' + data.length + ' điểm';
+                    });
+            }
+            
+            // ==========================================
+            // FETCH LATEST GAUGES
+            // ==========================================
+            function fetchLatest() {
+                fetch('/api/latest?_t=' + Date.now())
+                    .then(r => r.json())
+                    .then(d => {
+                        document.getElementById('tempValue').textContent = d.temp ? d.temp.toFixed(1) + '°C' : '--°C';
+                        document.getElementById('loadValue').textContent = d.load ? d.load + '%' : '--%';
+                        document.getElementById('statusValue').innerHTML = '<span class="status-badge ' + (d.status||'') + '">' + (d.status||'--').toUpperCase() + '</span>';
+                    });
             }
             
             function downloadImage() {
@@ -339,9 +367,12 @@ def home():
                     });
             }
             
-            fetchLatest(); fetchHistory();
+            // ==========================================
+            // INIT
+            // ==========================================
+            fetchLatest();
+            startLiveMode();
             setInterval(fetchLatest, 3000);
-            setInterval(fetchHistory, 30000);
         </script>
     </body>
     </html>
@@ -354,13 +385,9 @@ def api_latest():
     try:
         doc = collection.find_one(sort=[("mqtt_timestamp", -1)])
         if doc:
-            return jsonify({
-                "temp": doc.get("temp", 0),
-                "load": doc.get("load", 0),
-                "status": doc.get("status", "unknown")
-            })
+            return jsonify({"temp": doc.get("temp", 0), "load": doc.get("load", 0), "status": doc.get("status", "unknown")})
         return jsonify({"temp": 0, "load": 0, "status": "no_data"})
-    except Exception as e:
+    except:
         return jsonify({"temp": 0, "load": 0, "status": "error"})
 
 @app.route("/api/history")
@@ -372,51 +399,26 @@ def api_history():
         now = datetime.now()
         start_time = now - timedelta(minutes=minutes)
         
-        # Chuyển thành string format giống MongoDB
-        # MongoDB lưu dạng: "2026-05-15T16:21:41.602085"
-        start_str = start_time.isoformat()
-        now_str = now.isoformat()
-        
-        print(f"🕐 NOW: {now_str}")
-        print(f"🕐 START: {start_str}")
-        
-        # Query tất cả dữ liệu trong khoảng thời gian
+        # Lấy TẤT CẢ dữ liệu trong khoảng thời gian (không giới hạn)
         query = {
             "mqtt_timestamp": {
-                "$gte": start_str,
-                "$lte": now_str
+                "$gte": start_time.isoformat(),
+                "$lte": now.isoformat()
             }
         }
-        
         docs = list(collection.find(query).sort("mqtt_timestamp", 1))
-        print(f"📊 Found: {len(docs)} records in {minutes} minutes")
         
-        # Nếu vẫn không có, thử query không filter
-        if len(docs) == 0:
-            print("⚠️ No data with time filter, trying regex...")
-            # Thử query với regex cho ngày hiện tại
-            today_str = now.strftime("%Y-%m-%d")
-            query = {"mqtt_timestamp": {"$regex": f"^{today_str}"}}
-            docs = list(collection.find(query).sort("mqtt_timestamp", 1))
-            print(f"📊 Found with regex: {len(docs)} records")
-        
-        # Nếu > 1000 điểm, sample xuống
-        if len(docs) > 1000:
-            step = len(docs) // 1000
+        # Nếu > 2000 điểm, sample xuống
+        if len(docs) > 2000:
+            step = len(docs) // 2000
             docs = docs[::step]
-            print(f"📊 Sampled to: {len(docs)} records")
         
-        data = []
-        for doc in docs:
-            data.append({
-                "time": doc.get("mqtt_timestamp", ""),
-                "temp": doc.get("temp", 0),
-                "load": doc.get("load", 0)
-            })
-        return jsonify(data)
-        
-    except Exception as e:
-        print(f"❌ Error: {e}")
+        return jsonify([{
+            "time": d.get("mqtt_timestamp", ""),
+            "temp": d.get("temp", 0),
+            "load": d.get("load", 0)
+        } for d in docs])
+    except:
         return jsonify([])
 
 if __name__ == "__main__":
