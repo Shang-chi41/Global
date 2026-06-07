@@ -31,7 +31,6 @@
             background-size:40px 40px; pointer-events:none; z-index:0;
         }
 
-        /* Header */
         .header {
             background:linear-gradient(135deg,#0d1b2a 0%,#1e3a5f 100%);
             border-bottom:2px solid var(--gold);
@@ -39,17 +38,12 @@
             justify-content:space-between; height:88px; flex-shrink:0;
             position:relative; z-index:10;
         }
-        .header::after {
-            content:''; position:absolute; bottom:-4px; left:0; right:0;
-            height:2px; background:var(--cyan); opacity:.35;
-        }
         .logo-bk { display:flex; align-items:center; gap:10px; }
         .logo-bk-text { font-size:11px; font-weight:600; color:var(--gold); line-height:1.5; text-transform:uppercase; }
         .header-center { text-align:center; flex:1; padding:0 16px; }
         .header-center .main-title { font-weight:700; font-size:13px; text-transform:uppercase; letter-spacing:.7px; line-height:1.45; }
         .header-center .sub-title { font-size:11px; color:var(--gold); margin-top:4px; letter-spacing:.5px; }
 
-        /* User badge */
         .user-badge {
             position:fixed; top:96px; right:16px;
             background:rgba(30,58,95,.85); border:1px solid var(--border);
@@ -65,14 +59,12 @@
         }
         .logout-btn:hover { background:var(--red); color:white; }
 
-        /* Main Layout */
         .main {
             flex:1; position:relative; z-index:1;
             padding:20px 24px;
-            max-width: 1400px; margin: 0 auto; width: 100%;
+            max-width: 1600px; margin: 0 auto; width: 100%;
         }
 
-        /* Mode Toggle */
         .mode-toggle {
             display: flex;
             gap: 20px;
@@ -104,21 +96,20 @@
         .mode-btn.manual.active { background: var(--warning); border-color: var(--warning); }
         .mode-btn.auto.active { background: var(--success); border-color: var(--success); }
 
-        /* Panel Container */
         .panel-container {
             background: rgba(30,58,95,.35);
             border: 1px solid var(--border);
             border-radius: 12px;
             padding: 24px;
-            min-height: 500px;
+            min-height: 650px;
         }
 
-        /* ========== MANUAL MODE ========== */
-        .manual-panel {
-            display: none;
-        }
-        .manual-panel.active {
-            display: block;
+        /* ========== MANUAL PANEL STYLES ========== */
+        .manual-panel { display: none; }
+        .manual-panel.active { display: block; }
+        .manual-container {
+            max-width: 600px;
+            margin: 0 auto;
         }
         .connection-card {
             background: rgba(13,27,42,.6);
@@ -193,23 +184,13 @@
             cursor: pointer;
             font-size: 18px;
         }
-        
-        /* ========== CONNECTION INFO (Cách 6) ========== */
         .connection-info {
             margin-top: 24px;
             padding: 24px;
             background: rgba(0,0,0,.4);
             border-radius: 12px;
             text-align: center;
-            display: none;
-        }
-        .connection-info.show {
-            display: block;
             animation: fadeIn 0.5s ease;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
         }
         .connection-icon {
             font-size: 48px;
@@ -225,11 +206,6 @@
         .connection-url a {
             color: var(--cyan);
             text-decoration: none;
-            font-size: 16px;
-            font-family: monospace;
-        }
-        .connection-url a:hover {
-            text-decoration: underline;
         }
         .open-link-btn {
             background: var(--success);
@@ -261,57 +237,178 @@
             color: #6b8fa8;
             margin-top: 16px;
         }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            margin-left: 12px;
+        }
+        .connected { background: rgba(0,184,148,.2); color: var(--success); }
+        .disconnected { background: rgba(231,76,60,.2); color: var(--red); }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
-        /* ========== AUTO MODE ========== */
-        .auto-panel {
+        /* ========== AUTO PANEL STYLES ========== */
+        .auto-panel { display: none; }
+        .auto-panel.active { display: block; }
+        .auto-grid {
+            display: flex;
+            gap: 20px;
+        }
+        .col-left { flex: 1; display: flex; flex-direction: column; gap: 20px; }
+        .col-center { width: 380px; display: flex; flex-direction: column; gap: 20px; }
+        .col-right { width: 340px; display: flex; flex-direction: column; gap: 20px; }
+
+        .card {
+            background: rgba(13,27,42,.6);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+        }
+        .card-title {
+            font-family: 'Orbitron';
+            font-size: 14px;
+            color: var(--cyan);
+            margin-bottom: 16px;
+            letter-spacing: 1px;
+        }
+
+        .upload-area {
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .upload-area:hover { border-color: var(--cyan); background: rgba(0,201,212,.05); }
+        .upload-area.dragover { border-color: var(--success); background: rgba(0,184,148,.1); }
+        .file-info {
+            margin-top: 16px;
+            padding: 12px;
+            background: rgba(0,0,0,.3);
+            border-radius: 8px;
+            font-size: 13px;
             display: none;
         }
-        .auto-panel.active {
-            display: block;
-        }
-        .gcode-editor {
-            background: rgba(13,27,42,.8);
-            border: 1px solid var(--border);
+        .preview-img {
+            max-width: 100%;
+            max-height: 150px;
             border-radius: 8px;
-            padding: 20px;
-            font-family: monospace;
+            margin-top: 12px;
         }
-        textarea {
-            width: 100%;
+
+        .gcode-preview {
             background: #0a0f1a;
-            border: 1px solid var(--border);
-            color: var(--cyan);
-            font-family: monospace;
-            padding: 16px;
             border-radius: 8px;
-            margin: 10px 0;
+            padding: 16px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 280px;
+            overflow: auto;
+            white-space: pre-wrap;
+            margin: 16px 0;
         }
-        .control-buttons {
+        .btn-group {
             display: flex;
             gap: 12px;
-            margin-top: 16px;
         }
-        .ctrl-btn {
+        .btn {
             flex: 1;
             padding: 12px;
             font-family: 'Orbitron';
             font-weight: 600;
-            border: 1px solid var(--border);
+            border: none;
             border-radius: 8px;
-            background: rgba(30,58,95,.8);
             cursor: pointer;
             transition: all 0.2s;
+            text-align: center;
         }
-        .ctrl-btn:hover {
+        .btn-primary { background: var(--cyan); color: var(--navy); }
+        .btn-success { background: var(--success); color: white; }
+        .btn-danger { background: var(--red); color: white; }
+
+        .unity-waiting { text-align: center; padding: 20px; }
+        .unity-placeholder {
+            background: rgba(0,0,0,.5);
+            border-radius: 12px;
+            padding: 40px 20px;
+            border: 1px solid var(--border);
+        }
+        .unity-icon { font-size: 64px; margin-bottom: 20px; animation: pulse 2s infinite; }
+        .instruction-steps {
+            text-align: left;
+            margin-top: 20px;
+            padding: 16px;
+            background: rgba(0,0,0,.3);
+            border-radius: 8px;
+            font-size: 12px;
+        }
+        .instruction-steps ol { margin-left: 20px; margin-top: 8px; }
+        .instruction-steps li { margin: 6px 0; }
+        .status-waiting { background: rgba(243,156,18,.2); color: var(--warning); }
+        .status-ready { background: rgba(0,184,148,.2); color: var(--success); }
+        code { background: #000; padding: 2px 6px; border-radius: 4px; font-size: 11px; }
+
+        .chat-messages {
+            height: 380px;
+            overflow-y: auto;
+            margin-bottom: 16px;
+            padding: 8px;
+        }
+        .chat-message {
+            margin-bottom: 12px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            max-width: 95%;
+        }
+        .chat-message.user {
+            background: rgba(0,201,212,.2);
+            margin-left: auto;
+            text-align: right;
+        }
+        .chat-message.assistant {
+            background: rgba(30,58,95,.8);
+            margin-right: auto;
+        }
+        .chat-message .role {
+            font-size: 10px;
+            color: var(--cyan);
+            margin-bottom: 4px;
+        }
+        .chat-message .content { font-size: 12px; word-break: break-word; white-space: pre-wrap; }
+        .chat-input-group {
+            display: flex;
+            gap: 8px;
+        }
+        .chat-input {
+            flex: 1;
+            background: rgba(0,0,0,.5);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            color: white;
+        }
+        .send-btn {
             background: var(--cyan);
-            color: var(--navy);
+            border: none;
+            border-radius: 8px;
+            padding: 12px 20px;
+            cursor: pointer;
+        }
+        .typing-indicator {
+            color: var(--cyan);
+            font-size: 12px;
+            padding: 8px;
+            font-style: italic;
         }
 
-        /* Navbar */
         .navbar {
             background:rgba(13,27,42,.97); border-top:1px solid var(--border);
             display:flex; flex-shrink:0; position:sticky; bottom:0; z-index:10;
-            box-shadow:0 -4px 24px rgba(0,0,0,.4);
         }
         .nav-link {
             flex:1; text-align:center; padding:13px 8px;
@@ -322,15 +419,18 @@
         .nav-link:hover { color:var(--cyan); }
         .nav-link.active { color:var(--red); border-top-color:var(--red); }
 
-        .status-badge {
+        .loading-spinner {
             display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            margin-left: 12px;
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--cyan);
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
         }
-        .connected { background: rgba(0,184,148,.2); color: var(--success); }
-        .disconnected { background: rgba(231,76,60,.2); color: var(--red); }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
     </style>
 </head>
 <body>
@@ -345,12 +445,8 @@
           <text x="45" y="104" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="12.5" font-weight="900" fill="#CC1111" letter-spacing="2">BÁCH KHOA</text>
           <polygon points="16,7 17.6,12 22.8,12 18.6,15 20.2,20 16,17 11.8,20 13.4,15 9.2,12 14.4,12" fill="#FFD700"/>
           <text x="67" y="17" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" font-weight="bold" fill="#CC1111" letter-spacing="1">ĐẠI HỌC</text>
-          <clipPath id="lH"><rect x="0" y="0" width="45" height="113"/></clipPath>
-          <clipPath id="rH"><rect x="45" y="0" width="90" height="113"/></clipPath>
-          <circle cx="45" cy="60" r="24" fill="#CC1111" clip-path="url(#lH)"/>
-          <circle cx="45" cy="60" r="24" fill="#FAFAFA" clip-path="url(#rH)"/>
+          <circle cx="45" cy="60" r="24" fill="#CC1111"/>
           <circle cx="45" cy="60" r="24" fill="none" stroke="#E8A800" stroke-width="3"/>
-          <line x1="58" y1="15" x2="28" y2="75" stroke="#E8A800" stroke-width="2.8"/>
         </svg>
         <div class="logo-bk-text">ĐH Bách Khoa<br>Hà Nội</div>
     </div>
@@ -375,68 +471,143 @@
 </div>
 
 <main class="main">
-    <!-- Mode Toggle -->
     <div class="mode-toggle">
         <div class="mode-btn manual" onclick="setMode('manual')">🖐️ THỦ CÔNG</div>
-        <div class="mode-btn auto" onclick="setMode('auto')">🤖 TỰ ĐỘNG</div>
+        <div class="mode-btn auto active" onclick="setMode('auto')">🤖 TỰ ĐỘNG</div>
     </div>
 
     <div class="panel-container">
         <!-- ========== MANUAL PANEL ========== -->
         <div id="manualPanel" class="manual-panel">
-            <div class="connection-card">
-                <div class="connection-title">
-                    🔌 KẾT NỐI ĐIỀU KHIỂN THỦ CÔNG
-                    <span id="connectionStatus" class="status-badge disconnected">Chưa kết nối</span>
+            <div class="manual-container">
+                <div class="connection-card">
+                    <div class="connection-title">
+                        🔌 KẾT NỐI ĐIỀU KHIỂN THỦ CÔNG
+                        <span id="connectionStatus" class="status-badge disconnected">Chưa kết nối</span>
+                    </div>
+                    
+                    <div class="url-input-group">
+                        <input type="text" id="deviceUrl" class="url-input" 
+                               placeholder="Nhập địa chỉ IP hoặc URL (VD: 192.168.1.100:8080)">
+                        <button class="connect-btn" onclick="connectToDevice()">🔗 KẾT NỐI</button>
+                    </div>
+                    
+                    <div class="saved-urls">
+                        <div style="font-size: 12px; color: var(--cyan); margin-bottom: 8px;">📌 ĐÃ LƯU:</div>
+                        <div id="savedUrlsList"></div>
+                    </div>
                 </div>
                 
-                <div class="url-input-group">
-                    <input type="text" id="deviceUrl" class="url-input" 
-                           placeholder="Nhập địa chỉ IP hoặc URL (VD: 192.168.1.100:8080 hoặc localhost:5000)">
-                    <button class="connect-btn" onclick="connectToDevice()">🔗 KẾT NỐI</button>
-                </div>
-                
-                <div class="saved-urls">
-                    <div style="font-size: 12px; color: var(--cyan); margin-bottom: 8px;">📌 ĐÃ LƯU:</div>
-                    <div id="savedUrlsList"></div>
-                </div>
-            </div>
-            
-            <!-- ========== CONNECTION INFO (CÁCH 6) ========== -->
-            <div id="connectionInfo" class="connection-info">
-                <div class="connection-icon">🔗</div>
-                <h3 style="color: var(--cyan); margin-bottom: 8px;">ĐÃ KẾT NỐI THÀNH CÔNG!</h3>
-                <p style="margin-bottom: 16px;">Bấm vào link bên dưới để mở trang điều khiển:</p>
-                <div class="connection-url">
-                    <a id="connectionLink" href="#" target="_blank"></a>
-                </div>
-                <button class="open-link-btn" onclick="openConnectionInNewTab()">
-                    🌐 MỞ TRANG ĐIỀU KHIỂN
-                </button>
-                <button class="close-connection-btn" onclick="closeConnection()">
-                    ✖ ĐÓNG
-                </button>
-                <div class="note-text">
-                    💡 Lưu ý: Trang điều khiển sẽ mở trong tab mới để tránh lỗi bảo mật từ trình duyệt.
+                <div id="connectionInfo" class="connection-info" style="display: none;">
+                    <div class="connection-icon">🔗</div>
+                    <h3 style="color: var(--cyan); margin-bottom: 8px;">ĐÃ KẾT NỐI THÀNH CÔNG!</h3>
+                    <p style="margin-bottom: 16px;">Bấm vào link bên dưới để mở trang điều khiển:</p>
+                    <div class="connection-url">
+                        <a id="connectionLink" href="#" target="_blank" style="color: var(--cyan);"></a>
+                    </div>
+                    <button class="open-link-btn" onclick="openConnectionInNewTab()">
+                        🌐 MỞ TRANG ĐIỀU KHIỂN
+                    </button>
+                    <button class="close-connection-btn" onclick="closeConnection()">
+                        ✖ ĐÓNG
+                    </button>
+                    <div class="note-text">
+                        💡 Lưu ý: Trang điều khiển sẽ mở trong tab mới để tránh lỗi bảo mật.
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- ========== AUTO PANEL ========== -->
-        <div id="autoPanel" class="auto-panel">
-            <div class="gcode-editor">
-                <h3 style="color: var(--cyan); margin-bottom: 16px;">📝 G-CODE TỰ ĐỘNG</h3>
-                <textarea id="gcodeInput" rows="10" placeholder="G21 (mm)
-G90 (Absolute)
-G0 X0 Y0 Z0
-G1 X100 Y50 Z10 F500
-M30"></textarea>
-                <div class="control-buttons">
-                    <button class="ctrl-btn" onclick="sendGCode()">▶ CHẠY G-CODE</button>
-                    <button class="ctrl-btn" onclick="stopMachine()">⏹ DỪNG KHẨN CẤP</button>
-                    <button class="ctrl-btn" onclick="homeMachine()">🏠 HOME</button>
+        <div id="autoPanel" class="auto-panel active">
+            <div class="auto-grid">
+                <!-- CỘT TRÁI: Upload + G-Code -->
+                <div class="col-left">
+                    <div class="card">
+                        <div class="card-title">📁 UPLOAD PHÔI</div>
+                        <div id="uploadArea" class="upload-area" onclick="document.getElementById('fileInput').click()">
+                            📂 Click hoặc kéo thả file vào đây
+                            <br><small>Hỗ trợ: STL, PNG, JPG, STEP, DXF</small>
+                        </div>
+                        <input type="file" id="fileInput" style="display: none;" accept=".stl,.png,.jpg,.jpeg,.step,.dxf">
+                        <div id="fileInfo" class="file-info">
+                            <strong>📄 File:</strong> <span id="fileName"></span><br>
+                            <strong>📏 Kích thước:</strong> <span id="fileSize"></span>
+                            <img id="previewImage" class="preview-img" style="display: none;">
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title">📝 G-CODE</div>
+                        <div id="gcodePreview" class="gcode-preview">
+                            ⏳ Chưa có G-Code. Hãy upload file phôi và chat với AI.
+                        </div>
+                        <div class="btn-group">
+                            <button id="downloadBtn" class="btn btn-success" onclick="downloadGCode()" disabled>💾 DOWNLOAD .NC</button>
+                            <button class="btn btn-danger" onclick="clearGCode()">🗑 XÓA</button>
+                        </div>
+                    </div>
                 </div>
-                <div id="autoStatus" style="margin-top: 16px; padding: 12px; background: rgba(0,0,0,.3); border-radius: 8px; font-family: monospace; font-size: 12px;"></div>
+
+                <!-- CỘT GIỮA: UNITY PANEL -->
+                <div class="col-center">
+                    <div class="card">
+                        <div class="card-title">🎮 MÔ PHỎNG 3D</div>
+                        <div id="unityContainer">
+                            <div id="unityWaiting" class="unity-waiting">
+                                <div class="unity-placeholder">
+                                    <div class="unity-icon">🎮</div>
+                                    <h3 style="color: var(--cyan);">Unity WebGL</h3>
+                                    <p style="margin: 16px 0; font-size: 13px;">Đang chờ cấu hình mô hình 3D</p>
+                                    <span class="status-badge status-waiting">⏳ CHƯA SẴN SÀNG</span>
+                                </div>
+                                <div class="instruction-steps">
+                                    <strong>📌 HƯỚNG DẪN KHI CÓ UNITY:</strong>
+                                    <ol>
+                                        <li>Export WebGL từ Unity (File → Build Settings → WebGL)</li>
+                                        <li>Tạo thư mục <code>static/unity/</code> trong dự án Flask</li>
+                                        <li>Copy toàn bộ file build vào thư mục trên</li>
+                                        <li>Refresh lại trang → Mô hình 3D sẽ hiển thị tại đây 🎯</li>
+                                    </ol>
+                                </div>
+                            </div>
+                            <div id="unityIframe" style="display: none;">
+                                <iframe id="unityFrame" src="/static/unity/index.html" 
+                                        style="width:100%; height:400px; border:none; border-radius:8px;"
+                                        allow="autoplay; fullscreen"></iframe>
+                                <div style="margin-top: 12px; text-align: center; font-size: 11px; color: var(--cyan);">
+                                    ✅ Mô phỏng 3D | Dữ liệu realtime từ cảm biến
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CỘT PHẢI: CHAT AI -->
+                <div class="col-right">
+                    <div class="card" style="height: 100%; display: flex; flex-direction: column;">
+                        <div class="card-title">💬 CNC AI ASSISTANT</div>
+                        <div id="chatMessages" class="chat-messages" style="flex: 1;">
+                            <div class="chat-message assistant">
+                                <div class="role">🤖 AI</div>
+                                <div class="content">Chào bạn! 👋<br><br>
+                                🔹 Hãy <strong>upload file phôi</strong> (STL, PNG, JPG, STEP, DXF)<br>
+                                🔹 Sau đó chat với tôi để được tạo <strong>G-Code</strong><br>
+                                🔹 Tôi sẽ hỗ trợ thông số: vật liệu, tốc độ cắt, dao cụ...<br><br>
+                                💡 <em>Ví dụ: "Tạo G-Code gia công nhôm, tốc độ 500mm/phút, dao 6mm"</em></div>
+                            </div>
+                        </div>
+                        <div id="typingIndicator" class="typing-indicator" style="display: none;">
+                            <span class="loading-spinner"></span> AI đang suy nghĩ...
+                        </div>
+                        <div class="chat-input-group">
+                            <input type="text" id="chatInput" class="chat-input" 
+                                   placeholder="Nhập câu hỏi về G-Code, vật liệu, tốc độ cắt..." 
+                                   onkeypress="if(event.key==='Enter') sendMessage()">
+                            <button class="send-btn" onclick="sendMessage()">📤 GỬI</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -450,18 +621,31 @@ M30"></textarea>
 </nav>
 
 <script>
-// State
-let currentMode = 'manual';
+// ========== STATE ==========
+let currentMode = 'auto';
+let currentFile = null;
+let currentGCode = '';
+let currentConversationId = null;
+let isWaitingForResponse = false;
+
+// ========== MODE TOGGLE ==========
+function setMode(mode) {
+    currentMode = mode;
+    document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelector(`.mode-btn.${mode}`).classList.add('active');
+    document.getElementById('manualPanel').classList.toggle('active', mode === 'manual');
+    document.getElementById('autoPanel').classList.toggle('active', mode === 'auto');
+}
+
+// ========== MANUAL MODE FUNCTIONS ==========
 let currentConnectedUrl = '';
 let savedUrls = [];
 
-// Load saved URLs from localStorage
 function loadSavedUrls() {
     const urls = localStorage.getItem('cnc_manual_urls');
     if (urls) {
         savedUrls = JSON.parse(urls);
     } else {
-        // Default demo URLs
         savedUrls = [
             { name: 'GRBL WebUI Demo', url: 'http://localhost:8080' },
             { name: 'ESP32 CNC', url: 'http://192.168.1.100' }
@@ -470,13 +654,11 @@ function loadSavedUrls() {
     renderSavedUrls();
 }
 
-// Save URLs to localStorage
 function saveUrls() {
     localStorage.setItem('cnc_manual_urls', JSON.stringify(savedUrls));
     renderSavedUrls();
 }
 
-// Render saved URLs list
 function renderSavedUrls() {
     const container = document.getElementById('savedUrlsList');
     if (!container) return;
@@ -494,23 +676,18 @@ function renderSavedUrls() {
     `).join('');
 }
 
-// Use a saved URL
 function useSavedUrl(url) {
     document.getElementById('deviceUrl').value = url;
     connectToDevice();
 }
 
-// Delete saved URL
 function deleteSavedUrl(index) {
     savedUrls.splice(index, 1);
     saveUrls();
 }
 
-// Add new URL to saved list
 function addToSavedUrls(url) {
-    // Check if already exists
     if (savedUrls.some(item => item.url === url)) return;
-    
     let name = prompt('Nhập tên cho địa chỉ này:', url.split('//')[1]?.split(':')[0] || url.split(':')[0] || 'CNC Device');
     if (name) {
         savedUrls.push({ name: name, url: url });
@@ -518,161 +695,210 @@ function addToSavedUrls(url) {
     }
 }
 
-// Connect to device (CÁCH 6)
 function connectToDevice() {
     let url = document.getElementById('deviceUrl').value.trim();
     if (!url) {
         alert('Vui lòng nhập địa chỉ IP hoặc URL');
         return;
     }
-    
-    // Auto add http:// if missing
     if (!url.startsWith('http://') && !url.startsWith('https://')) {
         url = 'http://' + url;
     }
-    
     currentConnectedUrl = url;
-    
-    // Cập nhật link trong connection info
     const linkElement = document.getElementById('connectionLink');
     linkElement.href = url;
     linkElement.textContent = url;
-    
-    // Hiển thị connection info
-    const connectionInfo = document.getElementById('connectionInfo');
-    connectionInfo.classList.add('show');
-    
-    // Cập nhật trạng thái
+    document.getElementById('connectionInfo').style.display = 'block';
     const statusSpan = document.getElementById('connectionStatus');
     statusSpan.textContent = 'Đã kết nối';
     statusSpan.className = 'status-badge connected';
-    
-    // Scroll đến connection info
-    connectionInfo.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    
-    // Hỏi lưu lại
+    document.getElementById('connectionInfo').scrollIntoView({ behavior: 'smooth', block: 'center' });
     setTimeout(() => {
-        const alreadySaved = savedUrls.some(item => item.url === url);
-        if (!alreadySaved && confirm('Bạn có muốn lưu địa chỉ này để dùng sau không?')) {
-            addToSavedUrls(url);
+        if (!savedUrls.some(item => item.url === url)) {
+            if (confirm('Bạn có muốn lưu địa chỉ này để dùng sau không?')) {
+                addToSavedUrls(url);
+            }
         }
     }, 500);
 }
 
-// Open connection in new tab
 function openConnectionInNewTab() {
     if (currentConnectedUrl) {
         window.open(currentConnectedUrl, '_blank');
     }
 }
 
-// Close connection info
 function closeConnection() {
-    const connectionInfo = document.getElementById('connectionInfo');
-    connectionInfo.classList.remove('show');
-    
+    document.getElementById('connectionInfo').style.display = 'none';
     const statusSpan = document.getElementById('connectionStatus');
     statusSpan.textContent = 'Chưa kết nối';
     statusSpan.className = 'status-badge disconnected';
-    
     currentConnectedUrl = '';
 }
 
-// ========== AUTO MODE FUNCTIONS ==========
-function sendGCode() {
-    const gcode = document.getElementById('gcodeInput').value;
-    const statusDiv = document.getElementById('autoStatus');
-    
-    if (!gcode.trim()) {
-        statusDiv.innerHTML = '⚠️ Vui lòng nhập G-Code';
-        return;
-    }
-    
-    statusDiv.innerHTML = '⏳ Đang gửi G-Code đến máy CNC...';
-    
-    fetch('/api/control/gcode', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ gcode: gcode })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.status === 'ok') {
-            statusDiv.innerHTML = '✅ G-Code đã được gửi thành công!';
+// ========== UNITY CHECK ==========
+async function checkUnityAvailable() {
+    try {
+        const response = await fetch('/static/unity/index.html', { method: 'HEAD', cache: 'no-cache' });
+        if (response.ok) {
+            document.getElementById('unityWaiting').style.display = 'none';
+            document.getElementById('unityIframe').style.display = 'block';
         } else {
-            statusDiv.innerHTML = '❌ Lỗi: ' + (data.error || 'Không thể gửi');
+            document.getElementById('unityWaiting').style.display = 'block';
+            document.getElementById('unityIframe').style.display = 'none';
         }
-    })
-    .catch(error => {
-        statusDiv.innerHTML = '❌ Lỗi kết nối: ' + error.message;
-    });
-}
-
-function stopMachine() {
-    const statusDiv = document.getElementById('autoStatus');
-    statusDiv.innerHTML = '🛑 Đang gửi lệnh DỪNG KHẨN CẤP...';
-    
-    fetch('/api/control/stop', { method: 'POST' })
-    .then(response => response.json())
-    .then(data => {
-        if (data.status === 'ok') {
-            statusDiv.innerHTML = '🛑 Đã dừng khẩn cấp!';
-        } else {
-            statusDiv.innerHTML = '❌ Lỗi: ' + (data.error || 'Không thể dừng');
-        }
-    })
-    .catch(error => {
-        statusDiv.innerHTML = '❌ Lỗi: ' + error.message;
-    });
-}
-
-function homeMachine() {
-    const statusDiv = document.getElementById('autoStatus');
-    statusDiv.innerHTML = '🏠 Đang đưa máy về HOME...';
-    
-    fetch('/api/control/home', { method: 'POST' })
-    .then(response => response.json())
-    .then(data => {
-        if (data.status === 'ok') {
-            statusDiv.innerHTML = '🏠 Đã về HOME!';
-        } else {
-            statusDiv.innerHTML = '❌ Lỗi: ' + (data.error || 'Không thể home');
-        }
-    })
-    .catch(error => {
-        statusDiv.innerHTML = '❌ Lỗi: ' + error.message;
-    });
-}
-
-// Set mode
-function setMode(mode) {
-    currentMode = mode;
-    
-    // Update button styles
-    document.querySelectorAll('.mode-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    document.querySelector(`.mode-btn.${mode}`).classList.add('active');
-    
-    // Show/hide panels
-    const manualPanel = document.getElementById('manualPanel');
-    const autoPanel = document.getElementById('autoPanel');
-    
-    if (mode === 'manual') {
-        manualPanel.classList.add('active');
-        autoPanel.classList.remove('active');
-    } else {
-        manualPanel.classList.remove('active');
-        autoPanel.classList.add('active');
+    } catch (error) {
+        document.getElementById('unityWaiting').style.display = 'block';
+        document.getElementById('unityIframe').style.display = 'none';
     }
 }
 
-// Initialize
+// ========== FILE UPLOAD ==========
+const uploadArea = document.getElementById('uploadArea');
+const fileInput = document.getElementById('fileInput');
+const fileInfo = document.getElementById('fileInfo');
+const fileName = document.getElementById('fileName');
+const fileSize = document.getElementById('fileSize');
+const previewImage = document.getElementById('previewImage');
+
+uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.classList.add('dragover'); });
+uploadArea.addEventListener('dragleave', () => { uploadArea.classList.remove('dragover'); });
+uploadArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadArea.classList.remove('dragover');
+    if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', (e) => { if (e.target.files.length) handleFile(e.target.files[0]); });
+
+function handleFile(file) {
+    currentFile = file;
+    fileName.textContent = file.name;
+    fileSize.textContent = (file.size / 1024).toFixed(2) + ' KB';
+    fileInfo.style.display = 'block';
+    if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = (e) => { previewImage.src = e.target.result; previewImage.style.display = 'block'; };
+        reader.readAsDataURL(file);
+    } else { previewImage.style.display = 'none'; }
+    addChatMessage('assistant', `📄 Đã nhận file: <strong>${file.name}</strong><br>🔍 Hãy chat với tôi để tạo G-Code!`);
+}
+
+// ========== CHAT AI ==========
+async function sendMessage() {
+    const input = document.getElementById('chatInput');
+    const message = input.value.trim();
+    if (!message || isWaitingForResponse) return;
+    input.value = '';
+    addChatMessage('user', message);
+    isWaitingForResponse = true;
+    document.getElementById('typingIndicator').style.display = 'block';
+    try {
+        const response = await fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                message: message + (currentFile ? `\n[File đã upload: ${currentFile.name}]` : ''),
+                conversation_id: currentConversationId 
+            })
+        });
+        const data = await response.json();
+        currentConversationId = data.conversation_id;
+        pollForResponse(currentConversationId);
+    } catch (error) {
+        document.getElementById('typingIndicator').style.display = 'none';
+        isWaitingForResponse = false;
+        addChatMessage('assistant', '❌ Lỗi kết nối: ' + error.message);
+    }
+}
+
+async function pollForResponse(convId) {
+    let attempts = 0;
+    const maxAttempts = 40;
+    const interval = setInterval(async () => {
+        attempts++;
+        try {
+            const response = await fetch(`/api/chat/messages/${convId}`);
+            const data = await response.json();
+            if (data.done) {
+                clearInterval(interval);
+                document.getElementById('typingIndicator').style.display = 'none';
+                isWaitingForResponse = false;
+                const assistantMessages = data.messages.filter(m => m.role === 'assistant');
+                if (assistantMessages.length) {
+                    const lastMsg = assistantMessages[assistantMessages.length - 1];
+                    addChatMessage('assistant', lastMsg.message);
+                    extractGCodeFromMessage(lastMsg.message);
+                }
+            } else if (attempts >= maxAttempts) {
+                clearInterval(interval);
+                document.getElementById('typingIndicator').style.display = 'none';
+                isWaitingForResponse = false;
+                addChatMessage('assistant', '⏰ Quá thời gian chờ. Vui lòng thử lại.');
+            }
+        } catch (error) { console.error('Poll error:', error); }
+    }, 2000);
+}
+
+function extractGCodeFromMessage(message) {
+    const lines = message.split('\n');
+    let gcodeLines = [];
+    let inGCodeBlock = false;
+    for (let line of lines) {
+        if (line.includes('```gcode')) { inGCodeBlock = true; continue; }
+        if (line.includes('```') && inGCodeBlock) { inGCodeBlock = false; continue; }
+        if (inGCodeBlock) { gcodeLines.push(line); }
+        else if (/^[GgM][0-9]/.test(line.trim())) { gcodeLines.push(line.trim()); }
+    }
+    if (gcodeLines.length > 0) {
+        currentGCode = gcodeLines.join('\n');
+        document.getElementById('gcodePreview').innerHTML = `<pre style="margin:0; white-space:pre-wrap;">${escapeHtml(currentGCode)}</pre>`;
+        document.getElementById('downloadBtn').disabled = false;
+        addChatMessage('assistant', '✅ **Đã tạo G-Code thành công!** Bạn có thể tải file .nc về máy.');
+    }
+}
+
+function addChatMessage(role, content) {
+    const chatDiv = document.getElementById('chatMessages');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `chat-message ${role}`;
+    messageDiv.innerHTML = `<div class="role">${role === 'user' ? '👤 BẠN' : '🤖 AI'}</div>
+                           <div class="content">${content.replace(/\n/g, '<br>')}</div>`;
+    chatDiv.appendChild(messageDiv);
+    chatDiv.scrollTop = chatDiv.scrollHeight;
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function downloadGCode() {
+    if (!currentGCode) { alert('Chưa có G-Code để tải'); return; }
+    const blob = new Blob([currentGCode], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+    a.download = `cnc_gcode_${timestamp}.nc`;
+    a.href = url;
+    a.click();
+    URL.revokeObjectURL(url);
+    addChatMessage('assistant', '📥 **Đã tải file G-Code về máy!**');
+}
+
+function clearGCode() {
+    currentGCode = '';
+    document.getElementById('gcodePreview').innerHTML = '⏳ Chưa có G-Code. Hãy upload file phôi và chat với AI.';
+    document.getElementById('downloadBtn').disabled = true;
+}
+
+// ========== INIT ==========
 document.addEventListener('DOMContentLoaded', () => {
+    setMode('auto');
     loadSavedUrls();
-    setMode('manual');
+    checkUnityAvailable();
+    setInterval(checkUnityAvailable, 10000);
 });
 </script>
-
 </body>
 </html>
