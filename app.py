@@ -9,33 +9,58 @@ from functools import wraps
 from flask_cors import CORS
 import json
 import os
+import base64
+import re
 
 app = Flask(__name__)
 app.secret_key = "cnc_hanu_2026_secret"
+app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50MB
 
-# Enable CORS for Unity WebGL
+# Enable CORS
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 MONGO_URI = "mongodb+srv://tn042182_db_user:pRCe.YNp34hL8v4@cluster0.rk7eki0.mongodb.net/"
 
-# Tài khoản đăng nhập (có thể thêm nhiều user)
+# Tài khoản
 USERS = {
     "admin": "cnc2026",
+    "user": "123456",
 }
 
+# Kết nối MongoDB
 try:
     client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=10000)
     db = client["CNC_Database"]
-    collection = db["Sensor_Data"]
+    
+    # Collections
+    sensor_data = db["Sensor_Data"]
+    uploaded_images = db["Uploaded_Images"]
+    generated_gcode = db["Generated_GCode"]
+    chat_messages = db["Chat_Messages"]
+    chat_jobs = db["Chat_Jobs"]
+    alarms = db["Alarms"]
+    machine_config = db["Machine_Config"]
+    
     client.admin.command('ping')
     print("✅ MongoDB Atlas connected!")
+    print("   - Sensor_Data: dữ liệu cảm biến")
+    print("   - Uploaded_Images: ảnh phôi")
+    print("   - Generated_GCode: G-Code")
+    print("   - Chat_Messages: tin nhắn")
+    print("   - Chat_Jobs: jobs AI")
 except Exception as e:
     print(f"❌ MongoDB error: {e}")
     db = None
-    collection = None
+    sensor_data = None
+    uploaded_images = None
+    generated_gcode = None
+    chat_messages = None
+    chat_jobs = None
+    alarms = None
+    machine_config = None
 
 # ─────────────────────────────────────────────
-#  DECORATOR: bảo vệ route cần đăng nhập
+#  DECORATOR
 # ─────────────────────────────────────────────
 def login_required(f):
     @wraps(f)
@@ -52,19 +77,16 @@ def login_required(f):
 def login():
     if session.get("logged_in"):
         return redirect(url_for("home"))
-
     error = ""
     if request.method == "POST":
         username = request.form.get("username", "").strip()
         password = request.form.get("password", "").strip()
-
         if USERS.get(username) == password:
             session["logged_in"] = True
             session["username"] = username
             return redirect(url_for("home"))
         else:
             error = "❌ Sai tài khoản hoặc mật khẩu"
-
     return render_template("login.html", error=error)
 
 @app.route("/logout", methods=["POST"])
@@ -96,58 +118,145 @@ def settings():
     return render_template("settings.html", username=session.get("username", "admin"))
 
 # ─────────────────────────────────────────────
-#  API: SENSOR (CHO MONITOR)
+#  STATIC FILES (UNITY)
+# ─────────────────────────────────────────────
+@app.route('/static/unity/<path:filename>')
+def serve_unity(filename):
+    return send_from_directory('static/unity', filename)
+
+# ─────────────────────────────────────────────
+#  API: UPLOAD IMAGE (LƯU VÀO MONGODB)
+# ─────────────────────────────────────────────
+@app.route("/api/upload/image", methods=["POST"])
+@login_required
+def api_upload_image():
+    """Upload ảnh phôi - lưu vào collection Uploaded_Images"""
+    if uploaded_images is None:
+        return jsonify({"error": "Database not connected"}), 500
+    
+    try:
+        if 'file' not in request.files:
+            return jsonify({"error": "No file provided"}), 400
+        
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({"error": "No file selected"}), 400
+        
+        # Đọc file và chuyển base64
+        file_content = file.read()
+        file_base64 = base64.b64encode(file_content).decode('utf-8')
+        
+        # Lưu vào MongoDB
+        image_doc = {
+            "filename": file.filename,
+            "file_extension": file.filename.split('.')[-1].lower(),
+            "file_size": len(file_content),
+            "file_base64": file_base64,
+            "mime_type": file.content_type,
+            "uploaded_by": session.get("username", "unknown"),
+            "uploaded_at": (datetime.utcnow() + timedelta(hours=7)).isoformat(),
+            "description": request.form.get("description", ""),
+            "used": False
+        }
+        
+        result = uploaded_images.insert_one(image_doc)
+        
+        print(f"📸 Upload ảnh: {file.filename} bởi {session.get('username')}")
+        
+        return jsonify({
+            "status": "ok",
+            "message": "Upload ảnh thành công",
+            "image_id": str(result.inserted_id),
+            "filename": file.filename,
+            "file_size": len(file_content)
+        })
+        
+    except Exception as e:
+        print(f"❌ Upload error: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/images", methods=["GET"])
+@login_required
+def api_get_images():
+    """Lấy danh sách ảnh đã upload (không lấy base64)"""
+    if uploaded_images is None:
+        return jsonify([]), 500
+    
+    try:
+        limit = int(request.args.get("limit", 20))
+        docs = list(uploaded_images.find(
+            {}, 
+            {"file_base64": 0}
+        ).sort("uploaded_at", -1).limit(limit))
+        
+        for doc in docs:
+            doc["_id"] = str(doc["_id"])
+        
+        return jsonify(docs)
+    except Exception as e:
+        return jsonify([]), 500
+
+@app.route("/api/images/<image_id>", methods=["GET"])
+@login_required
+def api_get_image_by_id(image_id):
+    """Lấy ảnh theo ID (có base64 để gửi AI)"""
+    if uploaded_images is None:
+        return jsonify({"error": "Database not connected"}), 500
+    
+    try:
+        doc = uploaded_images.find_one({"_id": ObjectId(image_id)})
+        if doc:
+            doc["_id"] = str(doc["_id"])
+            return jsonify(doc)
+        return jsonify({"error": "Image not found"}), 404
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# ─────────────────────────────────────────────
+#  API: SENSOR DATA
 # ─────────────────────────────────────────────
 @app.route("/api/latest")
 @login_required
 def api_latest():
-    """Lấy dữ liệu cảm biến mới nhất"""
-    if collection is None:
-        return jsonify({"temp": 0, "load": 0, "status": "db_error", "position_x": 0, "position_y": 0, "position_z": 0})
+    if sensor_data is None:
+        return jsonify({"temp": 0, "load": 0, "status": "db_error"})
     try:
-        doc = collection.find_one(sort=[("mqtt_timestamp", -1)])
+        doc = sensor_data.find_one(sort=[("mqtt_timestamp", -1)])
         if doc:
             return jsonify({
-                "temp":   doc.get("temp", 0),
-                "load":   doc.get("load", 0),
+                "temp": doc.get("temp", 0),
+                "load": doc.get("load", 0),
                 "status": doc.get("status", "unknown"),
                 "position_x": doc.get("position_x", 0),
                 "position_y": doc.get("position_y", 0),
                 "position_z": doc.get("position_z", 0),
                 "velocity": doc.get("velocity", 0),
-                "timestamp": doc.get("mqtt_timestamp", "")
+                "moment": doc.get("moment", 0)
             })
-        return jsonify({"temp": 0, "load": 0, "status": "no_data", "position_x": 0, "position_y": 0, "position_z": 0})
-    except Exception as e:
-        print(f"❌ Latest error: {e}")
-        return jsonify({"temp": 0, "load": 0, "status": "error", "position_x": 0, "position_y": 0, "position_z": 0})
+        return jsonify({"temp": 0, "load": 0, "status": "no_data"})
+    except:
+        return jsonify({"temp": 0, "load": 0, "status": "error"})
 
 @app.route("/api/history")
 @login_required
 def api_history():
-    """Lấy dữ liệu lịch sử cho biểu đồ"""
-    if collection is None:
+    if sensor_data is None:
         return jsonify([])
     try:
-        minutes    = int(request.args.get("minutes", 10))
-        now        = datetime.utcnow() + timedelta(hours=7)  # giờ Việt Nam
+        minutes = int(request.args.get("minutes", 10))
+        now = datetime.utcnow() + timedelta(hours=7)
         start_time = now - timedelta(minutes=minutes)
-
         start_str = start_time.strftime("%Y-%m-%dT%H:%M:%S.000000")
-        now_str   = now.strftime("%Y-%m-%dT%H:%M:%S.999999")
-
-        print(f"📅 Giờ VN: {now.strftime('%H:%M:%S')}  |  Từ: {start_str} → Đến: {now_str}")
-
-        docs = list(collection.find({
+        now_str = now.strftime("%Y-%m-%dT%H:%M:%S.999999")
+        
+        docs = list(sensor_data.find({
             "mqtt_timestamp": {"$gte": start_str, "$lte": now_str}
         }).sort("mqtt_timestamp", 1))
-
-        print(f"📊 Tìm được: {len(docs)} bản ghi")
-
+        
         if len(docs) > 2000:
             step = len(docs) // 2000
             docs = docs[::step]
-
+        
         return jsonify([{
             "time": d.get("mqtt_timestamp", ""),
             "temp": d.get("temp", 0),
@@ -156,170 +265,96 @@ def api_history():
             "van_toc": d.get("velocity", 0),
             "moment": d.get("moment", 0)
         } for d in docs])
-
     except Exception as e:
-        print(f"❌ History error: {e}")
         return jsonify([])
 
 # ─────────────────────────────────────────────
-#  API: CONTROL (CHO CONTROL.HTML)
-# ─────────────────────────────────────────────
-@app.route("/api/control/gcode", methods=["POST"])
-@login_required
-def api_control_gcode():
-    """Nhận G-Code từ web và gửi đến máy CNC"""
-    try:
-        data = request.json
-        gcode = data.get("gcode", "")
-        
-        print(f"📝 Nhận G-Code từ {session.get('username')}:")
-        print(f"--- G-CODE START ---")
-        print(gcode[:500])  # In 500 ký tự đầu
-        print(f"--- G-CODE END ---")
-        
-        # TODO: Gửi G-Code đến máy CNC thật qua:
-        # - Serial (USB)
-        # - MQTT
-        # - TCP Socket
-        # - HTTP to ESP32
-        
-        # Lưu vào database để theo dõi
-        if db is not None:
-            db["GCode_History"].insert_one({
-                "username": session.get("username", "unknown"),
-                "gcode": gcode,
-                "timestamp": (datetime.utcnow() + timedelta(hours=7)).isoformat(),
-                "status": "sent"
-            })
-        
-        return jsonify({
-            "status": "ok", 
-            "message": "Đã nhận G-Code",
-            "length": len(gcode)
-        })
-    except Exception as e:
-        print(f"❌ GCode error: {e}")
-        return jsonify({"status": "error", "error": str(e)}), 500
-
-@app.route("/api/control/stop", methods=["POST"])
-@login_required
-def api_control_stop():
-    """Dừng khẩn cấp máy CNC"""
-    try:
-        print(f"🛑 DỪNG KHẨN CẤP bởi {session.get('username')}!")
-        
-        # TODO: Gửi lệnh dừng đến máy CNC
-        # - Serial.write(b'!')
-        # - MQTT publish "emergency_stop"
-        
-        # Lưu vào alarm
-        if db is not None:
-            db["Alarms"].insert_one({
-                "alarm_class": "Dừng khẩn cấp",
-                "data_type": "Hệ thống",
-                "timestamp": (datetime.utcnow() + timedelta(hours=7)).isoformat(),
-                "status_text": f"Người dùng {session.get('username')} đã dừng khẩn cấp",
-                "resolved": False
-            })
-        
-        return jsonify({"status": "ok", "message": "Đã dừng khẩn cấp"})
-    except Exception as e:
-        return jsonify({"status": "error", "error": str(e)}), 500
-
-@app.route("/api/control/home", methods=["POST"])
-@login_required
-def api_control_home():
-    """Đưa máy về vị trí Home"""
-    try:
-        print(f"🏠 Đưa máy về HOME bởi {session.get('username')}")
-        
-        # TODO: Gửi lệnh home đến máy CNC
-        # G28 (lệnh G-Code home)
-        
-        return jsonify({"status": "ok", "message": "Đã gửi lệnh Home"})
-    except Exception as e:
-        return jsonify({"status": "error", "error": str(e)}), 500
-
-@app.route("/api/control/jog", methods=["POST"])
-@login_required
-def api_control_jog():
-    """Điều khiển manual từng bước (Jog)"""
-    try:
-        data = request.json
-        axis = data.get("axis", "X")  # X, Y, Z
-        direction = data.get("direction", "+")  # + or -
-        step = data.get("step", 10)  # mm
-        
-        print(f"🎮 Jog: {axis}{direction} {step}mm")
-        
-        # TODO: Gửi lệnh jog đến máy CNC
-        # G91 (relative mode)
-        # G0 X{step} hoặc G0 X-{step}
-        
-        return jsonify({"status": "ok", "message": f"Jog {axis}{direction} {step}mm"})
-    except Exception as e:
-        return jsonify({"status": "error", "error": str(e)}), 500
-
-# ─────────────────────────────────────────────
-#  API: CHAT (CHO FRIDAY AI)
+#  API: CHAT AI (QUA MONGODB)
 # ─────────────────────────────────────────────
 @app.route("/api/chat", methods=["POST"])
 @login_required
 def api_chat():
-    if db is None:
+    if chat_messages is None or chat_jobs is None:
         return jsonify({"error": "DB không kết nối"}), 500
 
-    data    = request.json or {}
+    data = request.json or {}
     message = data.get("message", "").strip()
+    image_id = data.get("image_id", "")
+    
     if not message:
         return jsonify({"error": "Tin nhắn trống"}), 400
 
     conv_id = data.get("conversation_id") or str(ObjectId())
-
+    
+    # Lấy thông tin ảnh nếu có
+    image_info = ""
+    if image_id:
+        try:
+            img_doc = uploaded_images.find_one({"_id": ObjectId(image_id)})
+            if img_doc:
+                image_info = f"\n[ẢNH ĐÍNH KÈM: {img_doc.get('filename')}]\n"
+                image_info += f"[BASE64: {img_doc.get('file_base64', '')[:200]}...]\n"
+                # Đánh dấu ảnh đã được dùng
+                uploaded_images.update_one(
+                    {"_id": ObjectId(image_id)},
+                    {"$set": {"used": True, "used_at": (datetime.utcnow() + timedelta(hours=7)).isoformat()}}
+                )
+        except:
+            pass
+    
     # Lưu tin nhắn user
-    db["Chat_Messages"].insert_one({
+    chat_messages.insert_one({
         "conversation_id": conv_id,
-        "role":            "user",
-        "message":         message,
-        "username":        session.get("username", "unknown"),
-        "timestamp":       (datetime.utcnow() + timedelta(hours=7)).isoformat()
+        "role": "user",
+        "message": message,
+        "image_id": image_id,
+        "username": session.get("username", "unknown"),
+        "timestamp": (datetime.utcnow() + timedelta(hours=7)).isoformat()
     })
-
-    # Tạo job cho worker VS Code
-    db["Chat_Jobs"].insert_one({
+    
+    # Tạo job cho worker
+    full_message = message + image_info
+    chat_jobs.insert_one({
         "conversation_id": conv_id,
-        "question":        message,
-        "status":          "pending",
-        "created_at":      (datetime.utcnow() + timedelta(hours=7)).isoformat()
+        "question": full_message,
+        "image_id": image_id,
+        "status": "pending",
+        "created_at": (datetime.utcnow() + timedelta(hours=7)).isoformat()
     })
-
+    
     return jsonify({
-        "status":          "ok",
+        "status": "ok",
         "conversation_id": conv_id,
-        "message":         "Friday đang xử lý..."
+        "message": "AI đang xử lý..."
     })
 
 @app.route("/api/chat/messages/<conv_id>")
 @login_required
 def api_chat_messages(conv_id):
-    if db is None:
+    if chat_messages is None:
         return jsonify({"messages": [], "done": False})
     try:
-        messages = list(
-            db["Chat_Messages"]
-            .find({"conversation_id": conv_id})
-            .sort("timestamp", 1)
-        )
-        job_done = db["Chat_Jobs"].find_one({
-            "conversation_id": conv_id,
-            "status":          "done"
-        })
-        return jsonify({
-            "messages": [{
-                "role":    m["role"],
+        messages = list(chat_messages.find({"conversation_id": conv_id}).sort("timestamp", 1))
+        job_done = chat_jobs.find_one({"conversation_id": conv_id, "status": "done"})
+        
+        # Trích xuất G-Code từ message nếu có
+        result_messages = []
+        for m in messages:
+            msg_data = {
+                "role": m["role"],
                 "message": m["message"],
-                "time":    m.get("timestamp", "")
-            } for m in messages],
+                "time": m.get("timestamp", "")
+            }
+            # Nếu là AI và có G-Code thì thêm flag
+            if m["role"] == "assistant":
+                gcode_match = re.search(r'```gcode\n(.*?)\n```', m["message"], re.DOTALL)
+                if gcode_match:
+                    msg_data["has_gcode"] = True
+                    msg_data["gcode"] = gcode_match.group(1)
+            result_messages.append(msg_data)
+        
+        return jsonify({
+            "messages": result_messages,
             "done": job_done is not None
         })
     except Exception as e:
@@ -327,70 +362,167 @@ def api_chat_messages(conv_id):
         return jsonify({"messages": [], "done": False})
 
 # ─────────────────────────────────────────────
-#  API: ALARMS (CHO MONITOR)
+#  API: G-CODE
+# ─────────────────────────────────────────────
+@app.route("/api/gcode/save", methods=["POST"])
+@login_required
+def api_save_gcode():
+    """Lưu G-Code vào MongoDB"""
+    if generated_gcode is None:
+        return jsonify({"error": "Database not connected"}), 500
+    
+    try:
+        data = request.json
+        gcode = data.get("gcode", "")
+        image_id = data.get("image_id", "")
+        
+        if not gcode:
+            return jsonify({"error": "No G-Code provided"}), 400
+        
+        gcode_doc = {
+            "gcode": gcode,
+            "image_id": image_id,
+            "created_by": session.get("username", "unknown"),
+            "created_at": (datetime.utcnow() + timedelta(hours=7)).isoformat(),
+            "is_downloaded": False
+        }
+        
+        result = generated_gcode.insert_one(gcode_doc)
+        
+        return jsonify({
+            "status": "ok",
+            "message": "G-Code đã được lưu",
+            "gcode_id": str(result.inserted_id)
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/gcode/latest", methods=["GET"])
+@login_required
+def api_get_latest_gcode():
+    """Lấy G-Code mới nhất"""
+    if generated_gcode is None:
+        return jsonify({"gcode": "", "message": "DB not connected"}), 500
+    
+    try:
+        doc = generated_gcode.find_one(sort=[("created_at", -1)])
+        if doc:
+            return jsonify({
+                "gcode": doc.get("gcode", ""),
+                "created_at": doc.get("created_at", ""),
+                "gcode_id": str(doc["_id"])
+            })
+        return jsonify({"gcode": "", "message": "Chưa có G-Code nào"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# ─────────────────────────────────────────────
+#  API: CONTROL
+# ─────────────────────────────────────────────
+@app.route("/api/control/gcode", methods=["POST"])
+@login_required
+def api_control_gcode():
+    try:
+        data = request.json
+        gcode = data.get("gcode", "")
+        print(f"📝 G-Code từ {session.get('username')}: {len(gcode)} chars")
+        return jsonify({"status": "ok", "message": "Đã nhận G-Code"})
+    except Exception as e:
+        return jsonify({"status": "error", "error": str(e)}), 500
+
+@app.route("/api/control/stop", methods=["POST"])
+@login_required
+def api_control_stop():
+    try:
+        print(f"🛑 DỪNG KHẨN CẤP bởi {session.get('username')}")
+        if alarms is not None:
+            alarms.insert_one({
+                "alarm_class": "Dừng khẩn cấp",
+                "data_type": "Hệ thống",
+                "timestamp": (datetime.utcnow() + timedelta(hours=7)).isoformat(),
+                "status_text": f"Người dùng {session.get('username')} đã dừng khẩn cấp",
+                "resolved": False
+            })
+        return jsonify({"status": "ok", "message": "Đã dừng khẩn cấp"})
+    except Exception as e:
+        return jsonify({"status": "error", "error": str(e)}), 500
+
+@app.route("/api/control/home", methods=["POST"])
+@login_required
+def api_control_home():
+    try:
+        print(f"🏠 HOME bởi {session.get('username')}")
+        return jsonify({"status": "ok", "message": "Đã gửi lệnh Home"})
+    except Exception as e:
+        return jsonify({"status": "error", "error": str(e)}), 500
+
+@app.route("/api/control/jog", methods=["POST"])
+@login_required
+def api_control_jog():
+    try:
+        data = request.json
+        axis = data.get("axis", "X")
+        direction = data.get("direction", "+")
+        step = data.get("step", 10)
+        print(f"🎮 Jog: {axis}{direction} {step}mm")
+        return jsonify({"status": "ok", "message": f"Jog {axis}{direction} {step}mm"})
+    except Exception as e:
+        return jsonify({"status": "error", "error": str(e)}), 500
+
+# ─────────────────────────────────────────────
+#  API: ALARMS
 # ─────────────────────────────────────────────
 @app.route("/api/alarms")
 @login_required
 def api_alarms():
-    """
-    Trả về danh sách alarm từ MongoDB collection Alarms
-    """
-    if db is None:
+    if alarms is None:
         return jsonify([])
     try:
         limit = int(request.args.get("limit", 100))
-        docs = list(
-            db["Alarms"]
-            .find({})
-            .sort("timestamp", -1)
-            .limit(limit)
-        )
+        docs = list(alarms.find({}).sort("timestamp", -1).limit(limit))
         return jsonify([{
             "alarm_class": d.get("alarm_class", ""),
-            "data_type":   d.get("data_type", ""),
-            "timestamp":   d.get("timestamp", ""),
+            "data_type": d.get("data_type", ""),
+            "timestamp": d.get("timestamp", ""),
             "status_text": d.get("status_text", ""),
-            "resolved":    d.get("resolved", False)
+            "resolved": d.get("resolved", False)
         } for d in docs])
     except Exception as e:
-        print(f"❌ Alarms error: {e}")
         return jsonify([])
 
 @app.route("/api/alarms/resolve/<alarm_id>", methods=["POST"])
 @login_required
 def api_resolve_alarm(alarm_id):
-    """Đánh dấu alarm đã xử lý"""
-    if db is None:
+    if alarms is None:
         return jsonify({"error": "DB not connected"}), 500
     try:
-        result = db["Alarms"].update_one(
+        result = alarms.update_one(
             {"_id": ObjectId(alarm_id)},
-            {"$set": {"resolved": True, "resolved_by": session.get("username"), "resolved_at": (datetime.utcnow() + timedelta(hours=7)).isoformat()}}
+            {"$set": {
+                "resolved": True,
+                "resolved_by": session.get("username"),
+                "resolved_at": (datetime.utcnow() + timedelta(hours=7)).isoformat()
+            }}
         )
         return jsonify({"status": "ok", "modified": result.modified_count})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 # ─────────────────────────────────────────────
-#  API: MACHINE CONFIG (CHO SETTINGS)
+#  API: MACHINE CONFIG
 # ─────────────────────────────────────────────
 @app.route("/api/config", methods=["GET", "POST"])
 @login_required
 def api_config():
-    """
-    GET:  Lấy cấu hình máy từ MongoDB
-    POST: Lưu cấu hình máy vào MongoDB
-    """
-    if db is None:
+    if machine_config is None:
         return jsonify({"error": "Database not connected"}), 500
     
     if request.method == "GET":
         try:
-            doc = db["Machine_Config"].find_one({"_id": "current"})
+            doc = machine_config.find_one({"_id": "current"})
             if doc:
                 del doc["_id"]
                 return jsonify(doc)
-            # Config mặc định
             default_config = {
                 "steps_x": 80.00, "steps_y": 80.00, "steps_z": 80.00,
                 "max_speed_x": 250.00, "max_speed_y": 250.00, "max_speed_z": 150.00,
@@ -400,42 +532,24 @@ def api_config():
             }
             return jsonify(default_config)
         except Exception as e:
-            print(f"❌ GET config error: {e}")
             return jsonify({"error": str(e)}), 500
-    
-    elif request.method == "POST":
+    else:
         try:
             data = request.json
-            if not data:
-                return jsonify({"error": "No data provided"}), 400
-            
             data["last_updated"] = (datetime.utcnow() + timedelta(hours=7)).isoformat()
             data["updated_by"] = session.get("username", "unknown")
-            
-            result = db["Machine_Config"].update_one(
-                {"_id": "current"}, 
-                {"$set": data}, 
-                upsert=True
-            )
-            
-            print(f"✅ Config saved by {session.get('username')}")
-            return jsonify({
-                "status": "ok", 
-                "message": "Cấu hình đã được lưu thành công"
-            })
+            machine_config.update_one({"_id": "current"}, {"$set": data}, upsert=True)
+            return jsonify({"status": "ok", "message": "Cấu hình đã được lưu"})
         except Exception as e:
-            print(f"❌ POST config error: {e}")
             return jsonify({"error": str(e)}), 500
 
 @app.route("/api/config/export", methods=["GET"])
 @login_required
 def api_config_export():
-    """Export cấu hình dạng YAML"""
-    if db is None:
+    if machine_config is None:
         return jsonify({"error": "Database not connected"}), 500
-    
     try:
-        doc = db["Machine_Config"].find_one({"_id": "current"})
+        doc = machine_config.find_one({"_id": "current"})
         if not doc:
             doc = {
                 "steps_x": 80.00, "steps_y": 80.00, "steps_z": 80.00,
@@ -447,7 +561,6 @@ def api_config_export():
         
         yaml_content = f"""# CNC Machine Configuration
 # Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-# ============================================
 
 machine_tuning:
   steps_per_mm:
@@ -475,24 +588,21 @@ homing:
   enabled: {str(doc.get('enable_homing', True)).lower()}
   speed_mm_s: {doc.get('homing_speed', 50.00)}
   pull_off_mm: {doc.get('homing_pulloff', 5.00)}
-
-# End of configuration
 """
         return jsonify({"yaml": yaml_content})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 # ─────────────────────────────────────────────
-#  API: UNITY WEBGL SUPPORT
+#  API: UNITY STATUS
 # ─────────────────────────────────────────────
 @app.route("/api/unity/status")
 @login_required
 def api_unity_status():
-    """Trạng thái cho Unity WebGL"""
-    if collection is None:
+    if sensor_data is None:
         return jsonify({"connected": False})
     try:
-        latest = collection.find_one(sort=[("mqtt_timestamp", -1)])
+        latest = sensor_data.find_one(sort=[("mqtt_timestamp", -1)])
         return jsonify({
             "connected": True,
             "position": {
