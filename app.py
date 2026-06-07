@@ -211,10 +211,6 @@ def api_chat_messages(conv_id):
         return jsonify({"messages": [], "done": False})
 
 # ─────────────────────────────────────────────
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5002, debug=True)
-
-# ─────────────────────────────────────────────
 #  API: ALARMS
 # ─────────────────────────────────────────────
 @app.route("/api/alarms")
@@ -251,3 +247,144 @@ def api_alarms():
     except Exception as e:
         print(f"❌ Alarms error: {e}")
         return jsonify([])
+
+# ─────────────────────────────────────────────
+#  API: MACHINE CONFIG (THÊM MỚI CHO SETTINGS)
+# ─────────────────────────────────────────────
+@app.route("/api/config", methods=["GET", "POST"])
+@login_required
+def api_config():
+    """
+    GET:  Lấy cấu hình máy từ MongoDB
+    POST: Lưu cấu hình máy vào MongoDB
+    
+    Cấu trúc config mẫu:
+    {
+        "steps_x": 80.00, "steps_y": 80.00, "steps_z": 80.00,
+        "max_speed_x": 250.00, "max_speed_y": 250.00, "max_speed_z": 150.00,
+        "acc_x": 1000.00, "acc_y": 1000.00, "acc_z": 800.00,
+        "max_travel_x": 400.00, "max_travel_y": 400.00, "max_travel_z": 150.00,
+        "enable_homing": true, "homing_speed": 50.00, "homing_pulloff": 5.00
+    }
+    """
+    if db is None:
+        return jsonify({"error": "Database not connected"}), 500
+    
+    if request.method == "GET":
+        try:
+            # Lấy config từ collection Machine_Config
+            doc = db["Machine_Config"].find_one({"_id": "current"})
+            if doc:
+                # Loại bỏ _id trước khi trả về
+                del doc["_id"]
+                return jsonify(doc)
+            # Trả về config mặc định nếu chưa có
+            default_config = {
+                "steps_x": 80.00, "steps_y": 80.00, "steps_z": 80.00,
+                "max_speed_x": 250.00, "max_speed_y": 250.00, "max_speed_z": 150.00,
+                "acc_x": 1000.00, "acc_y": 1000.00, "acc_z": 800.00,
+                "max_travel_x": 400.00, "max_travel_y": 400.00, "max_travel_z": 150.00,
+                "enable_homing": True, "homing_speed": 50.00, "homing_pulloff": 5.00
+            }
+            return jsonify(default_config)
+        except Exception as e:
+            print(f"❌ GET config error: {e}")
+            return jsonify({"error": str(e)}), 500
+    
+    elif request.method == "POST":
+        try:
+            data = request.json
+            if not data:
+                return jsonify({"error": "No data provided"}), 400
+            
+            # Thêm timestamp và username
+            data["last_updated"] = (datetime.utcnow() + timedelta(hours=7)).isoformat()
+            data["updated_by"] = session.get("username", "unknown")
+            
+            # Upsert config
+            result = db["Machine_Config"].update_one(
+                {"_id": "current"}, 
+                {"$set": data}, 
+                upsert=True
+            )
+            
+            print(f"✅ Config saved by {session.get('username')} at {data['last_updated']}")
+            return jsonify({
+                "status": "ok", 
+                "message": "Cấu hình đã được lưu thành công",
+                "matched": result.matched_count,
+                "modified": result.modified_count,
+                "upserted": result.upserted_id is not None
+            })
+        except Exception as e:
+            print(f"❌ POST config error: {e}")
+            return jsonify({"error": str(e)}), 500
+
+# ─────────────────────────────────────────────
+#  API: EXPORT CONFIG TO YAML (TÙY CHỌN)
+# ─────────────────────────────────────────────
+@app.route("/api/config/export", methods=["GET"])
+@login_required
+def api_config_export():
+    """
+    Export cấu hình hiện tại dưới dạng YAML string
+    """
+    if db is None:
+        return jsonify({"error": "Database not connected"}), 500
+    
+    try:
+        doc = db["Machine_Config"].find_one({"_id": "current"})
+        if not doc:
+            # Dùng config mặc định
+            doc = {
+                "steps_x": 80.00, "steps_y": 80.00, "steps_z": 80.00,
+                "max_speed_x": 250.00, "max_speed_y": 250.00, "max_speed_z": 150.00,
+                "acc_x": 1000.00, "acc_y": 1000.00, "acc_z": 800.00,
+                "max_travel_x": 400.00, "max_travel_y": 400.00, "max_travel_z": 150.00,
+                "enable_homing": True, "homing_speed": 50.00, "homing_pulloff": 5.00
+            }
+        
+        # Tạo YAML string
+        yaml_content = f"""# CNC Machine Configuration
+# Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+# ============================================
+
+machine_tuning:
+  steps_per_mm:
+    x: {doc.get('steps_x', 80.00)}
+    y: {doc.get('steps_y', 80.00)}
+    z: {doc.get('steps_z', 80.00)}
+
+motion:
+  max_speed_mm_s:
+    x: {doc.get('max_speed_x', 250.00)}
+    y: {doc.get('max_speed_y', 250.00)}
+    z: {doc.get('max_speed_z', 150.00)}
+  acceleration_mm_s2:
+    x: {doc.get('acc_x', 1000.00)}
+    y: {doc.get('acc_y', 1000.00)}
+    z: {doc.get('acc_z', 800.00)}
+
+travel_limits:
+  max_travel_mm:
+    x: {doc.get('max_travel_x', 400.00)}
+    y: {doc.get('max_travel_y', 400.00)}
+    z: {doc.get('max_travel_z', 150.00)}
+
+homing:
+  enabled: {str(doc.get('enable_homing', True)).lower()}
+  speed_mm_s: {doc.get('homing_speed', 50.00)}
+  pull_off_mm: {doc.get('homing_pulloff', 5.00)}
+
+# End of configuration
+"""
+        return jsonify({"yaml": yaml_content})
+    except Exception as e:
+        print(f"❌ Export YAML error: {e}")
+        return jsonify({"error": str(e)}), 500
+
+# ─────────────────────────────────────────────
+#  MAIN
+# ─────────────────────────────────────────────
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5002, debug=True)
