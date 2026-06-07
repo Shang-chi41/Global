@@ -104,15 +104,19 @@
         .chart-wrap {
             background:rgba(30,58,95,.35); border:1px solid var(--border);
             border-radius:6px; padding:10px 12px; flex:1;
+            min-height: 160px;
         }
         .chart-label {
             font-size:11px; color:#6b8fa8; margin-bottom:6px;
             font-weight:600; letter-spacing:1px;
         }
-        canvas { width:100% !important; }
+        canvas { width:100% !important; max-height: 180px !important; }
 
         /* Info bar */
-        .info-bar { font-size:11px; color:#4a6a80; text-align:right; padding-top:4px; }
+        .info-bar { 
+            font-size:11px; color:#4a6a80; text-align:right; padding-top:4px;
+            font-family: monospace;
+        }
 
         /* ══ RIGHT PANEL: ALARM ══ */
         .alarm-header {
@@ -130,6 +134,7 @@
         .alarm-table-wrap {
             flex:1; overflow-y:auto; border:1px solid var(--border);
             border-radius:6px; background:rgba(13,27,42,.6);
+            max-height: 400px;
         }
         .alarm-table-wrap::-webkit-scrollbar { width:4px; }
         .alarm-table-wrap::-webkit-scrollbar-track { background:transparent; }
@@ -359,9 +364,20 @@
 
 <script>
 // ══════════════════════════════════
-//  CHART SETUP
+//  CHART SETUP - CẢI THIỆN HIỂN THỊ FLOAT
 // ══════════════════════════════════
-const chartCfg = (color) => ({
+
+// Hàm định dạng số thập phân (giữ 1-2 chữ số sau dấu phẩy)
+function formatFloat(value) {
+    if (value === undefined || value === null) return '0';
+    let num = Number(value);
+    if (isNaN(num)) return value;
+    // Nếu là số nguyên thì hiển thị số nguyên, nếu có phần thập phân thì hiển thị 2 số
+    return num % 1 === 0 ? num.toString() : num.toFixed(2);
+}
+
+// Cấu hình chart với định dạng số float
+const chartCfg = (color, suggestedMin = null, suggestedMax = null) => ({
     type: 'line',
     data: { labels: [], datasets: [{
         data: [], borderColor: color,
@@ -370,25 +386,89 @@ const chartCfg = (color) => ({
         tension: 0.4, fill: true
     }]},
     options: {
-        responsive:true, maintainAspectRatio:false,
-        animation:{duration:300},
-        interaction:{mode:'index',intersect:false},
-        scales:{
-            x:{ ticks:{color:'#4a6a80',maxTicksLimit:6,font:{size:9}}, grid:{color:'#1a2a3a'} },
-            y:{ ticks:{color:'#4a6a80',font:{size:9}}, grid:{color:'#1a2a3a'} }
+        responsive: true, 
+        maintainAspectRatio: false,
+        animation: { duration: 300 },
+        interaction: { mode: 'index', intersect: false },
+        scales: {
+            x: { 
+                ticks: { color: '#4a6a80', maxTicksLimit: 6, font: { size: 9 } }, 
+                grid: { color: '#1a2a3a' } 
+            },
+            y: { 
+                ticks: { 
+                    color: '#4a6a80', 
+                    font: { size: 9 },
+                    // 📌 ĐỊNH DẠNG SỐ FLOAT TRÊN TRỤC Y
+                    callback: function(val) {
+                        return formatFloat(val);
+                    }
+                }, 
+                grid: { color: '#1a2a3a' },
+                // 📌 NGĂN KÉO GIÃN QUÁ MỨC
+                beginAtZero: false,
+                suggestedMin: suggestedMin,
+                suggestedMax: suggestedMax
+            }
         },
-        plugins:{ legend:{display:false}, tooltip:{enabled:true} }
+        plugins: { 
+            legend: { display: false }, 
+            tooltip: { 
+                enabled: true,
+                callbacks: {
+                    label: function(context) {
+                        let value = context.raw;
+                        return `Giá trị: ${formatFloat(value)}`;
+                    }
+                }
+            } 
+        }
     }
 });
 
-const cViTri  = new Chart(document.getElementById('chartViTri'),  chartCfg('rgb(0,201,212)'));
-const cVanToc = new Chart(document.getElementById('chartVanToc'), chartCfg('rgb(255,107,107)'));
-const cMoment = new Chart(document.getElementById('chartMoment'), chartCfg('rgb(212,160,23)'));
+// Khởi tạo charts
+const cViTri  = new Chart(document.getElementById('chartViTri'),  chartCfg('rgb(0,201,212)', 0, null));
+const cVanToc = new Chart(document.getElementById('chartVanToc'), chartCfg('rgb(255,107,107)', 0, null));
+const cMoment = new Chart(document.getElementById('chartMoment'), chartCfg('rgb(212,160,23)', 0, null));
 
 let currentMinutes = 60;
 let alarmFilter    = 'all';
 let allAlarms      = [];
 let histTimer      = null;
+
+// 📌 HÀM TỰ ĐỘNG TÍNH MIN/MAX ĐỂ TRÁNH KÉO GIÃN
+function updateChartWithAutoRange(chart, dataArray, paddingPercent = 0.15) {
+    if (!dataArray || dataArray.length === 0) return;
+    
+    const minVal = Math.min(...dataArray);
+    const maxVal = Math.max(...dataArray);
+    const range = maxVal - minVal;
+    
+    let yMin, yMax;
+    
+    if (range === 0) {
+        // Nếu tất cả giá trị bằng nhau, thêm khoảng cách nhỏ xung quanh
+        yMin = minVal - (Math.abs(minVal) * 0.1 || 1);
+        yMax = maxVal + (Math.abs(maxVal) * 0.1 || 1);
+    } else if (range < 5) {
+        // Dữ liệu dao động nhỏ (ví dụ 12.9 -> 13.5) -> thêm padding
+        yMin = minVal - range * paddingPercent;
+        yMax = maxVal + range * paddingPercent;
+    } else {
+        // Dữ liệu dao động lớn, vẫn giữ padding nhẹ
+        yMin = minVal - range * 0.05;
+        yMax = maxVal + range * 0.05;
+    }
+    
+    // Cập nhật options
+    chart.options.scales.y.suggestedMin = yMin;
+    chart.options.scales.y.suggestedMax = yMax;
+    
+    // Giới hạn không cho âm quá mức (nếu dữ liệu vốn không âm)
+    if (yMin < 0 && minVal >= 0) {
+        chart.options.scales.y.suggestedMin = 0;
+    }
+}
 
 function changeTime(min, btn) {
     currentMinutes = min;
@@ -406,10 +486,14 @@ function clearChart(c) {
 }
 
 function fetchChart() {
-    document.getElementById('chartInfo').textContent = '🔄 Đang tải...';
+    document.getElementById('chartInfo').innerHTML = '<span style="color:var(--cyan)">🔄 Đang tải...</span>';
     fetch('/api/history?minutes=' + currentMinutes + '&_t=' + Date.now())
     .then(r => r.json())
     .then(data => {
+        const posData = [];
+        const velData = [];
+        const momData = [];
+        
         [cViTri, cVanToc, cMoment].forEach(c => clearChart(c));
 
         data.forEach(d => {
@@ -422,23 +506,43 @@ function fetchChart() {
                       + dt.toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'});
             } catch(e) { t = d.time || ''; }
 
+            const pos = d.vi_tri ?? d.position ?? d.temp ?? 0;
+            const vel = d.van_toc ?? d.velocity ?? d.load ?? 0;
+            const mom = d.moment ?? 0;
+            
+            posData.push(pos);
+            velData.push(vel);
+            momData.push(mom);
+            
             cViTri.data.labels.push(t);
-            cViTri.data.datasets[0].data.push(d.vi_tri ?? d.position ?? d.temp ?? 0);
-
+            cViTri.data.datasets[0].data.push(pos);
             cVanToc.data.labels.push(t);
-            cVanToc.data.datasets[0].data.push(d.van_toc ?? d.velocity ?? d.load ?? 0);
-
+            cVanToc.data.datasets[0].data.push(vel);
             cMoment.data.labels.push(t);
-            cMoment.data.datasets[0].data.push(d.moment ?? 0);
+            cMoment.data.datasets[0].data.push(mom);
         });
+        
+        // 📌 TỰ ĐỘNG ĐIỀU CHỈNH RANGE CHO TỪNG BIỂU ĐỒ
+        updateChartWithAutoRange(cViTri, posData, 0.15);
+        updateChartWithAutoRange(cVanToc, velData, 0.15);
+        updateChartWithAutoRange(cMoment, momData, 0.15);
 
         [cViTri, cVanToc, cMoment].forEach(c => c.update());
+        
         const now = new Date().toLocaleTimeString('vi-VN');
-        document.getElementById('chartInfo').textContent =
-            `🔄 ${now}  |  ${data.length} điểm dữ liệu`;
+        // Hiển thị thêm khoảng giá trị để thấy sự cải thiện
+        const posRange = posData.length ? `${formatFloat(Math.min(...posData))} → ${formatFloat(Math.max(...posData))}` : 'N/A';
+        const velRange = velData.length ? `${formatFloat(Math.min(...velData))} → ${formatFloat(Math.max(...velData))}` : 'N/A';
+        const momRange = momData.length ? `${formatFloat(Math.min(...momData))} → ${formatFloat(Math.max(...momData))}` : 'N/A';
+        
+        document.getElementById('chartInfo').innerHTML = 
+            `🕒 ${now} | 📊 ${data.length} điểm | ` +
+            `<span style="color:#00c9d4">📍 ${posRange} mm</span> | ` +
+            `<span style="color:#ff6b6b">⚡ ${velRange} mm/s</span> | ` +
+            `<span style="color:#d4a017">🔩 ${momRange} N·m</span>`;
     })
     .catch(() => {
-        document.getElementById('chartInfo').textContent = '❌ Lỗi tải dữ liệu';
+        document.getElementById('chartInfo').innerHTML = '❌ Lỗi tải dữ liệu';
     });
 }
 
@@ -491,7 +595,7 @@ function renderAlarmTable(data) {
 
         let badge = '';
         if (resolved) {
-            badge = `<span class="badge badge-ok">Đã xử lý</span>`;
+            badge = `<span class="badge badge-ok">✅ Đã xử lý</span>`;
         } else if (cls === 'Dừng khẩn cấp') {
             badge = `<span class="badge badge-danger">🛑 ${cls}</span>`;
         } else {
