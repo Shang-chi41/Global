@@ -213,3 +213,41 @@ def api_chat_messages(conv_id):
 # ─────────────────────────────────────────────
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5002, debug=True)
+
+# ─────────────────────────────────────────────
+#  API: ALARMS
+# ─────────────────────────────────────────────
+@app.route("/api/alarms")
+@login_required
+def api_alarms():
+    """
+    Trả về danh sách alarm từ MongoDB collection Alarms
+    Document mẫu:
+    {
+        alarm_class: "Cảnh báo" | "Dừng khẩn cấp",
+        data_type:   "Vị trí"  | "Vận tốc" | "Moment",
+        timestamp:   "2026-05-19T16:20:55",
+        status_text: "Vị trí vượt giới hạn trên: 150mm",
+        resolved:    false
+    }
+    """
+    if db is None:
+        return jsonify([])
+    try:
+        limit = int(request.args.get("limit", 100))
+        docs = list(
+            db["Alarms"]
+            .find({})
+            .sort("timestamp", -1)   # mới nhất lên đầu
+            .limit(limit)
+        )
+        return jsonify([{
+            "alarm_class": d.get("alarm_class", ""),
+            "data_type":   d.get("data_type", ""),
+            "timestamp":   d.get("timestamp", ""),
+            "status_text": d.get("status_text", ""),
+            "resolved":    d.get("resolved", False)
+        } for d in docs])
+    except Exception as e:
+        print(f"❌ Alarms error: {e}")
+        return jsonify([])
