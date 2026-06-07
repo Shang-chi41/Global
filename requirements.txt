@@ -2,6 +2,7 @@
 flask
 gunicorn
 pymongo
+flask-cors
 dnspython
 # Desktop app (cnc_desktop.py)
 PyQt6
