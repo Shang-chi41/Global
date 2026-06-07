@@ -31,13 +31,17 @@
             background-size:40px 40px; pointer-events:none; z-index:0;
         }
 
-        /* Header (giống monitor) */
+        /* Header */
         .header {
             background:linear-gradient(135deg,#0d1b2a 0%,#1e3a5f 100%);
             border-bottom:2px solid var(--gold);
             padding:0 28px; display:flex; align-items:center;
             justify-content:space-between; height:88px; flex-shrink:0;
             position:relative; z-index:10;
+        }
+        .header::after {
+            content:''; position:absolute; bottom:-4px; left:0; right:0;
+            height:2px; background:var(--cyan); opacity:.35;
         }
         .logo-bk { display:flex; align-items:center; gap:10px; }
         .logo-bk-text { font-size:11px; font-weight:600; color:var(--gold); line-height:1.5; text-transform:uppercase; }
@@ -189,18 +193,73 @@
             cursor: pointer;
             font-size: 18px;
         }
-        .iframe-container {
+        
+        /* ========== CONNECTION INFO (Cách 6) ========== */
+        .connection-info {
             margin-top: 24px;
+            padding: 24px;
+            background: rgba(0,0,0,.4);
             border-radius: 12px;
-            overflow: hidden;
-            background: #000;
-            min-height: 500px;
+            text-align: center;
+            display: none;
         }
-        .control-iframe {
-            width: 100%;
-            height: 600px;
+        .connection-info.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .connection-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+        .connection-url {
+            background: rgba(0,201,212,.1);
+            padding: 16px;
+            border-radius: 8px;
+            margin: 16px 0;
+            word-break: break-all;
+        }
+        .connection-url a {
+            color: var(--cyan);
+            text-decoration: none;
+            font-size: 16px;
+            font-family: monospace;
+        }
+        .connection-url a:hover {
+            text-decoration: underline;
+        }
+        .open-link-btn {
+            background: var(--success);
+            color: white;
             border: none;
-            background: white;
+            padding: 12px 32px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 8px;
+            transition: all 0.3s;
+        }
+        .open-link-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0,184,148,.4);
+        }
+        .close-connection-btn {
+            background: var(--red);
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 8px;
+        }
+        .note-text {
+            font-size: 12px;
+            color: #6b8fa8;
+            margin-top: 16px;
         }
 
         /* ========== AUTO MODE ========== */
@@ -333,7 +392,7 @@
                 
                 <div class="url-input-group">
                     <input type="text" id="deviceUrl" class="url-input" 
-                           placeholder="Nhập địa chỉ IP hoặc URL (VD: http://192.168.1.100:8080 hoặc http://localhost:5000)">
+                           placeholder="Nhập địa chỉ IP hoặc URL (VD: 192.168.1.100:8080 hoặc localhost:5000)">
                     <button class="connect-btn" onclick="connectToDevice()">🔗 KẾT NỐI</button>
                 </div>
                 
@@ -343,12 +402,23 @@
                 </div>
             </div>
             
-            <div id="iframeContainer" class="iframe-container" style="display: none;">
-                <div style="background: var(--navy); padding: 8px 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between;">
-                    <span style="font-size: 12px;" id="currentUrl"></span>
-                    <button onclick="closeIframe()" style="background: none; border: none; color: var(--red); cursor: pointer;">✖ Đóng</button>
+            <!-- ========== CONNECTION INFO (CÁCH 6) ========== -->
+            <div id="connectionInfo" class="connection-info">
+                <div class="connection-icon">🔗</div>
+                <h3 style="color: var(--cyan); margin-bottom: 8px;">ĐÃ KẾT NỐI THÀNH CÔNG!</h3>
+                <p style="margin-bottom: 16px;">Bấm vào link bên dưới để mở trang điều khiển:</p>
+                <div class="connection-url">
+                    <a id="connectionLink" href="#" target="_blank"></a>
                 </div>
-                <iframe id="controlIframe" class="control-iframe" src="about:blank"></iframe>
+                <button class="open-link-btn" onclick="openConnectionInNewTab()">
+                    🌐 MỞ TRANG ĐIỀU KHIỂN
+                </button>
+                <button class="close-connection-btn" onclick="closeConnection()">
+                    ✖ ĐÓNG
+                </button>
+                <div class="note-text">
+                    💡 Lưu ý: Trang điều khiển sẽ mở trong tab mới để tránh lỗi bảo mật từ trình duyệt.
+                </div>
             </div>
         </div>
 
@@ -382,7 +452,7 @@ M30"></textarea>
 <script>
 // State
 let currentMode = 'manual';
-let currentIframeUrl = '';
+let currentConnectedUrl = '';
 let savedUrls = [];
 
 // Load saved URLs from localStorage
@@ -393,7 +463,7 @@ function loadSavedUrls() {
     } else {
         // Default demo URLs
         savedUrls = [
-            { name: 'GRBL WebUI', url: 'http://localhost:8080' },
+            { name: 'GRBL WebUI Demo', url: 'http://localhost:8080' },
             { name: 'ESP32 CNC', url: 'http://192.168.1.100' }
         ];
     }
@@ -441,14 +511,14 @@ function addToSavedUrls(url) {
     // Check if already exists
     if (savedUrls.some(item => item.url === url)) return;
     
-    let name = prompt('Nhập tên cho địa chỉ này:', url.split('//')[1]?.split(':')[0] || 'CNC Device');
+    let name = prompt('Nhập tên cho địa chỉ này:', url.split('//')[1]?.split(':')[0] || url.split(':')[0] || 'CNC Device');
     if (name) {
         savedUrls.push({ name: name, url: url });
         saveUrls();
     }
 }
 
-// Connect to device
+// Connect to device (CÁCH 6)
 function connectToDevice() {
     let url = document.getElementById('deviceUrl').value.trim();
     if (!url) {
@@ -461,74 +531,62 @@ function connectToDevice() {
         url = 'http://' + url;
     }
     
-    currentIframeUrl = url;
+    currentConnectedUrl = url;
     
-    // Show iframe container
-    const iframeContainer = document.getElementById('iframeContainer');
-    const iframe = document.getElementById('controlIframe');
-    const currentUrlSpan = document.getElementById('currentUrl');
+    // Cập nhật link trong connection info
+    const linkElement = document.getElementById('connectionLink');
+    linkElement.href = url;
+    linkElement.textContent = url;
     
-    iframe.src = url;
-    iframeContainer.style.display = 'block';
-    currentUrlSpan.textContent = `Đang kết nối: ${url}`;
+    // Hiển thị connection info
+    const connectionInfo = document.getElementById('connectionInfo');
+    connectionInfo.classList.add('show');
     
-    // Update status
+    // Cập nhật trạng thái
     const statusSpan = document.getElementById('connectionStatus');
     statusSpan.textContent = 'Đã kết nối';
     statusSpan.className = 'status-badge connected';
     
-    // Ask to save
+    // Scroll đến connection info
+    connectionInfo.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    
+    // Hỏi lưu lại
     setTimeout(() => {
-        if (confirm('Bạn có muốn lưu địa chỉ này để dùng sau không?')) {
+        const alreadySaved = savedUrls.some(item => item.url === url);
+        if (!alreadySaved && confirm('Bạn có muốn lưu địa chỉ này để dùng sau không?')) {
             addToSavedUrls(url);
         }
-    }, 1000);
-    
-    // Try to ping the device to check connection
-    checkConnection(url);
+    }, 500);
 }
 
-// Close iframe
-function closeIframe() {
-    const iframeContainer = document.getElementById('iframeContainer');
-    const iframe = document.getElementById('controlIframe');
-    iframe.src = 'about:blank';
-    iframeContainer.style.display = 'none';
+// Open connection in new tab
+function openConnectionInNewTab() {
+    if (currentConnectedUrl) {
+        window.open(currentConnectedUrl, '_blank');
+    }
+}
+
+// Close connection info
+function closeConnection() {
+    const connectionInfo = document.getElementById('connectionInfo');
+    connectionInfo.classList.remove('show');
     
     const statusSpan = document.getElementById('connectionStatus');
     statusSpan.textContent = 'Chưa kết nối';
     statusSpan.className = 'status-badge disconnected';
-}
-
-// Check connection to device
-async function checkConnection(url) {
-    try {
-        // Try to fetch a simple endpoint
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 3000);
-        
-        const response = await fetch(url + '/api/status', {
-            method: 'GET',
-            mode: 'no-cors', // To avoid CORS issues
-            signal: controller.signal
-        }).catch(() => null);
-        
-        clearTimeout(timeoutId);
-        
-        // Update status (even with no-cors we assume connected if no error)
-        const statusSpan = document.getElementById('connectionStatus');
-        statusSpan.textContent = 'Đã kết nối + ping OK';
-        statusSpan.className = 'status-badge connected';
-        
-    } catch (error) {
-        console.log('Ping failed, but iframe may still work');
-    }
+    
+    currentConnectedUrl = '';
 }
 
 // ========== AUTO MODE FUNCTIONS ==========
 function sendGCode() {
     const gcode = document.getElementById('gcodeInput').value;
     const statusDiv = document.getElementById('autoStatus');
+    
+    if (!gcode.trim()) {
+        statusDiv.innerHTML = '⚠️ Vui lòng nhập G-Code';
+        return;
+    }
     
     statusDiv.innerHTML = '⏳ Đang gửi G-Code đến máy CNC...';
     
@@ -557,7 +615,11 @@ function stopMachine() {
     fetch('/api/control/stop', { method: 'POST' })
     .then(response => response.json())
     .then(data => {
-        statusDiv.innerHTML = '🛑 Đã dừng khẩn cấp!';
+        if (data.status === 'ok') {
+            statusDiv.innerHTML = '🛑 Đã dừng khẩn cấp!';
+        } else {
+            statusDiv.innerHTML = '❌ Lỗi: ' + (data.error || 'Không thể dừng');
+        }
     })
     .catch(error => {
         statusDiv.innerHTML = '❌ Lỗi: ' + error.message;
@@ -571,7 +633,11 @@ function homeMachine() {
     fetch('/api/control/home', { method: 'POST' })
     .then(response => response.json())
     .then(data => {
-        statusDiv.innerHTML = '🏠 Đã về HOME!';
+        if (data.status === 'ok') {
+            statusDiv.innerHTML = '🏠 Đã về HOME!';
+        } else {
+            statusDiv.innerHTML = '❌ Lỗi: ' + (data.error || 'Không thể home');
+        }
     })
     .catch(error => {
         statusDiv.innerHTML = '❌ Lỗi: ' + error.message;
