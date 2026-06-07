@@ -3,6 +3,7 @@ flask
 gunicorn
 pymongo
 flask-cors
+python-dotenv
 dnspython
 # Desktop app (cnc_desktop.py)
 PyQt6
