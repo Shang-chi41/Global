@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CNC 3D Viewer</title>
+<title>CNC 3D Viewer - Auto Save</title>
 <style>
-    *, *::before, *::after {
+    * {
         margin: 0;
         padding: 0;
         box-sizing: border-box;
@@ -14,7 +14,7 @@
 
     body {
         background: #0a0e14;
-        font-family: 'SF Pro Display', -apple-system, 'Segoe UI', system-ui, sans-serif;
+        font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
         overflow: hidden;
     }
 
@@ -24,36 +24,19 @@
         inset: 0;
         width: 100%;
         height: 100%;
-        will-change: transform;
     }
 
-    /* ===== PANEL ===== */
     .viewer-panel {
         position: fixed;
         top: 16px;
         right: 16px;
-        background: rgba(10, 14, 20, 0.82);
-        backdrop-filter: blur(20px) saturate(180%);
-        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        background: rgba(10, 14, 20, 0.85);
+        backdrop-filter: blur(20px);
         border-radius: 18px;
         border: 1px solid rgba(0, 229, 255, 0.12);
-        box-shadow:
-            0 4px 6px rgba(0,0,0,0.3),
-            0 20px 40px rgba(0,0,0,0.4),
-            inset 0 1px 0 rgba(255,255,255,0.05);
         z-index: 100;
-        transition: opacity 0.25s ease, transform 0.25s ease,
-                    box-shadow 0.2s ease;
         width: 228px;
         overflow: hidden;
-    }
-
-    .viewer-panel:hover {
-        box-shadow:
-            0 4px 6px rgba(0,0,0,0.3),
-            0 24px 48px rgba(0,0,0,0.5),
-            0 0 0 1px rgba(0,229,255,0.18),
-            inset 0 1px 0 rgba(255,255,255,0.07);
     }
 
     .viewer-panel.collapsed {
@@ -62,7 +45,6 @@
         transform: translateX(20px);
     }
 
-    /* Nút mở lại khi panel đã ẩn */
     .panel-reopen {
         position: fixed;
         top: 16px;
@@ -71,7 +53,6 @@
         height: 40px;
         background: rgba(10, 14, 20, 0.88);
         backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
         border: 1px solid rgba(0, 229, 255, 0.25);
         border-radius: 12px;
         display: flex;
@@ -82,22 +63,13 @@
         z-index: 101;
         opacity: 0;
         pointer-events: none;
-        transform: scale(0.8);
-        transition: opacity 0.25s ease, transform 0.25s ease, box-shadow 0.2s ease, background 0.2s ease;
+        transition: all 0.25s ease;
         color: #00e5ff;
     }
 
     .panel-reopen.visible {
         opacity: 1;
         pointer-events: all;
-        transform: scale(1);
-    }
-
-    .panel-reopen:hover {
-        background: rgba(0, 229, 255, 0.12);
-        border-color: rgba(0, 229, 255, 0.5);
-        box-shadow: 0 0 16px rgba(0, 229, 255, 0.2);
-        transform: scale(1.08);
     }
 
     .panel-header {
@@ -105,14 +77,7 @@
         justify-content: space-between;
         align-items: center;
         padding: 12px 14px;
-        cursor: pointer;
-        background: linear-gradient(135deg, rgba(0,229,255,0.06), rgba(0,229,255,0.02));
         border-bottom: 1px solid rgba(0, 229, 255, 0.08);
-        transition: background 0.2s;
-    }
-
-    .panel-header:hover {
-        background: linear-gradient(135deg, rgba(0,229,255,0.1), rgba(0,229,255,0.04));
     }
 
     .panel-title {
@@ -120,13 +85,7 @@
         font-weight: 700;
         color: #00e5ff;
         letter-spacing: 1.5px;
-        text-transform: uppercase;
-        white-space: nowrap;
-        opacity: 1;
-        transition: opacity 0.2s;
     }
-
-
 
     .panel-toggle {
         background: none;
@@ -136,12 +95,7 @@
         font-size: 16px;
         width: 24px;
         height: 24px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
         border-radius: 6px;
-        transition: background 0.15s, color 0.15s, transform 0.2s;
-        flex-shrink: 0;
     }
 
     .panel-toggle:hover {
@@ -151,23 +105,16 @@
 
     .panel-content {
         padding: 12px;
-        transition: opacity 0.25s ease, transform 0.25s ease;
         max-height: 520px;
         overflow-y: auto;
-        overflow-x: hidden;
     }
 
-
-
-    /* ===== BUTTONS ===== */
     .btn-group {
         display: flex;
         flex-wrap: wrap;
         gap: 5px;
         margin-bottom: 10px;
     }
-
-    .btn-group:last-child { margin-bottom: 0; }
 
     .btn-icon {
         background: rgba(255,255,255,0.04);
@@ -178,29 +125,7 @@
         border-radius: 9px;
         font-size: 10.5px;
         font-weight: 600;
-        letter-spacing: 0.3px;
-        transition:
-            background 0.15s ease,
-            color 0.15s ease,
-            border-color 0.15s ease,
-            transform 0.12s ease,
-            box-shadow 0.15s ease;
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        -webkit-tap-highlight-color: transparent;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .btn-icon::after {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: radial-gradient(circle at center, rgba(255,255,255,0.15) 0%, transparent 70%);
-        opacity: 0;
-        transition: opacity 0.2s;
-        pointer-events: none;
+        transition: all 0.15s ease;
     }
 
     .btn-icon:hover {
@@ -208,82 +133,28 @@
         border-color: rgba(0,229,255,0.3);
         color: #00e5ff;
         transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(0,229,255,0.15);
     }
-
-    .btn-icon:active {
-        transform: translateY(0px) scale(0.97);
-        box-shadow: none;
-    }
-
-    .btn-icon:active::after { opacity: 1; }
 
     .btn-icon.active {
         background: rgba(0,229,255,0.15);
         border-color: rgba(0,229,255,0.4);
         color: #00e5ff;
-        box-shadow: 0 0 12px rgba(0,229,255,0.2), inset 0 0 8px rgba(0,229,255,0.1);
     }
 
-    /* Mode buttons */
-    .btn-mode-drag {
-        background: rgba(255, 107, 0, 0.15);
-        border-color: rgba(255, 107, 0, 0.3);
-        color: #ff8c40;
-    }
-    .btn-mode-drag.active {
-        background: rgba(255, 107, 0, 0.25);
-        border-color: rgba(255, 107, 0, 0.6);
-        color: #ff6b00;
-        box-shadow: 0 0 12px rgba(255,107,0,0.2);
-    }
-    .btn-mode-rotate.active {
-        background: rgba(0,229,255,0.15);
-        border-color: rgba(0,229,255,0.4);
-        color: #00e5ff;
-        box-shadow: 0 0 12px rgba(0,229,255,0.2);
-    }
+    .btn-mode-drag.active { background: rgba(255, 107, 0, 0.25); border-color: rgba(255, 107, 0, 0.6); color: #ff6b00; }
+    .btn-mode-rotate.active { background: rgba(0,229,255,0.15); border-color: rgba(0,229,255,0.4); color: #00e5ff; }
+    .btn-axis-x { color: #ff7777; }
+    .btn-axis-y { color: #7799ff; }
+    .btn-axis-z { color: #77ee88; }
+    .btn-danger { background: rgba(231, 76, 60, 0.1); border-color: rgba(231,76,60,0.2); color: #ff8877; }
+    .btn-warning { background: rgba(243, 156, 18, 0.1); border-color: rgba(243,156,18,0.2); color: #ffcc66; }
 
-    /* Axis buttons */
-    .btn-axis-x { color: #ff7777; border-color: rgba(255,119,119,0.15); }
-    .btn-axis-x:hover { background: rgba(255,119,119,0.12); border-color: rgba(255,119,119,0.4); color: #ff9999; }
-    .btn-axis-y { color: #7799ff; border-color: rgba(119,153,255,0.15); }
-    .btn-axis-y:hover { background: rgba(119,153,255,0.12); border-color: rgba(119,153,255,0.4); color: #aabbff; }
-    .btn-axis-z { color: #77ee88; border-color: rgba(119,238,136,0.15); }
-    .btn-axis-z:hover { background: rgba(119,238,136,0.12); border-color: rgba(119,238,136,0.4); color: #aaffbb; }
-
-    .btn-danger {
-        background: rgba(231, 76, 60, 0.1);
-        border-color: rgba(231,76,60,0.2);
-        color: #ff8877;
-    }
-    .btn-danger:hover {
-        background: rgba(231,76,60,0.2);
-        border-color: rgba(231,76,60,0.5);
-        color: #ff6655;
-        box-shadow: 0 4px 12px rgba(231,76,60,0.2);
-    }
-
-    .btn-warning {
-        background: rgba(243, 156, 18, 0.1);
-        border-color: rgba(243,156,18,0.2);
-        color: #ffcc66;
-    }
-    .btn-warning:hover {
-        background: rgba(243,156,18,0.2);
-        border-color: rgba(243,156,18,0.5);
-        color: #ffbb33;
-        box-shadow: 0 4px 12px rgba(243,156,18,0.2);
-    }
-
-    /* ===== SEPARATOR ===== */
     .separator {
         height: 1px;
         background: linear-gradient(90deg, transparent, rgba(0,229,255,0.15), transparent);
         margin: 10px 0;
     }
 
-    /* ===== SECTION LABEL ===== */
     .section-label {
         font-size: 8.5px;
         font-weight: 700;
@@ -293,31 +164,20 @@
         margin: 6px 0 5px 0;
     }
 
-    /* ===== SLIDERS ===== */
     .slider-item { margin: 8px 0; }
-
     .slider-label {
         display: flex;
         justify-content: space-between;
         font-size: 10px;
         color: rgba(138, 174, 192, 0.8);
         margin-bottom: 5px;
-        letter-spacing: 0.2px;
     }
-
-    .slider-label span:last-child {
-        color: #00e5ff;
-        font-weight: 600;
-    }
-
     .slider-track {
         position: relative;
         height: 4px;
         background: rgba(255,255,255,0.06);
         border-radius: 10px;
-        overflow: visible;
     }
-
     .slider-fill {
         position: absolute;
         left: 0;
@@ -326,9 +186,7 @@
         background: linear-gradient(90deg, #0099bb, #00e5ff);
         border-radius: 10px;
         pointer-events: none;
-        transition: width 0.05s;
     }
-
     input[type="range"] {
         position: absolute;
         inset: -6px 0;
@@ -336,37 +194,26 @@
         height: calc(100% + 12px);
         opacity: 0;
         cursor: pointer;
-        margin: 0;
     }
 
-    /* ===== INFO BADGE ===== */
     .info-badge {
         background: rgba(0,0,0,0.3);
         border: 1px solid rgba(0,229,255,0.08);
         border-radius: 10px;
         padding: 6px 10px;
         display: flex;
-        align-items: center;
         justify-content: space-between;
         font-size: 10px;
-        color: rgba(107, 143, 168, 0.8);
         margin-top: 6px;
     }
+    .info-badge .badge-val { color: #00e5ff; font-weight: 700; }
 
-    .info-badge .badge-val {
-        color: #00e5ff;
-        font-weight: 700;
-        font-size: 12px;
-    }
-
-    /* ===== UPLOAD ===== */
     .upload-area {
         position: fixed;
         bottom: 20px;
         right: 20px;
         background: rgba(10, 14, 20, 0.88);
-        backdrop-filter: blur(16px) saturate(180%);
-        -webkit-backdrop-filter: blur(16px) saturate(180%);
+        backdrop-filter: blur(16px);
         border: 1px solid rgba(0, 229, 255, 0.25);
         border-radius: 40px;
         padding: 10px 22px;
@@ -375,30 +222,11 @@
         font-size: 12px;
         font-weight: 600;
         color: #00e5ff;
-        transition:
-            border-color 0.2s ease,
-            background 0.2s ease,
-            transform 0.15s ease,
-            box-shadow 0.2s ease;
         display: flex;
         align-items: center;
         gap: 8px;
-        letter-spacing: 0.5px;
     }
 
-    .upload-area:hover {
-        border-color: rgba(0,229,255,0.6);
-        background: rgba(0,229,255,0.08);
-        transform: translateY(-2px);
-        box-shadow: 0 8px 24px rgba(0,229,255,0.2);
-    }
-
-    .upload-area:active {
-        transform: translateY(0px);
-        box-shadow: none;
-    }
-
-    /* ===== FILE INFO ===== */
     .file-info {
         position: fixed;
         bottom: 20px;
@@ -410,12 +238,8 @@
         font-size: 10.5px;
         z-index: 100;
         border-left: 2px solid #00e5ff;
-        color: rgba(184, 212, 232, 0.9);
-        letter-spacing: 0.2px;
-        transition: opacity 0.3s;
     }
 
-    /* ===== STATUS ===== */
     .status {
         position: fixed;
         bottom: 64px;
@@ -425,14 +249,9 @@
         padding: 4px 12px;
         border-radius: 20px;
         font-size: 9.5px;
-        color: rgba(107, 143, 168, 0.8);
-        font-family: 'SF Mono', 'Fira Code', monospace;
         pointer-events: none;
-        transition: opacity 0.3s;
-        letter-spacing: 0.3px;
     }
 
-    /* ===== OVERLAY ===== */
     #overlay {
         position: fixed;
         inset: 0;
@@ -443,45 +262,18 @@
         justify-content: center;
         gap: 20px;
         z-index: 200;
-        transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: opacity 0.5s;
     }
-
-    #overlay.hidden {
-        opacity: 0;
-        pointer-events: none;
-    }
-
+    #overlay.hidden { opacity: 0; pointer-events: none; }
     .spinner-ring {
-        position: relative;
         width: 48px;
         height: 48px;
-    }
-
-    .spinner-ring::before,
-    .spinner-ring::after {
-        content: '';
-        position: absolute;
-        inset: 0;
         border-radius: 50%;
         border: 2px solid transparent;
-    }
-
-    .spinner-ring::before {
         border-top-color: #00e5ff;
-        border-right-color: rgba(0,229,255,0.3);
-        animation: spinA 0.9s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+        animation: spin 0.8s linear infinite;
     }
-
-    .spinner-ring::after {
-        border-bottom-color: rgba(255, 107, 0, 0.7);
-        border-left-color: rgba(255,107,0,0.2);
-        animation: spinB 1.4s cubic-bezier(0.5, 0, 0.5, 1) infinite reverse;
-        inset: 6px;
-    }
-
-    @keyframes spinA { to { transform: rotate(360deg); } }
-    @keyframes spinB { to { transform: rotate(360deg); } }
-
+    @keyframes spin { to { transform: rotate(360deg); } }
     .progress-bar {
         width: 220px;
         height: 2px;
@@ -489,31 +281,13 @@
         border-radius: 10px;
         overflow: hidden;
     }
-
     .progress-fill {
         width: 0%;
         height: 100%;
         background: linear-gradient(90deg, #00e5ff, #ff6b00);
-        border-radius: 10px;
-        transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 0 0 8px rgba(0,229,255,0.6);
+        transition: width 0.3s;
     }
 
-    #load-msg {
-        color: rgba(138, 174, 192, 0.8);
-        font-size: 11px;
-        letter-spacing: 0.3px;
-    }
-
-    /* ===== SCROLLBAR ===== */
-    .panel-content::-webkit-scrollbar { width: 2px; }
-    .panel-content::-webkit-scrollbar-track { background: transparent; }
-    .panel-content::-webkit-scrollbar-thumb {
-        background: rgba(0,229,255,0.3);
-        border-radius: 4px;
-    }
-
-    /* ===== TOAST ===== */
     .toast {
         position: fixed;
         top: 20px;
@@ -530,14 +304,9 @@
         pointer-events: none;
         z-index: 300;
         opacity: 0;
-        transition: opacity 0.25s ease, transform 0.25s ease;
-        letter-spacing: 0.5px;
+        transition: all 0.25s ease;
     }
-
-    .toast.show {
-        opacity: 1;
-        transform: translateX(-50%) translateY(0);
-    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 </style>
 </head>
 <body>
@@ -549,19 +318,14 @@
 </div>
 
 <div class="toast" id="toast"></div>
+<div class="panel-reopen" id="panelReopen">🎮</div>
 
-<!-- Nút mở lại panel -->
-<div class="panel-reopen" id="panelReopen" title="Mở panel điều khiển">🎮</div>
-
-<!-- Panel -->
 <div class="viewer-panel" id="viewerPanel">
-    <div class="panel-header" id="panelHeader">
+    <div class="panel-header">
         <span class="panel-title">CNC VIEWER</span>
         <button class="panel-toggle" id="panelToggle">−</button>
     </div>
     <div class="panel-content">
-
-        <!-- Hiển thị -->
         <div class="section-label">Hiển thị</div>
         <div class="btn-group">
             <button class="btn-icon" id="btnWire">WIRE</button>
@@ -569,17 +333,12 @@
             <button class="btn-icon" id="btnAxes">AXES</button>
             <button class="btn-icon btn-danger" id="btnResetCam">↩ CAM</button>
         </div>
-
         <div class="separator"></div>
-
-        <!-- Mode -->
         <div class="section-label">Chế độ</div>
         <div class="btn-group">
             <button class="btn-icon btn-mode-drag active" id="modeDrag">✋ Kéo</button>
             <button class="btn-icon btn-mode-rotate" id="modeRotate">⌛ Xoay</button>
         </div>
-
-        <!-- Di chuyển -->
         <div class="section-label">Di chuyển</div>
         <div class="btn-group">
             <button class="btn-icon btn-axis-x" id="moveLeft">◀ X-</button>
@@ -590,10 +349,7 @@
             <button class="btn-icon btn-axis-z" id="moveUp">Z+ ▲</button>
             <button class="btn-icon btn-warning" id="resetPos">↺ Reset</button>
         </div>
-
         <div class="separator"></div>
-
-        <!-- Xoay -->
         <div class="section-label">Xoay</div>
         <div class="btn-group">
             <button class="btn-icon btn-axis-x" id="rotXP">X+90°</button>
@@ -609,42 +365,21 @@
             <button class="btn-icon btn-axis-z" id="flipZ">🪞 Z</button>
             <button class="btn-icon btn-warning" id="resetRot">⟳ Reset</button>
         </div>
-
         <div class="separator"></div>
-
-        <!-- Sliders -->
         <div class="slider-item">
             <div class="slider-label"><span>🔍 Scale</span><span id="scaleVal">1.00×</span></div>
-            <div class="slider-track">
-                <div class="slider-fill" id="scaleFill" style="width:31%"></div>
-                <input type="range" id="scaleSlider" min="0.2" max="3" step="0.01" value="1">
-            </div>
+            <div class="slider-track"><div class="slider-fill" id="scaleFill" style="width:31%"></div><input type="range" id="scaleSlider" min="0.2" max="3" step="0.01" value="1"></div>
         </div>
         <div class="slider-item">
             <div class="slider-label"><span>💡 Ánh sáng</span><span id="lightVal">70%</span></div>
-            <div class="slider-track">
-                <div class="slider-fill" id="lightFill" style="width:70%"></div>
-                <input type="range" id="lightSlider" min="0" max="100" value="70">
-            </div>
+            <div class="slider-track"><div class="slider-fill" id="lightFill" style="width:70%"></div><input type="range" id="lightSlider" min="0" max="100" value="70"></div>
         </div>
-
-        <div class="info-badge">
-            <span>Parts</span>
-            <span class="badge-val" id="partsCount">0</span>
-        </div>
+        <div class="info-badge"><span>Parts</span><span class="badge-val" id="partsCount">0</span></div>
     </div>
 </div>
 
-<!-- Upload -->
-<div class="upload-area" id="uploadArea">
-    📂 Mở file STEP
-    <input type="file" id="fileInput" accept=".stp,.step" style="display:none">
-</div>
-
-<div class="file-info" id="fileInfo">
-    📄 <span id="fileName">Chưa có file</span>
-</div>
-
+<div class="upload-area" id="uploadArea">📂 Mở file STEP<input type="file" id="fileInput" accept=".stp,.step" style="display:none"></div>
+<div class="file-info" id="fileInfo">📄 <span id="fileName">Chưa có file</span></div>
 <div class="status" id="status">✅ Sẵn sàng</div>
 
 <script type="importmap">
@@ -660,25 +395,134 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-// ===== RENDERER =====
+// ===== KHAI BÁO BIẾN =====
+let occt = null;
+let mainGroup = null;
+let allMeshes = [];
+let wireframe = false;
+let currentRotation = new THREE.Euler(0, 0, 0);
+let currentScale = 1;
+let dragMode = true;
+let isDragging = false;
+let dragLastX = 0, dragLastY = 0;
+
+// ===== AUTO SAVE =====
+let saveTimeout = null;
+
+function autoSaveModelState() {
+    if (!mainGroup) return;
+
+    clearTimeout(saveTimeout);
+
+    saveTimeout = setTimeout(() => {
+        localStorage.setItem(
+            'cnc_model_state',
+            JSON.stringify({
+                position: [
+                    mainGroup.position.x,
+                    mainGroup.position.y,
+                    mainGroup.position.z
+                ],
+                rotation: [
+                    currentRotation.x,
+                    currentRotation.y,
+                    currentRotation.z
+                ],
+                scale: currentScale
+            })
+        );
+
+        console.log("💾 Auto Saved");
+
+        const status = document.getElementById("status");
+        if (status) {
+            status.textContent = "💾 Đã lưu";
+            setTimeout(() => {
+                status.textContent = `✅ ${allMeshes.length} parts`;
+            }, 1000);
+        }
+    }, 300);
+}
+
+const colors = [0x3a86ff, 0xf4a261, 0xe76f51, 0x2a9d8f, 0xe9c46a, 0x9c89b8, 0xf08080, 0x70d6ff, 0xffb703];
+
+// ===== INDEXEDDB - LƯU FILE STEP =====
+const DB_NAME = 'CNCViewerDB';
+const STORE_NAME = 'stepFiles';
+const DB_VERSION = 1;
+
+function openDB() {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open(DB_NAME, DB_VERSION);
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => resolve(request.result);
+        request.onupgradeneeded = (event) => {
+            const db = event.target.result;
+            if (!db.objectStoreNames.contains(STORE_NAME)) {
+                db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+            }
+        };
+    });
+}
+
+async function saveFileToIndexedDB(file) {
+    const db = await openDB();
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = async () => {
+            const transaction = db.transaction([STORE_NAME], 'readwrite');
+            const store = transaction.objectStore(STORE_NAME);
+            const record = {
+                id: 'current_step',
+                name: file.name,
+                size: file.size,
+                type: file.type,
+                data: reader.result,
+                timestamp: Date.now()
+            };
+            const request = store.put(record);
+            request.onsuccess = () => {
+                console.log('✅ File saved to IndexedDB:', file.name);
+                resolve();
+            };
+            request.onerror = () => reject(request.error);
+        };
+        reader.onerror = () => reject(reader.error);
+        reader.readAsArrayBuffer(file);
+    });
+}
+
+async function loadFileFromIndexedDB() {
+    const db = await openDB();
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction([STORE_NAME], 'readonly');
+        const store = transaction.objectStore(STORE_NAME);
+        const request = store.get('current_step');
+        request.onsuccess = () => {
+            const record = request.result;
+            if (record && record.data) {
+                const file = new File([record.data], record.name, { type: record.type || 'application/step' });
+                resolve(file);
+            } else {
+                resolve(null);
+            }
+        };
+        request.onerror = () => reject(request.error);
+    });
+}
+
+// ===== THREE.JS SETUP =====
 const canvas = document.createElement('canvas');
 document.body.insertBefore(canvas, document.body.firstChild);
 canvas.style.position = 'fixed';
 canvas.style.inset = '0';
+canvas.style.width = '100%';
+canvas.style.height = '100%';
 
-const renderer = new THREE.WebGLRenderer({
-    canvas,
-    antialias: true,
-    alpha: false,
-    powerPreference: 'high-performance',
-});
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setClearColor(0x0a0e14, 1);
-renderer.physicallyCorrectLights = true;
-renderer.outputEncoding = THREE.sRGBEncoding;
 
-// ===== SCENE =====
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x0a0e14);
 scene.fog = new THREE.FogExp2(0x0a0e14, 0.00012);
@@ -689,155 +533,91 @@ camera.position.set(500, 420, 700);
 const orbitControls = new OrbitControls(camera, renderer.domElement);
 orbitControls.enableDamping = true;
 orbitControls.dampingFactor = 0.06;
-orbitControls.rotateSpeed = 0.65;
-orbitControls.zoomSpeed = 1.1;
-orbitControls.panSpeed = 0.8;
 orbitControls.target.set(0, 0, 0);
-orbitControls.minDistance = 20;
-orbitControls.maxDistance = 4000;
+orbitControls.zoomSpeed = 1.2;
+orbitControls.panSpeed = 0.8;
 
-// ===== LIGHTING =====
+// Lighting
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.9);
 scene.add(ambientLight);
-
 const mainLight = new THREE.DirectionalLight(0xfff5e0, 2.0);
 mainLight.position.set(500, 800, 600);
 scene.add(mainLight);
-
 const fillLight = new THREE.DirectionalLight(0x3399ff, 0.4);
 fillLight.position.set(-400, -200, -300);
 scene.add(fillLight);
+const backLight = new THREE.PointLight(0xffaa66, 0.3);
+backLight.position.set(0, 200, -500);
+scene.add(backLight);
 
-const rimLight = new THREE.PointLight(0xff6633, 0.3, 2000);
-rimLight.position.set(0, -300, 400);
-scene.add(rimLight);
-
-// ===== HELPERS =====
+// Helpers
 const axesHelper = new THREE.AxesHelper(250);
 scene.add(axesHelper);
-
 const gridHelper = new THREE.GridHelper(2200, 60, 0x4a8a9a, 0x2a5a6a);
 gridHelper.position.y = -2;
 scene.add(gridHelper);
 
-// ===== STATE =====
-let mainGroup = null;
-let allMeshes = [];
-let wireframe = false;
-let currentRotation = new THREE.Euler(0, 0, 0);
-let currentScale = 1;
-let dragMode = true;
-
-const colors = [
-    0x3a86ff, 0xf4a261, 0xe76f51, 0x2a9d8f,
-    0xe9c46a, 0x9c89b8, 0xf08080, 0x70d6ff, 0xffb703,
-    0x06d6a0, 0xef476f, 0xffd166
-];
-
-// ===== SMOOTH DRAG =====
-let isDragging = false;
-let dragLastX = 0, dragLastY = 0;
-let dragVelX = 0, dragVelY = 0;
-let dragMomentumX = 0, dragMomentumY = 0;
-const DRAG_FRICTION = 0.88;
-const DRAG_SPEED = 1.0;
-
+// ===== DRAG MODEL =====
 function screenToWorldDelta(dx, dy) {
     const dist = camera.position.distanceTo(mainGroup ? mainGroup.position : orbitControls.target);
     const fovRad = camera.fov * Math.PI / 180;
     const heightAtDist = 2 * Math.tan(fovRad / 2) * dist;
-    const pixelToWorld = heightAtDist / window.innerHeight * DRAG_SPEED;
+    const pixelToWorld = heightAtDist / window.innerHeight * 1.0;
     return { dx: dx * pixelToWorld, dy: dy * pixelToWorld };
 }
 
-canvas.addEventListener('mousedown', e => {
+canvas.addEventListener('mousedown', (e) => {
     if (!dragMode || !mainGroup) return;
     isDragging = true;
     dragLastX = e.clientX;
     dragLastY = e.clientY;
-    dragMomentumX = 0;
-    dragMomentumY = 0;
     canvas.style.cursor = 'grabbing';
     e.preventDefault();
 });
 
-window.addEventListener('mousemove', e => {
+window.addEventListener('mousemove', (e) => {
     if (!isDragging || !dragMode || !mainGroup) return;
-    const rawDX = e.clientX - dragLastX;
-    const rawDY = e.clientY - dragLastY;
-    dragVelX = rawDX;
-    dragVelY = rawDY;
-
-    const { dx, dy } = screenToWorldDelta(rawDX, rawDY);
-    const right = new THREE.Vector3();
-    const up = new THREE.Vector3(0, 1, 0);
-    camera.getWorldDirection(new THREE.Vector3()).cross(up).normalize().negate().multiplyScalar(-1);
-    right.crossVectors(camera.getWorldDirection(new THREE.Vector3()), up).normalize();
-
+    const { dx, dy } = screenToWorldDelta(e.clientX - dragLastX, e.clientY - dragLastY);
+    const right = new THREE.Vector3().crossVectors(camera.getWorldDirection(new THREE.Vector3()), new THREE.Vector3(0, 1, 0)).normalize();
     mainGroup.position.addScaledVector(right, dx);
     mainGroup.position.y -= dy;
-
     dragLastX = e.clientX;
     dragLastY = e.clientY;
+    autoSaveModelState();
 });
 
 window.addEventListener('mouseup', () => {
-    if (!isDragging) return;
     isDragging = false;
-    dragMomentumX = dragVelX;
-    dragMomentumY = dragVelY;
     canvas.style.cursor = dragMode ? 'grab' : 'default';
 });
 
-function applyDragMomentum() {
-    if (isDragging || !mainGroup || (Math.abs(dragMomentumX) < 0.01 && Math.abs(dragMomentumY) < 0.01)) return;
-    const { dx, dy } = screenToWorldDelta(dragMomentumX, dragMomentumY);
-    const right = new THREE.Vector3();
-    camera.getWorldDirection(new THREE.Vector3()).cross(new THREE.Vector3(0,1,0)).normalize();
-    right.crossVectors(camera.getWorldDirection(new THREE.Vector3()), new THREE.Vector3(0,1,0)).normalize();
-    mainGroup.position.addScaledVector(right, dx);
-    mainGroup.position.y -= dy;
-    dragMomentumX *= DRAG_FRICTION;
-    dragMomentumY *= DRAG_FRICTION;
-}
-
-// ===== HELPERS =====
 function applyRotation() {
-    if (mainGroup) mainGroup.rotation.set(currentRotation.x, currentRotation.y, currentRotation.z, 'XYZ');
+    if (!mainGroup) return;
+    mainGroup.rotation.set(currentRotation.x, currentRotation.y, currentRotation.z);
+    autoSaveModelState();
 }
 
 function applyScale() {
-    if (mainGroup) mainGroup.scale.setScalar(currentScale);
-    const pct = ((currentScale - 0.2) / (3 - 0.2)) * 100;
-    document.getElementById('scaleFill').style.width = pct + '%';
+    if (!mainGroup) return;
+    mainGroup.scale.setScalar(currentScale);
+    document.getElementById('scaleFill').style.width = ((currentScale - 0.2) / 2.8) * 100 + '%';
     document.getElementById('scaleVal').innerText = currentScale.toFixed(2) + '×';
+    autoSaveModelState();
 }
 
-// ===== TOAST =====
-let toastTimer;
-function showToast(msg) {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.classList.add('show');
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => t.classList.remove('show'), 1800);
-}
-
-// ===== MODE =====
 function setDragMode(enabled) {
     dragMode = enabled;
-    dragMomentumX = 0; dragMomentumY = 0;
     const dragBtn = document.getElementById('modeDrag');
     const rotBtn = document.getElementById('modeRotate');
-    if (dragMode) {
-        dragBtn.classList.add('active');
-        rotBtn.classList.remove('active');
-        orbitControls.enabled = false;
+    if (dragMode) { 
+        dragBtn.classList.add('active'); 
+        rotBtn.classList.remove('active'); 
+        orbitControls.enabled = false; 
         canvas.style.cursor = 'grab';
-    } else {
-        dragBtn.classList.remove('active');
-        rotBtn.classList.add('active');
-        orbitControls.enabled = true;
+    } else { 
+        dragBtn.classList.remove('active'); 
+        rotBtn.classList.add('active'); 
+        orbitControls.enabled = true; 
         canvas.style.cursor = 'default';
     }
 }
@@ -846,284 +626,281 @@ function setDragMode(enabled) {
 document.getElementById('modeDrag').onclick = () => setDragMode(true);
 document.getElementById('modeRotate').onclick = () => setDragMode(false);
 
-const MOVE_STEP = 20;
-document.getElementById('moveLeft').onclick = () => { if (mainGroup) mainGroup.position.x -= MOVE_STEP; };
-document.getElementById('moveRight').onclick = () => { if (mainGroup) mainGroup.position.x += MOVE_STEP; };
-document.getElementById('moveBack').onclick = () => { if (mainGroup) mainGroup.position.z -= MOVE_STEP; };
-document.getElementById('moveForward').onclick = () => { if (mainGroup) mainGroup.position.z += MOVE_STEP; };
-document.getElementById('moveDown').onclick = () => { if (mainGroup) mainGroup.position.y -= MOVE_STEP; };
-document.getElementById('moveUp').onclick = () => { if (mainGroup) mainGroup.position.y += MOVE_STEP; };
-document.getElementById('resetPos').onclick = () => {
-    if (mainGroup) {
-        mainGroup.position.set(0, 0, 0);
-        showToast('Đã reset vị trí');
-    }
+document.getElementById('moveLeft').onclick = () => { if (!mainGroup) return; mainGroup.position.x -= 20; autoSaveModelState(); };
+document.getElementById('moveRight').onclick = () => { if (!mainGroup) return; mainGroup.position.x += 20; autoSaveModelState(); };
+document.getElementById('moveBack').onclick = () => { if (!mainGroup) return; mainGroup.position.z -= 20; autoSaveModelState(); };
+document.getElementById('moveForward').onclick = () => { if (!mainGroup) return; mainGroup.position.z += 20; autoSaveModelState(); };
+document.getElementById('moveDown').onclick = () => { if (!mainGroup) return; mainGroup.position.y -= 20; autoSaveModelState(); };
+document.getElementById('moveUp').onclick = () => { if (!mainGroup) return; mainGroup.position.y += 20; autoSaveModelState(); };
+document.getElementById('resetPos').onclick = () => { if (!mainGroup) return; mainGroup.position.set(0, 0, 0); autoSaveModelState(); showToast('Reset vị trí'); };
+
+document.getElementById('scaleSlider').oninput = (e) => { currentScale = parseFloat(e.target.value); applyScale(); };
+document.getElementById('lightSlider').oninput = (e) => { 
+    let v = parseInt(e.target.value); 
+    ambientLight.intensity = v/100 * 1.5; 
+    mainLight.intensity = v/100 * 2.5; 
+    document.getElementById('lightFill').style.width = v + '%'; 
+    document.getElementById('lightVal').innerText = v + '%'; 
 };
 
-document.getElementById('scaleSlider').oninput = e => {
-    currentScale = parseFloat(e.target.value);
-    applyScale();
-};
-
-document.getElementById('lightSlider').oninput = e => {
-    const val = parseInt(e.target.value);
-    ambientLight.intensity = (val / 100) * 1.5;
-    mainLight.intensity = (val / 100) * 2.5;
-    document.getElementById('lightFill').style.width = val + '%';
-    document.getElementById('lightVal').innerText = val + '%';
-};
-
-document.getElementById('btnWire').onclick = () => {
-    wireframe = !wireframe;
-    allMeshes.forEach(m => { if (m.material) m.material.wireframe = wireframe; });
-    document.getElementById('btnWire').classList.toggle('active', wireframe);
+document.getElementById('btnWire').onclick = () => { 
+    wireframe = !wireframe; 
+    allMeshes.forEach(m => { if (m.material) m.material.wireframe = wireframe; }); 
+    document.getElementById('btnWire').classList.toggle('active', wireframe); 
     showToast(wireframe ? 'Wireframe ON' : 'Wireframe OFF');
 };
-
-document.getElementById('btnGrid').onclick = () => {
-    gridHelper.visible = !gridHelper.visible;
-    document.getElementById('btnGrid').classList.toggle('active', gridHelper.visible);
+document.getElementById('btnGrid').onclick = () => { 
+    gridHelper.visible = !gridHelper.visible; 
+    document.getElementById('btnGrid').classList.toggle('active', gridHelper.visible); 
+};
+document.getElementById('btnAxes').onclick = () => { 
+    axesHelper.visible = !axesHelper.visible; 
+    document.getElementById('btnAxes').classList.toggle('active', axesHelper.visible); 
+};
+document.getElementById('btnResetCam').onclick = () => { 
+    camera.position.set(500, 420, 700); 
+    orbitControls.target.set(0, 0, 0); 
+    orbitControls.update(); 
+    showToast('Reset camera'); 
 };
 
-document.getElementById('btnAxes').onclick = () => {
-    axesHelper.visible = !axesHelper.visible;
-    document.getElementById('btnAxes').classList.toggle('active', axesHelper.visible);
-};
-
-document.getElementById('btnResetCam').onclick = () => {
-    const target = orbitControls.target.clone();
-    const startPos = camera.position.clone();
-    const endPos = new THREE.Vector3(500, 420, 700);
-    let t = 0;
-    function animCam() {
-        t += 0.06;
-        const ease = 1 - Math.pow(1 - Math.min(t, 1), 3);
-        camera.position.lerpVectors(startPos, endPos, ease);
-        orbitControls.target.lerp(new THREE.Vector3(0,0,0), ease * 0.15);
-        orbitControls.update();
-        if (t < 1) requestAnimationFrame(animCam);
-        else {
-            camera.position.copy(endPos);
-            orbitControls.target.set(0,0,0);
-        }
-    }
-    animCam();
-    showToast('Camera reset');
-};
-
-// Rotation buttons
-const HPI = Math.PI / 2;
-document.getElementById('rotXP').onclick = () => { currentRotation.x += HPI; applyRotation(); };
-document.getElementById('rotXM').onclick = () => { currentRotation.x -= HPI; applyRotation(); };
-document.getElementById('rotYP').onclick = () => { currentRotation.y += HPI; applyRotation(); };
-document.getElementById('rotYM').onclick = () => { currentRotation.y -= HPI; applyRotation(); };
-document.getElementById('rotZP').onclick = () => { currentRotation.z += HPI; applyRotation(); };
-document.getElementById('rotZM').onclick = () => { currentRotation.z -= HPI; applyRotation(); };
+document.getElementById('rotXP').onclick = () => { currentRotation.x += Math.PI/2; applyRotation(); };
+document.getElementById('rotXM').onclick = () => { currentRotation.x -= Math.PI/2; applyRotation(); };
+document.getElementById('rotYP').onclick = () => { currentRotation.y += Math.PI/2; applyRotation(); };
+document.getElementById('rotYM').onclick = () => { currentRotation.y -= Math.PI/2; applyRotation(); };
+document.getElementById('rotZP').onclick = () => { currentRotation.z += Math.PI/2; applyRotation(); };
+document.getElementById('rotZM').onclick = () => { currentRotation.z -= Math.PI/2; applyRotation(); };
 document.getElementById('flipX').onclick = () => { currentRotation.x += Math.PI; applyRotation(); };
 document.getElementById('flipY').onclick = () => { currentRotation.y += Math.PI; applyRotation(); };
 document.getElementById('flipZ').onclick = () => { currentRotation.z += Math.PI; applyRotation(); };
-document.getElementById('resetRot').onclick = () => {
-    currentRotation.set(0, 0, 0);
-    applyRotation();
-    showToast('Đã reset góc xoay');
-};
+document.getElementById('resetRot').onclick = () => { currentRotation.set(0, 0, 0); applyRotation(); showToast('Reset xoay'); };
 
 // Panel toggle
 let panelCollapsed = false;
-function setPanelCollapsed(val) {
-    panelCollapsed = val;
-    document.getElementById('viewerPanel').classList.toggle('collapsed', panelCollapsed);
-    document.getElementById('panelReopen').classList.toggle('visible', panelCollapsed);
-}
-
-document.getElementById('panelToggle').onclick = e => {
-    e.stopPropagation();
-    setPanelCollapsed(true);
+document.getElementById('panelToggle').onclick = () => {
+    panelCollapsed = true;
+    document.getElementById('viewerPanel').classList.add('collapsed');
+    document.getElementById('panelReopen').classList.add('visible');
 };
 document.getElementById('panelReopen').onclick = () => {
-    setPanelCollapsed(false);
+    panelCollapsed = false;
+    document.getElementById('viewerPanel').classList.remove('collapsed');
+    document.getElementById('panelReopen').classList.remove('visible');
 };
 
-// Upload
-document.getElementById('uploadArea').onclick = () => document.getElementById('fileInput').click();
-document.getElementById('fileInput').onchange = async e => {
-    if (e.target.files[0]) await processFile(e.target.files[0]);
-};
-
-// Drag & drop on canvas
-document.body.addEventListener('dragover', e => e.preventDefault());
-document.body.addEventListener('drop', e => {
-    e.preventDefault();
-    const file = e.dataTransfer.files[0];
-    if (file && /\.(stp|step)$/i.test(file.name)) processFile(file);
-});
-
-// ===== OCCT =====
-let occt = null;
-async function loadOCCT() {
-    return new Promise((resolve, reject) => {
-        if (window.occtimportjs) {
-            window.occtimportjs({ locateFile: p => `https://cdn.jsdelivr.net/npm/occt-import-js@0.0.18/dist/${p}` }).then(resolve).catch(reject);
-            return;
-        }
-        const script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/npm/occt-import-js@0.0.18/dist/occt-import-js.js';
-        script.onload = () => {
-            window.occtimportjs({ locateFile: p => `https://cdn.jsdelivr.net/npm/occt-import-js@0.0.18/dist/${p}` }).then(resolve).catch(reject);
-        };
-        script.onerror = () => reject(new Error('Không tải được OCCT'));
-        document.head.appendChild(script);
-    });
+function showToast(msg) { 
+    let t = document.getElementById('toast'); 
+    t.textContent = msg; 
+    t.classList.add('show'); 
+    setTimeout(() => t.classList.remove('show'), 1800); 
 }
 
-function setProgress(pct, msg) {
-    document.getElementById('progress-fill').style.width = pct + '%';
-    if (msg) document.getElementById('load-msg').innerHTML = msg;
-}
-
-async function processFile(file) {
+// ===== XỬ LÝ FILE STEP =====
+async function processFile(file, shouldSave = true) {
     const overlay = document.getElementById('overlay');
+    const progressFill = document.getElementById('progress-fill');
+    const loadMsg = document.getElementById('load-msg');
     overlay.classList.remove('hidden');
-    setProgress(5, `📄 ${file.name}`);
+    progressFill.style.width = '5%';
+    loadMsg.innerHTML = `📄 ${file.name}`;
     document.getElementById('fileName').textContent = file.name;
     document.getElementById('status').textContent = '⏳ Đang xử lý...';
 
     try {
         if (!occt) {
-            setProgress(15, 'Tải OCCT engine...');
-            occt = await loadOCCT();
+            progressFill.style.width = '15%';
+            loadMsg.innerHTML = 'Tải OCCT engine...';
+            occt = await new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = 'https://cdn.jsdelivr.net/npm/occt-import-js@0.0.18/dist/occt-import-js.js';
+                script.onload = () => {
+                    window.occtimportjs({ 
+                        locateFile: (path) => `https://cdn.jsdelivr.net/npm/occt-import-js@0.0.18/dist/${path}` 
+                    }).then(resolve).catch(reject);
+                };
+                script.onerror = () => reject(new Error('Load OCCT failed'));
+                document.head.appendChild(script);
+            });
         }
-        setProgress(35, 'Đọc file STEP...');
-
+        progressFill.style.width = '35%';
+        loadMsg.innerHTML = 'Đọc file STEP...';
+        
         const buffer = await file.arrayBuffer();
         const uint8Array = new Uint8Array(buffer);
-
-        setProgress(55, 'Phân tích hình học...');
+        
+        progressFill.style.width = '55%';
+        loadMsg.innerHTML = 'Phân tích hình học...';
         let result;
         try {
             result = occt.ReadStepFile(uint8Array, { linearDeflection: 0.1, angularDeflection: 0.5 });
-        } catch {
-            result = occt.ReadStepFile(uint8Array);
+        } catch(e) { 
+            result = occt.ReadStepFile(uint8Array); 
         }
-
+        
         if (!result?.meshes?.length) throw new Error('Không có mesh trong file');
-
-        setProgress(75, 'Dựng mô hình 3D...');
-
-        if (mainGroup) {
-            scene.remove(mainGroup);
-            allMeshes.forEach(m => { m.geometry.dispose(); m.material.dispose(); });
-        }
+        
+        progressFill.style.width = '75%';
+        loadMsg.innerHTML = 'Dựng mô hình 3D...';
+        
+        if (mainGroup) scene.remove(mainGroup);
         allMeshes = [];
         mainGroup = new THREE.Group();
         currentRotation.set(0, 0, 0);
         currentScale = 1;
         document.getElementById('scaleSlider').value = 1;
         applyScale();
-
+        
         for (let i = 0; i < result.meshes.length; i++) {
             const m = result.meshes[i];
             const geom = new THREE.BufferGeometry();
             geom.setAttribute('position', new THREE.BufferAttribute(new Float32Array(m.attributes.position.array), 3));
-            if (m.index?.array) geom.setIndex(new THREE.BufferAttribute(new Uint32Array(m.index.array), 1));
+            if (m.index && m.index.array) geom.setIndex(new THREE.BufferAttribute(new Uint32Array(m.index.array), 1));
             geom.computeVertexNormals();
-
-            const mat = new THREE.MeshStandardMaterial({
-                color: colors[i % colors.length],
-                roughness: 0.3,
-                metalness: 0.7,
-                envMapIntensity: 0.8,
-            });
+            const mat = new THREE.MeshStandardMaterial({ color: colors[i % colors.length], roughness: 0.3, metalness: 0.7 });
             const mesh = new THREE.Mesh(geom, mat);
             mainGroup.add(mesh);
             allMeshes.push(mesh);
         }
-
+        
         scene.add(mainGroup);
-
         const box = new THREE.Box3().setFromObject(mainGroup);
         const center = box.getCenter(new THREE.Vector3());
         mainGroup.position.sub(center);
-
+        
+        // Khôi phục vị trí đã lưu
+        loadModelState();
+        
         document.getElementById('partsCount').textContent = allMeshes.length;
-        setProgress(100, `✅ ${allMeshes.length} parts`);
+        progressFill.style.width = '100%';
+        loadMsg.innerHTML = `✅ ${allMeshes.length} parts`;
         document.getElementById('status').textContent = `✅ ${allMeshes.length} parts`;
-
-        setTimeout(() => overlay.classList.add('hidden'), 600);
+        
+        if (shouldSave) {
+            await saveFileToIndexedDB(file);
+            console.log('✅ File saved to IndexedDB');
+        }
+        
+        setTimeout(() => overlay.classList.add('hidden'), 500);
         showToast(`Đã tải ${allMeshes.length} parts`);
-
+        
     } catch (err) {
-        setProgress(100, `❌ ${err.message}`);
+        console.error(err);
+        progressFill.style.width = '100%';
+        loadMsg.innerHTML = `❌ ${err.message}`;
         document.getElementById('status').textContent = '❌ Lỗi';
         setTimeout(() => overlay.classList.add('hidden'), 2500);
     }
 }
 
-function saveState() {
+// ===== TỰ ĐỘNG KHÔI PHỤC =====
+async function autoRestoreFile() {
+    try {
+        const savedFile = await loadFileFromIndexedDB();
+        if (savedFile) {
+            console.log('🔄 Restoring saved file:', savedFile.name);
+            document.getElementById('fileName').textContent = savedFile.name;
+            await processFile(savedFile, false);
+            showToast(`📂 Đã khôi phục: ${savedFile.name}`);
+            return true;
+        }
+    } catch(e) {
+        console.log('No saved file found');
+    }
+    return false;
+}
+
+// ===== UPLOAD HANDLER =====
+document.getElementById('uploadArea').onclick = () => document.getElementById('fileInput').click();
+document.getElementById('fileInput').onchange = async (e) => {
+    if (e.target.files[0]) await processFile(e.target.files[0], true);
+};
+
+// Drag & drop
+document.body.addEventListener('dragover', (e) => e.preventDefault());
+document.body.addEventListener('drop', async (e) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    if (file && /\.(stp|step)$/i.test(file.name)) await processFile(file, true);
+});
+
+// ===== LƯU VÀ KHÔI PHỤC TRẠNG THÁI =====
+function saveModelState() {
     if (!mainGroup) return;
     localStorage.setItem('cnc_model_state', JSON.stringify({
-        position: mainGroup.position.toArray(),
+        position: [mainGroup.position.x, mainGroup.position.y, mainGroup.position.z],
         rotation: [currentRotation.x, currentRotation.y, currentRotation.z],
-        scale: currentScale,
+        scale: currentScale
     }));
     showToast('💾 Đã lưu trạng thái');
 }
 
-// postMessage API
-window.addEventListener('message', ev => {
+function loadModelState() {
+    const saved = localStorage.getItem('cnc_model_state');
+    if (!saved || !mainGroup) return;
+    
+    const s = JSON.parse(saved);
+    mainGroup.position.set(s.position[0], s.position[1], s.position[2]);
+    currentRotation.set(s.rotation[0], s.rotation[1], s.rotation[2]);
+    currentScale = s.scale || 1;
+    document.getElementById('scaleSlider').value = currentScale;
+    mainGroup.rotation.set(currentRotation.x, currentRotation.y, currentRotation.z);
+    mainGroup.scale.setScalar(currentScale);
+    document.getElementById('scaleVal').innerText = currentScale.toFixed(2) + '×';
+    document.getElementById('scaleFill').style.width = ((currentScale - 0.2) / 2.8) * 100 + '%';
+    console.log("🔄 Model state restored");
+}
+
+// postMessage API cho iframe
+window.addEventListener('message', (ev) => {
     if (ev.data?.type !== 'cnc_control') return;
     switch (ev.data.action) {
         case 'reset': document.getElementById('resetPos').click(); document.getElementById('resetRot').click(); break;
         case 'wire': document.getElementById('btnWire').click(); break;
         case 'grid': document.getElementById('btnGrid').click(); break;
         case 'axes': document.getElementById('btnAxes').click(); break;
-        case 'save': saveState(); break;
-        case 'load':
-            const saved = localStorage.getItem('cnc_model_state');
-            if (saved && mainGroup) {
-                const s = JSON.parse(saved);
-                mainGroup.position.fromArray(s.position);
-                currentRotation.set(...s.rotation);
-                currentScale = s.scale;
-                document.getElementById('scaleSlider').value = currentScale;
-                applyRotation(); applyScale();
-                showToast('📂 Đã tải trạng thái');
-            }
-            break;
+        case 'save': saveModelState(); break;
+        case 'load': loadModelState(); break;
     }
 });
 
-// ===== ANIMATION LOOP =====
-let lastTime = 0;
-function animate(time) {
+// ===== ANIMATION =====
+function animate() {
     requestAnimationFrame(animate);
-    const delta = time - lastTime;
-    lastTime = time;
-
     orbitControls.update();
-    applyDragMomentum();
     renderer.render(scene, camera);
 }
-animate(0);
+animate();
 
-// ===== RESIZE =====
-const resizeObserver = new ResizeObserver(() => {
+window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
 });
-resizeObserver.observe(document.body);
 
-// ===== INIT =====
+// ===== KHỞI TẠO =====
 setDragMode(true);
 async function init() {
     try {
-        setProgress(10, 'Tải OCCT engine...');
-        occt = await loadOCCT();
-        setProgress(100, '✅ Sẵn sàng — kéo thả file STEP vào đây');
-        setTimeout(() => document.getElementById('overlay').classList.add('hidden'), 600);
-    } catch {
-        document.getElementById('load-msg').textContent = '❌ Lỗi tải OCCT';
+        const occtPromise = new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/occt-import-js@0.0.18/dist/occt-import-js.js';
+            script.onload = () => {
+                window.occtimportjs({ 
+                    locateFile: (path) => `https://cdn.jsdelivr.net/npm/occt-import-js@0.0.18/dist/${path}` 
+                }).then(resolve).catch(reject);
+            };
+            script.onerror = () => reject(new Error('Load OCCT failed'));
+            document.head.appendChild(script);
+        });
+        
+        occt = await occtPromise;
+        document.getElementById('overlay').classList.add('hidden');
+        
+        await autoRestoreFile();
+        
+    } catch(err) {
+        console.error(err);
+        document.getElementById('load-msg').innerHTML = '❌ Lỗi tải OCCT: ' + err.message;
     }
 }
 init();
