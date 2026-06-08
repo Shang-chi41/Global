@@ -38,6 +38,10 @@
             justify-content:space-between; height:88px; flex-shrink:0;
             position:relative; z-index:10;
         }
+        .header::after {
+            content:''; position:absolute; bottom:-4px; left:0; right:0;
+            height:2px; background:var(--cyan); opacity:.35;
+        }
         .logo-bk { display:flex; align-items:center; gap:10px; }
         .logo-bk-text { font-size:11px; font-weight:600; color:var(--gold); line-height:1.5; text-transform:uppercase; }
         .header-center { text-align:center; flex:1; padding:0 16px; }
@@ -259,7 +263,7 @@
             gap: 20px;
         }
         .col-left { flex: 1; display: flex; flex-direction: column; gap: 20px; }
-        .col-center { width: 380px; display: flex; flex-direction: column; gap: 20px; }
+        .col-center { width: 420px; display: flex; flex-direction: column; gap: 20px; }
         .col-right { width: 340px; display: flex; flex-direction: column; gap: 20px; }
 
         .card {
@@ -276,6 +280,7 @@
             letter-spacing: 1px;
         }
 
+        /* Upload Area */
         .upload-area {
             border: 2px dashed var(--border);
             border-radius: 12px;
@@ -301,6 +306,7 @@
             margin-top: 12px;
         }
 
+        /* G-Code */
         .gcode-preview {
             background: #0a0f1a;
             border-radius: 8px;
@@ -331,28 +337,26 @@
         .btn-success { background: var(--success); color: white; }
         .btn-danger { background: var(--red); color: white; }
 
-        .unity-waiting { text-align: center; padding: 20px; }
-        .unity-placeholder {
-            background: rgba(0,0,0,.5);
-            border-radius: 12px;
-            padding: 40px 20px;
-            border: 1px solid var(--border);
+        /* Button nhỏ */
+        .btn-small {
+            flex: 1;
+            padding: 6px 12px;
+            font-family: 'Orbitron';
+            font-size: 10px;
+            font-weight: 600;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            color: white;
         }
-        .unity-icon { font-size: 64px; margin-bottom: 20px; animation: pulse 2s infinite; }
-        .instruction-steps {
-            text-align: left;
-            margin-top: 20px;
-            padding: 16px;
-            background: rgba(0,0,0,.3);
-            border-radius: 8px;
-            font-size: 12px;
+        .btn-small:hover {
+            transform: translateY(-1px);
+            filter: brightness(1.1);
         }
-        .instruction-steps ol { margin-left: 20px; margin-top: 8px; }
-        .instruction-steps li { margin: 6px 0; }
-        .status-waiting { background: rgba(243,156,18,.2); color: var(--warning); }
-        .status-ready { background: rgba(0,184,148,.2); color: var(--success); }
-        code { background: #000; padding: 2px 6px; border-radius: 4px; font-size: 11px; }
 
+        /* Chat */
         .chat-messages {
             height: 380px;
             overflow-y: auto;
@@ -430,7 +434,6 @@
             margin-right: 8px;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
     </style>
 </head>
 <body>
@@ -445,8 +448,12 @@
           <text x="45" y="104" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="12.5" font-weight="900" fill="#CC1111" letter-spacing="2">BÁCH KHOA</text>
           <polygon points="16,7 17.6,12 22.8,12 18.6,15 20.2,20 16,17 11.8,20 13.4,15 9.2,12 14.4,12" fill="#FFD700"/>
           <text x="67" y="17" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" font-weight="bold" fill="#CC1111" letter-spacing="1">ĐẠI HỌC</text>
-          <circle cx="45" cy="60" r="24" fill="#CC1111"/>
+          <clipPath id="lH"><rect x="0" y="0" width="45" height="113"/></clipPath>
+          <clipPath id="rH"><rect x="45" y="0" width="90" height="113"/></clipPath>
+          <circle cx="45" cy="60" r="24" fill="#CC1111" clip-path="url(#lH)"/>
+          <circle cx="45" cy="60" r="24" fill="#FAFAFA" clip-path="url(#rH)"/>
           <circle cx="45" cy="60" r="24" fill="none" stroke="#E8A800" stroke-width="3"/>
+          <line x1="58" y1="15" x2="28" y2="75" stroke="#E8A800" stroke-width="2.8"/>
         </svg>
         <div class="logo-bk-text">ĐH Bách Khoa<br>Hà Nội</div>
     </div>
@@ -529,7 +536,7 @@
                             📂 Click hoặc kéo thả file vào đây
                             <br><small>Hỗ trợ: STL, PNG, JPG, STEP, DXF</small>
                         </div>
-                        <input type="file" id="fileInput" style="display: none;" accept=".stl,.png,.jpg,.jpeg,.step,.dxf">
+                        <input type="file" id="fileInput" style="display: none;" accept=".stl,.png,.jpg,.jpeg,.step,.dxf,.stp">
                         <div id="fileInfo" class="file-info">
                             <strong>📄 File:</strong> <span id="fileName"></span><br>
                             <strong>📏 Kích thước:</strong> <span id="fileSize"></span>
@@ -549,36 +556,29 @@
                     </div>
                 </div>
 
-                <!-- CỘT GIỮA: UNITY PANEL -->
+                <!-- CỘT GIỮA: 3D CNC VIEWER -->
                 <div class="col-center">
                     <div class="card">
-                        <div class="card-title">🎮 MÔ PHỎNG 3D</div>
-                        <div id="unityContainer">
-                            <div id="unityWaiting" class="unity-waiting">
-                                <div class="unity-placeholder">
-                                    <div class="unity-icon">🎮</div>
-                                    <h3 style="color: var(--cyan);">Unity WebGL</h3>
-                                    <p style="margin: 16px 0; font-size: 13px;">Đang chờ cấu hình mô hình 3D</p>
-                                    <span class="status-badge status-waiting">⏳ CHƯA SẴN SÀNG</span>
-                                </div>
-                                <div class="instruction-steps">
-                                    <strong>📌 HƯỚNG DẪN KHI CÓ UNITY:</strong>
-                                    <ol>
-                                        <li>Export WebGL từ Unity (File → Build Settings → WebGL)</li>
-                                        <li>Tạo thư mục <code>static/unity/</code> trong dự án Flask</li>
-                                        <li>Copy toàn bộ file build vào thư mục trên</li>
-                                        <li>Refresh lại trang → Mô hình 3D sẽ hiển thị tại đây 🎯</li>
-                                    </ol>
-                                </div>
-                            </div>
-                            <div id="unityIframe" style="display: none;">
-                                <iframe id="unityFrame" src="/static/unity/index.html" 
-                                        style="width:100%; height:400px; border:none; border-radius:8px;"
-                                        allow="autoplay; fullscreen"></iframe>
-                                <div style="margin-top: 12px; text-align: center; font-size: 11px; color: var(--cyan);">
-                                    ✅ Mô phỏng 3D | Dữ liệu realtime từ cảm biến
-                                </div>
-                            </div>
+                        <div class="card-title">🎮 MÔ PHỎNG 3D CNC</div>
+                        
+                        <iframe 
+                            id="cncViewerFrame"
+                            src="/static/cnc_viewer.html" 
+                            style="width:100%; height:450px; border:none; border-radius:12px; background:#0a0f14;"
+                            allow="autoplay; fullscreen"
+                        ></iframe>
+                        
+                        <div style="display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap;">
+                            <button class="btn-small" onclick="sendToViewer('reset')" style="background:#e74c3c;">⟳ RESET</button>
+                            <button class="btn-small" onclick="sendToViewer('wire')" style="background:#2a3a44;">📐 WIRE</button>
+                            <button class="btn-small" onclick="sendToViewer('grid')" style="background:#2a3a44;">🔲 GRID</button>
+                            <button class="btn-small" onclick="sendToViewer('axes')" style="background:#2a3a44;">📏 AXES</button>
+                            <button class="btn-small" onclick="sendToViewer('save')" style="background:#00b894;">💾 LƯU</button>
+                            <button class="btn-small" onclick="sendToViewer('load')" style="background:#f39c12;">📂 TẢI</button>
+                        </div>
+                        
+                        <div id="viewerStatus" style="margin-top: 8px; font-size: 11px; color: var(--cyan); text-align: center;">
+                            💡 Mẹo: Kéo thả file STEP vào khung để xem mô hình 3D
                         </div>
                     </div>
                 </div>
@@ -591,10 +591,10 @@
                             <div class="chat-message assistant">
                                 <div class="role">🤖 AI</div>
                                 <div class="content">Chào bạn! 👋<br><br>
-                                🔹 Hãy <strong>upload file phôi</strong> (STL, PNG, JPG, STEP, DXF)<br>
+                                🔹 Hãy <strong>upload file phôi</strong> (STL, PNG, JPG, STEP)<br>
                                 🔹 Sau đó chat với tôi để được tạo <strong>G-Code</strong><br>
-                                🔹 Tôi sẽ hỗ trợ thông số: vật liệu, tốc độ cắt, dao cụ...<br><br>
-                                💡 <em>Ví dụ: "Tạo G-Code gia công nhôm, tốc độ 500mm/phút, dao 6mm"</em></div>
+                                🔹 Kéo thả file STEP vào khung 3D để xem mô hình<br><br>
+                                💡 <em>Ví dụ: "Tạo G-Code gia công nhôm, tốc độ 500mm/phút"</em></div>
                             </div>
                         </div>
                         <div id="typingIndicator" class="typing-indicator" style="display: none;">
@@ -736,22 +736,40 @@ function closeConnection() {
     currentConnectedUrl = '';
 }
 
-// ========== UNITY CHECK ==========
-async function checkUnityAvailable() {
-    try {
-        const response = await fetch('/static/unity/index.html', { method: 'HEAD', cache: 'no-cache' });
-        if (response.ok) {
-            document.getElementById('unityWaiting').style.display = 'none';
-            document.getElementById('unityIframe').style.display = 'block';
-        } else {
-            document.getElementById('unityWaiting').style.display = 'block';
-            document.getElementById('unityIframe').style.display = 'none';
-        }
-    } catch (error) {
-        document.getElementById('unityWaiting').style.display = 'block';
-        document.getElementById('unityIframe').style.display = 'none';
+// ========== TƯƠNG TÁC VỚI CNC VIEWER ==========
+const viewerFrame = document.getElementById('cncViewerFrame');
+
+function sendToViewer(action, data = {}) {
+    if (!viewerFrame || !viewerFrame.contentWindow) {
+        addChatMessage('assistant', '⚠️ Viewer chưa sẵn sàng, vui lòng đợi...');
+        return;
     }
+    
+    viewerFrame.contentWindow.postMessage({
+        type: 'cnc_control',
+        action: action,
+        data: data
+    }, '*');
 }
+
+// Nhận phản hồi từ viewer
+window.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'cnc_response') {
+        const { action, status, data } = event.data;
+        
+        if (action === 'save' && status === 'success') {
+            addChatMessage('assistant', `💾 Đã lưu vị trí mô hình!`);
+        }
+        
+        if (action === 'load' && status === 'success') {
+            addChatMessage('assistant', `📂 Đã tải vị trí mô hình`);
+        }
+        
+        if (action === 'ready') {
+            addChatMessage('assistant', `🎮 3D Viewer đã sẵn sàng! Kéo thả file STEP để xem.`);
+        }
+    }
+});
 
 // ========== FILE UPLOAD ==========
 const uploadArea = document.getElementById('uploadArea');
@@ -896,8 +914,6 @@ function clearGCode() {
 document.addEventListener('DOMContentLoaded', () => {
     setMode('auto');
     loadSavedUrls();
-    checkUnityAvailable();
-    setInterval(checkUnityAvailable, 10000);
 });
 </script>
 </body>
