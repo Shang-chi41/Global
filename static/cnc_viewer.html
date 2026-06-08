@@ -3,299 +3,656 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CNC STEP Viewer - Chuẩn tọa độ RGB</title>
+<title>CNC 3D Viewer</title>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    background: #0a0f14;
-    font-family: monospace;
-    overflow: hidden;
-  }
-  canvas {
-    display: block;
-    width: 100%;
-    height: 100%;
-  }
-  #controls {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background: rgba(10,15,20,0.95);
-    backdrop-filter: blur(12px);
-    border: 1px solid #2a6a7a;
-    border-radius: 12px;
-    padding: 14px;
-    z-index: 100;
-    font-size: 11px;
-    min-width: 240px;
-    max-width: 280px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-  }
-  button {
-    background: #2a3a44;
-    border: none;
-    color: #eef4ff;
-    padding: 5px 8px;
-    margin: 2px;
-    cursor: pointer;
-    border-radius: 6px;
-    font-size: 11px;
-    font-weight: bold;
-    transition: all 0.1s;
-  }
-  button:hover, button.active { 
-    background: #00e5ff; 
-    color: #0a0f14;
-  }
-  .stat { color: #00e5ff; font-weight: bold; }
-  .section-title {
-    color: #ffaa66;
-    font-size: 10px;
-    margin-top: 8px;
-    margin-bottom: 6px;
-    border-bottom: 1px solid #2a6a7a;
-  }
-  .mode-badge {
-    background: #00e5ff22;
-    border: 1px solid #00e5ff;
-    border-radius: 4px;
-    padding: 4px 8px;
-    font-size: 10px;
-    margin-bottom: 8px;
-    text-align: center;
-  }
-  .coord-note {
-    background: #1a2a30;
-    border-radius: 4px;
-    padding: 6px;
-    font-size: 9px;
-    text-align: center;
-    margin-top: 6px;
-    font-family: monospace;
-  }
-  .coord-note span.red { color: #ff4444; }
-  .coord-note span.blue { color: #4488ff; }
-  .coord-note span.green { color: #44ff44; }
-  #upload-area {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background: linear-gradient(135deg, #1a2a30, #0f1a20);
-    border: 1px solid #00e5ff;
-    border-radius: 30px;
-    padding: 12px 20px;
-    cursor: pointer;
-    z-index: 100;
-    font-size: 13px;
-    font-weight: bold;
-    color: #00e5ff;
-    transition: all 0.2s;
-  }
-  #upload-area:hover {
-    background: linear-gradient(135deg, #2a4a5a, #1a2a30);
-    transform: scale(1.02);
-  }
-  #file-info {
-    position: fixed;
-    bottom: 20px;
-    left: 20px;
-    background: rgba(0,0,0,0.7);
-    backdrop-filter: blur(8px);
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-size: 11px;
-    z-index: 100;
-    border-left: 3px solid #00e5ff;
-  }
-  #overlay {
-    position: fixed;
-    inset: 0;
-    background: #0a0f14;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 20px;
-    z-index: 200;
-    transition: opacity 0.3s;
-  }
-  #overlay.hidden { opacity: 0; pointer-events: none; }
-  .progress-bar {
-    width: 340px;
-    height: 6px;
-    background: #2a3a44;
-    border-radius: 10px;
-    overflow: hidden;
-  }
-  .progress-fill {
-    width: 0%;
-    height: 100%;
-    background: linear-gradient(90deg, #00e5ff, #ff6b00);
-    transition: width 0.2s;
-  }
-  #load-msg { color: #aaccee; font-size: 13px; }
-  .log-panel {
-    position: fixed;
-    bottom: 80px;
-    left: 20px;
-    background: #0a0f14cc;
-    backdrop-filter: blur(8px);
-    border: 1px solid #2a6a7a;
-    border-radius: 8px;
-    padding: 8px 12px;
-    font-size: 10px;
-    width: 340px;
-    max-height: 140px;
-    overflow-y: auto;
-    z-index: 100;
-    color: #bbddff;
-  }
-  .title {
-    font-size: 28px;
-    font-weight: bold;
-    background: linear-gradient(135deg, #00e5ff, #ff6b00);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-  }
-  input[type="range"] {
-    width: 100%;
-    height: 3px;
-    background-clip: text;
-    -webkit-background-clip: text;
-    border-radius: 3px;
-  }
-  input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 10px;
-    height: 10px;
-    background: #00e5ff;
-    border-radius: 50%;
-    cursor: pointer;
-  }
-  .drag-info {
-    background: #ff6b0022;
-    border: 1px solid #ff6b00;
-    border-radius: 4px;
-    padding: 4px;
-    font-size: 9px;
-    text-align: center;
-    margin-top: 6px;
-  }
-  .btn-red { border-left: 3px solid #ff4444; }
-  .btn-blue { border-left: 3px solid #4488ff; }
-  .btn-green { border-left: 3px solid #44ff44; }
-  
-  /* Nút lưu mới */
-  .save-btn {
-    position: fixed;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #00b894;
-    color: white;
-    border: none;
-    border-radius: 30px;
-    padding: 10px 24px;
-    z-index: 100;
-    cursor: pointer;
-    font-weight: bold;
-    font-size: 13px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-  }
-  .save-btn:hover {
-    background: #00a884;
-    transform: translateX(-50%) scale(1.02);
-  }
+    *, *::before, *::after {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        user-select: none;
+    }
+
+    body {
+        background: #0a0e14;
+        font-family: 'SF Pro Display', -apple-system, 'Segoe UI', system-ui, sans-serif;
+        overflow: hidden;
+    }
+
+    canvas {
+        display: block;
+        position: fixed;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        will-change: transform;
+    }
+
+    /* ===== PANEL ===== */
+    .viewer-panel {
+        position: fixed;
+        top: 16px;
+        right: 16px;
+        background: rgba(10, 14, 20, 0.82);
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        border-radius: 18px;
+        border: 1px solid rgba(0, 229, 255, 0.12);
+        box-shadow:
+            0 4px 6px rgba(0,0,0,0.3),
+            0 20px 40px rgba(0,0,0,0.4),
+            inset 0 1px 0 rgba(255,255,255,0.05);
+        z-index: 100;
+        transition: opacity 0.25s ease, transform 0.25s ease,
+                    box-shadow 0.2s ease;
+        width: 228px;
+        overflow: hidden;
+    }
+
+    .viewer-panel:hover {
+        box-shadow:
+            0 4px 6px rgba(0,0,0,0.3),
+            0 24px 48px rgba(0,0,0,0.5),
+            0 0 0 1px rgba(0,229,255,0.18),
+            inset 0 1px 0 rgba(255,255,255,0.07);
+    }
+
+    .viewer-panel.collapsed {
+        opacity: 0;
+        pointer-events: none;
+        transform: translateX(20px);
+    }
+
+    /* Nút mở lại khi panel đã ẩn */
+    .panel-reopen {
+        position: fixed;
+        top: 16px;
+        right: 16px;
+        width: 40px;
+        height: 40px;
+        background: rgba(10, 14, 20, 0.88);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(0, 229, 255, 0.25);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        cursor: pointer;
+        z-index: 101;
+        opacity: 0;
+        pointer-events: none;
+        transform: scale(0.8);
+        transition: opacity 0.25s ease, transform 0.25s ease, box-shadow 0.2s ease, background 0.2s ease;
+        color: #00e5ff;
+    }
+
+    .panel-reopen.visible {
+        opacity: 1;
+        pointer-events: all;
+        transform: scale(1);
+    }
+
+    .panel-reopen:hover {
+        background: rgba(0, 229, 255, 0.12);
+        border-color: rgba(0, 229, 255, 0.5);
+        box-shadow: 0 0 16px rgba(0, 229, 255, 0.2);
+        transform: scale(1.08);
+    }
+
+    .panel-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 14px;
+        cursor: pointer;
+        background: linear-gradient(135deg, rgba(0,229,255,0.06), rgba(0,229,255,0.02));
+        border-bottom: 1px solid rgba(0, 229, 255, 0.08);
+        transition: background 0.2s;
+    }
+
+    .panel-header:hover {
+        background: linear-gradient(135deg, rgba(0,229,255,0.1), rgba(0,229,255,0.04));
+    }
+
+    .panel-title {
+        font-size: 11px;
+        font-weight: 700;
+        color: #00e5ff;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        white-space: nowrap;
+        opacity: 1;
+        transition: opacity 0.2s;
+    }
+
+
+
+    .panel-toggle {
+        background: none;
+        border: none;
+        color: rgba(0,229,255,0.5);
+        cursor: pointer;
+        font-size: 16px;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
+        transition: background 0.15s, color 0.15s, transform 0.2s;
+        flex-shrink: 0;
+    }
+
+    .panel-toggle:hover {
+        background: rgba(0,229,255,0.15);
+        color: #00e5ff;
+    }
+
+    .panel-content {
+        padding: 12px;
+        transition: opacity 0.25s ease, transform 0.25s ease;
+        max-height: 520px;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+
+
+    /* ===== BUTTONS ===== */
+    .btn-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+        margin-bottom: 10px;
+    }
+
+    .btn-group:last-child { margin-bottom: 0; }
+
+    .btn-icon {
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.06);
+        color: #9ab8cc;
+        padding: 6px 10px;
+        cursor: pointer;
+        border-radius: 9px;
+        font-size: 10.5px;
+        font-weight: 600;
+        letter-spacing: 0.3px;
+        transition:
+            background 0.15s ease,
+            color 0.15s ease,
+            border-color 0.15s ease,
+            transform 0.12s ease,
+            box-shadow 0.15s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        -webkit-tap-highlight-color: transparent;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-icon::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at center, rgba(255,255,255,0.15) 0%, transparent 70%);
+        opacity: 0;
+        transition: opacity 0.2s;
+        pointer-events: none;
+    }
+
+    .btn-icon:hover {
+        background: rgba(0,229,255,0.12);
+        border-color: rgba(0,229,255,0.3);
+        color: #00e5ff;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0,229,255,0.15);
+    }
+
+    .btn-icon:active {
+        transform: translateY(0px) scale(0.97);
+        box-shadow: none;
+    }
+
+    .btn-icon:active::after { opacity: 1; }
+
+    .btn-icon.active {
+        background: rgba(0,229,255,0.15);
+        border-color: rgba(0,229,255,0.4);
+        color: #00e5ff;
+        box-shadow: 0 0 12px rgba(0,229,255,0.2), inset 0 0 8px rgba(0,229,255,0.1);
+    }
+
+    /* Mode buttons */
+    .btn-mode-drag {
+        background: rgba(255, 107, 0, 0.15);
+        border-color: rgba(255, 107, 0, 0.3);
+        color: #ff8c40;
+    }
+    .btn-mode-drag.active {
+        background: rgba(255, 107, 0, 0.25);
+        border-color: rgba(255, 107, 0, 0.6);
+        color: #ff6b00;
+        box-shadow: 0 0 12px rgba(255,107,0,0.2);
+    }
+    .btn-mode-rotate.active {
+        background: rgba(0,229,255,0.15);
+        border-color: rgba(0,229,255,0.4);
+        color: #00e5ff;
+        box-shadow: 0 0 12px rgba(0,229,255,0.2);
+    }
+
+    /* Axis buttons */
+    .btn-axis-x { color: #ff7777; border-color: rgba(255,119,119,0.15); }
+    .btn-axis-x:hover { background: rgba(255,119,119,0.12); border-color: rgba(255,119,119,0.4); color: #ff9999; }
+    .btn-axis-y { color: #7799ff; border-color: rgba(119,153,255,0.15); }
+    .btn-axis-y:hover { background: rgba(119,153,255,0.12); border-color: rgba(119,153,255,0.4); color: #aabbff; }
+    .btn-axis-z { color: #77ee88; border-color: rgba(119,238,136,0.15); }
+    .btn-axis-z:hover { background: rgba(119,238,136,0.12); border-color: rgba(119,238,136,0.4); color: #aaffbb; }
+
+    .btn-danger {
+        background: rgba(231, 76, 60, 0.1);
+        border-color: rgba(231,76,60,0.2);
+        color: #ff8877;
+    }
+    .btn-danger:hover {
+        background: rgba(231,76,60,0.2);
+        border-color: rgba(231,76,60,0.5);
+        color: #ff6655;
+        box-shadow: 0 4px 12px rgba(231,76,60,0.2);
+    }
+
+    .btn-warning {
+        background: rgba(243, 156, 18, 0.1);
+        border-color: rgba(243,156,18,0.2);
+        color: #ffcc66;
+    }
+    .btn-warning:hover {
+        background: rgba(243,156,18,0.2);
+        border-color: rgba(243,156,18,0.5);
+        color: #ffbb33;
+        box-shadow: 0 4px 12px rgba(243,156,18,0.2);
+    }
+
+    /* ===== SEPARATOR ===== */
+    .separator {
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(0,229,255,0.15), transparent);
+        margin: 10px 0;
+    }
+
+    /* ===== SECTION LABEL ===== */
+    .section-label {
+        font-size: 8.5px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1.2px;
+        color: rgba(255, 170, 102, 0.7);
+        margin: 6px 0 5px 0;
+    }
+
+    /* ===== SLIDERS ===== */
+    .slider-item { margin: 8px 0; }
+
+    .slider-label {
+        display: flex;
+        justify-content: space-between;
+        font-size: 10px;
+        color: rgba(138, 174, 192, 0.8);
+        margin-bottom: 5px;
+        letter-spacing: 0.2px;
+    }
+
+    .slider-label span:last-child {
+        color: #00e5ff;
+        font-weight: 600;
+    }
+
+    .slider-track {
+        position: relative;
+        height: 4px;
+        background: rgba(255,255,255,0.06);
+        border-radius: 10px;
+        overflow: visible;
+    }
+
+    .slider-fill {
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 100%;
+        background: linear-gradient(90deg, #0099bb, #00e5ff);
+        border-radius: 10px;
+        pointer-events: none;
+        transition: width 0.05s;
+    }
+
+    input[type="range"] {
+        position: absolute;
+        inset: -6px 0;
+        width: 100%;
+        height: calc(100% + 12px);
+        opacity: 0;
+        cursor: pointer;
+        margin: 0;
+    }
+
+    /* ===== INFO BADGE ===== */
+    .info-badge {
+        background: rgba(0,0,0,0.3);
+        border: 1px solid rgba(0,229,255,0.08);
+        border-radius: 10px;
+        padding: 6px 10px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 10px;
+        color: rgba(107, 143, 168, 0.8);
+        margin-top: 6px;
+    }
+
+    .info-badge .badge-val {
+        color: #00e5ff;
+        font-weight: 700;
+        font-size: 12px;
+    }
+
+    /* ===== UPLOAD ===== */
+    .upload-area {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: rgba(10, 14, 20, 0.88);
+        backdrop-filter: blur(16px) saturate(180%);
+        -webkit-backdrop-filter: blur(16px) saturate(180%);
+        border: 1px solid rgba(0, 229, 255, 0.25);
+        border-radius: 40px;
+        padding: 10px 22px;
+        cursor: pointer;
+        z-index: 100;
+        font-size: 12px;
+        font-weight: 600;
+        color: #00e5ff;
+        transition:
+            border-color 0.2s ease,
+            background 0.2s ease,
+            transform 0.15s ease,
+            box-shadow 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        letter-spacing: 0.5px;
+    }
+
+    .upload-area:hover {
+        border-color: rgba(0,229,255,0.6);
+        background: rgba(0,229,255,0.08);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0,229,255,0.2);
+    }
+
+    .upload-area:active {
+        transform: translateY(0px);
+        box-shadow: none;
+    }
+
+    /* ===== FILE INFO ===== */
+    .file-info {
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        background: rgba(0,0,0,0.55);
+        backdrop-filter: blur(10px);
+        padding: 7px 16px;
+        border-radius: 30px;
+        font-size: 10.5px;
+        z-index: 100;
+        border-left: 2px solid #00e5ff;
+        color: rgba(184, 212, 232, 0.9);
+        letter-spacing: 0.2px;
+        transition: opacity 0.3s;
+    }
+
+    /* ===== STATUS ===== */
+    .status {
+        position: fixed;
+        bottom: 64px;
+        left: 20px;
+        background: rgba(0,0,0,0.4);
+        backdrop-filter: blur(6px);
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 9.5px;
+        color: rgba(107, 143, 168, 0.8);
+        font-family: 'SF Mono', 'Fira Code', monospace;
+        pointer-events: none;
+        transition: opacity 0.3s;
+        letter-spacing: 0.3px;
+    }
+
+    /* ===== OVERLAY ===== */
+    #overlay {
+        position: fixed;
+        inset: 0;
+        background: #0a0e14;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 20px;
+        z-index: 200;
+        transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    #overlay.hidden {
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .spinner-ring {
+        position: relative;
+        width: 48px;
+        height: 48px;
+    }
+
+    .spinner-ring::before,
+    .spinner-ring::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+        border: 2px solid transparent;
+    }
+
+    .spinner-ring::before {
+        border-top-color: #00e5ff;
+        border-right-color: rgba(0,229,255,0.3);
+        animation: spinA 0.9s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+    }
+
+    .spinner-ring::after {
+        border-bottom-color: rgba(255, 107, 0, 0.7);
+        border-left-color: rgba(255,107,0,0.2);
+        animation: spinB 1.4s cubic-bezier(0.5, 0, 0.5, 1) infinite reverse;
+        inset: 6px;
+    }
+
+    @keyframes spinA { to { transform: rotate(360deg); } }
+    @keyframes spinB { to { transform: rotate(360deg); } }
+
+    .progress-bar {
+        width: 220px;
+        height: 2px;
+        background: rgba(255,255,255,0.06);
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        width: 0%;
+        height: 100%;
+        background: linear-gradient(90deg, #00e5ff, #ff6b00);
+        border-radius: 10px;
+        transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 0 8px rgba(0,229,255,0.6);
+    }
+
+    #load-msg {
+        color: rgba(138, 174, 192, 0.8);
+        font-size: 11px;
+        letter-spacing: 0.3px;
+    }
+
+    /* ===== SCROLLBAR ===== */
+    .panel-content::-webkit-scrollbar { width: 2px; }
+    .panel-content::-webkit-scrollbar-track { background: transparent; }
+    .panel-content::-webkit-scrollbar-thumb {
+        background: rgba(0,229,255,0.3);
+        border-radius: 4px;
+    }
+
+    /* ===== TOAST ===== */
+    .toast {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%) translateY(-8px);
+        background: rgba(0,229,255,0.12);
+        border: 1px solid rgba(0,229,255,0.3);
+        backdrop-filter: blur(12px);
+        color: #00e5ff;
+        padding: 8px 20px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+        pointer-events: none;
+        z-index: 300;
+        opacity: 0;
+        transition: opacity 0.25s ease, transform 0.25s ease;
+        letter-spacing: 0.5px;
+    }
+
+    .toast.show {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
 </style>
 </head>
 <body>
 
 <div id="overlay">
-  <div class="title">⚙ CNC STEP VIEWER</div>
-  <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
-  <div id="load-msg">Đang khởi tạo...</div>
+    <div class="spinner-ring"></div>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+    <div id="load-msg">Đang khởi tạo...</div>
 </div>
 
-<div id="controls">
-  <div><strong>🎮 ĐIỀU KHIỂN</strong></div>
-  <div class="mode-badge" id="mode-indicator">
-    🔄 MODE: XOAY CAMERA
-  </div>
-  <div style="margin: 6px 0;">
-    <button id="btn-wire">WIRE</button>
-    <button id="btn-grid">GRID</button>
-    <button id="btn-axes">AXES</button>
-    <button id="btn-explode">💥 EXP</button>
-    <button id="btn-reset-cam">⟳ RESET</button>
-  </div>
-  
-  <div class="section-title">🖱️ DI CHUYỂN MODEL</div>
-  <div style="display: flex; gap: 4px; margin-bottom: 6px;">
-    <button id="mode-drag" style="background:#ff6b00; color:#fff;">✋ KÉO MODEL</button>
-    <button id="mode-rotate" style="background:#2a3a44;">🔄 XOAY CAM</button>
-  </div>
-  
-  <div class="coord-note">
-    <span class="red">🔴 X: Trái / Phải</span> &nbsp;|&nbsp;
-    <span class="blue">🔵 Y: Vào / Ra</span> &nbsp;|&nbsp;
-    <span class="green">🟢 Z: Lên / Xuống</span>
-  </div>
-  
-  <div style="display: flex; flex-wrap: wrap; gap: 4px; margin: 6px 0;">
-    <button id="move-left" class="btn-red" style="color:#ff8888;">◀ X- (Trái)</button>
-    <button id="move-right" class="btn-red" style="color:#ff8888;">X+ (Phải) ▶</button>
-    <button id="move-back" class="btn-blue" style="color:#88aaff;">◀ Y- (Vào)</button>
-    <button id="move-forward" class="btn-blue" style="color:#88aaff;">Y+ (Ra) ▶</button>
-    <button id="move-down" class="btn-green" style="color:#88ff88;">▼ Z- (Xuống)</button>
-    <button id="move-up" class="btn-green" style="color:#88ff88;">Z+ (Lên) ▲</button>
-    <button id="reset-pos">⬤ RESET VỊ TRÍ</button>
-  </div>
-  
-  <div class="section-title">🔄 XOAY / LẬT MODEL</div>
-  <div style="display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px;">
-    <button id="rot-x-plus">↻ X+90°</button>
-    <button id="rot-x-minus">↺ X-90°</button>
-    <button id="rot-y-plus">↻ Y+90°</button>
-    <button id="rot-y-minus">↺ Y-90°</button>
-    <button id="rot-z-plus">↻ Z+90°</button>
-    <button id="rot-z-minus">↺ Z-90°</button>
-    <button id="flip-x">🪞 Lật X</button>
-    <button id="flip-y">🪞 Lật Y</button>
-    <button id="flip-z">🪞 Lật Z</button>
-    <button id="reset-rot">⟳ Reset xoay</button>
-  </div>
-  
-  <div class="section-title">📐 THANG ĐO & SÁNG</div>
-  <div>🔍 Scale: <input type="range" id="scale-slider" min="0.2" max="3" step="0.01" value="1" style="width:100%"></div>
-  <div>💡 Sáng: <input type="range" id="ambient-slider" min="0" max="100" value="70"></div>
-  
-  <div style="margin-top: 8px;">📦 <span id="parts-count" class="stat">0</span> parts &nbsp; 🔺 <span id="tri-count" class="stat">0</span></div>
-  <div class="drag-info">💡 MẸO: Bấm "KÉO MODEL" để di chuyển bằng chuột</div>
+<div class="toast" id="toast"></div>
+
+<!-- Nút mở lại panel -->
+<div class="panel-reopen" id="panelReopen" title="Mở panel điều khiển">🎮</div>
+
+<!-- Panel -->
+<div class="viewer-panel" id="viewerPanel">
+    <div class="panel-header" id="panelHeader">
+        <span class="panel-title">CNC VIEWER</span>
+        <button class="panel-toggle" id="panelToggle">−</button>
+    </div>
+    <div class="panel-content">
+
+        <!-- Hiển thị -->
+        <div class="section-label">Hiển thị</div>
+        <div class="btn-group">
+            <button class="btn-icon" id="btnWire">WIRE</button>
+            <button class="btn-icon" id="btnGrid">GRID</button>
+            <button class="btn-icon" id="btnAxes">AXES</button>
+            <button class="btn-icon btn-danger" id="btnResetCam">↩ CAM</button>
+        </div>
+
+        <div class="separator"></div>
+
+        <!-- Mode -->
+        <div class="section-label">Chế độ</div>
+        <div class="btn-group">
+            <button class="btn-icon btn-mode-drag active" id="modeDrag">✋ Kéo</button>
+            <button class="btn-icon btn-mode-rotate" id="modeRotate">⌛ Xoay</button>
+        </div>
+
+        <!-- Di chuyển -->
+        <div class="section-label">Di chuyển</div>
+        <div class="btn-group">
+            <button class="btn-icon btn-axis-x" id="moveLeft">◀ X-</button>
+            <button class="btn-icon btn-axis-x" id="moveRight">X+ ▶</button>
+            <button class="btn-icon btn-axis-y" id="moveBack">◀ Y-</button>
+            <button class="btn-icon btn-axis-y" id="moveForward">Y+ ▶</button>
+            <button class="btn-icon btn-axis-z" id="moveDown">▼ Z-</button>
+            <button class="btn-icon btn-axis-z" id="moveUp">Z+ ▲</button>
+            <button class="btn-icon btn-warning" id="resetPos">↺ Reset</button>
+        </div>
+
+        <div class="separator"></div>
+
+        <!-- Xoay -->
+        <div class="section-label">Xoay</div>
+        <div class="btn-group">
+            <button class="btn-icon btn-axis-x" id="rotXP">X+90°</button>
+            <button class="btn-icon btn-axis-x" id="rotXM">X−90°</button>
+            <button class="btn-icon btn-axis-y" id="rotYP">Y+90°</button>
+            <button class="btn-icon btn-axis-y" id="rotYM">Y−90°</button>
+            <button class="btn-icon btn-axis-z" id="rotZP">Z+90°</button>
+            <button class="btn-icon btn-axis-z" id="rotZM">Z−90°</button>
+        </div>
+        <div class="btn-group">
+            <button class="btn-icon btn-axis-x" id="flipX">🪞 X</button>
+            <button class="btn-icon btn-axis-y" id="flipY">🪞 Y</button>
+            <button class="btn-icon btn-axis-z" id="flipZ">🪞 Z</button>
+            <button class="btn-icon btn-warning" id="resetRot">⟳ Reset</button>
+        </div>
+
+        <div class="separator"></div>
+
+        <!-- Sliders -->
+        <div class="slider-item">
+            <div class="slider-label"><span>🔍 Scale</span><span id="scaleVal">1.00×</span></div>
+            <div class="slider-track">
+                <div class="slider-fill" id="scaleFill" style="width:31%"></div>
+                <input type="range" id="scaleSlider" min="0.2" max="3" step="0.01" value="1">
+            </div>
+        </div>
+        <div class="slider-item">
+            <div class="slider-label"><span>💡 Ánh sáng</span><span id="lightVal">70%</span></div>
+            <div class="slider-track">
+                <div class="slider-fill" id="lightFill" style="width:70%"></div>
+                <input type="range" id="lightSlider" min="0" max="100" value="70">
+            </div>
+        </div>
+
+        <div class="info-badge">
+            <span>Parts</span>
+            <span class="badge-val" id="partsCount">0</span>
+        </div>
+    </div>
 </div>
 
-<div id="upload-area">
-  📂 CHỌN FILE STEP
-  <input type="file" id="file-input" accept=".stp,.step" style="display:none">
+<!-- Upload -->
+<div class="upload-area" id="uploadArea">
+    📂 Mở file STEP
+    <input type="file" id="fileInput" accept=".stp,.step" style="display:none">
 </div>
 
-<div id="file-info">
-  📄 <span id="file-name">Chưa có file</span>
+<div class="file-info" id="fileInfo">
+    📄 <span id="fileName">Chưa có file</span>
 </div>
 
-<div class="log-panel" id="log-panel">
-  ▶️ Sẵn sàng - Click nút bên phải để tải STEP
-</div>
-
-<!-- Nút lưu vị trí -->
-<button class="save-btn" id="save-position-btn">💾 LƯU VỊ TRÍ MÔ HÌNH</button>
+<div class="status" id="status">✅ Sẵn sàng</div>
 
 <script type="importmap">
 {
-  "imports": {
-    "three": "https://unpkg.com/three@0.128.0/build/three.module.js",
-    "three/addons/": "https://unpkg.com/three@0.128.0/examples/jsm/"
-  }
+    "imports": {
+        "three": "https://unpkg.com/three@0.128.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.128.0/examples/jsm/"
+    }
 }
 </script>
 
@@ -303,502 +660,473 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-function addLog(msg, type = 'info') {
-  const panel = document.getElementById('log-panel');
-  const time = new Date().toLocaleTimeString();
-  let color = '#bbddff';
-  if (type === 'error') color = '#ffaa88';
-  else if (type === 'success') color = '#88ffaa';
-  panel.innerHTML += `<div style="color:${color};">[${time}] ${msg}</div>`;
-  panel.scrollTop = panel.scrollHeight;
-  console.log(msg);
-}
-
-// --- Three.js ---
+// ===== RENDERER =====
 const canvas = document.createElement('canvas');
-document.body.appendChild(canvas);
+document.body.insertBefore(canvas, document.body.firstChild);
 canvas.style.position = 'fixed';
 canvas.style.inset = '0';
-canvas.style.width = '100%';
-canvas.style.height = '100%';
 
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+const renderer = new THREE.WebGLRenderer({
+    canvas,
+    antialias: true,
+    alpha: false,
+    powerPreference: 'high-performance',
+});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setClearColor(0x0a0f14, 1);
-renderer.shadowMap.enabled = true;
+renderer.setClearColor(0x0a0e14, 1);
+renderer.physicallyCorrectLights = true;
+renderer.outputEncoding = THREE.sRGBEncoding;
 
+// ===== SCENE =====
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x0a0f14);
-scene.fog = new THREE.FogExp2(0x0a0f14, 0.0002);
+scene.background = new THREE.Color(0x0a0e14);
+scene.fog = new THREE.FogExp2(0x0a0e14, 0.00012);
 
 const camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.5, 6000);
 camera.position.set(500, 420, 700);
 
-const controls = new OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true;
-controls.dampingFactor = 0.08;
-controls.target.set(0, 0, 0);
+const orbitControls = new OrbitControls(camera, renderer.domElement);
+orbitControls.enableDamping = true;
+orbitControls.dampingFactor = 0.06;
+orbitControls.rotateSpeed = 0.65;
+orbitControls.zoomSpeed = 1.1;
+orbitControls.panSpeed = 0.8;
+orbitControls.target.set(0, 0, 0);
+orbitControls.minDistance = 20;
+orbitControls.maxDistance = 4000;
 
-// Ánh sáng
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.75);
+// ===== LIGHTING =====
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.9);
 scene.add(ambientLight);
-const mainLight = new THREE.DirectionalLight(0xfff5e0, 1.5);
-mainLight.position.set(500, 800, 600);
-mainLight.castShadow = true;
-scene.add(mainLight);
-const fillLight = new THREE.PointLight(0xffaa66, 0.7);
-fillLight.position.set(0, -200, 0);
-scene.add(fillLight);
-const rimLight = new THREE.PointLight(0x4488ff, 0.6);
-rimLight.position.set(-300, 400, -600);
-scene.add(rimLight);
-const backLight = new THREE.PointLight(0xff66aa, 0.5);
-backLight.position.set(300, 200, -700);
-scene.add(backLight);
 
-// Helpers
+const mainLight = new THREE.DirectionalLight(0xfff5e0, 2.0);
+mainLight.position.set(500, 800, 600);
+scene.add(mainLight);
+
+const fillLight = new THREE.DirectionalLight(0x3399ff, 0.4);
+fillLight.position.set(-400, -200, -300);
+scene.add(fillLight);
+
+const rimLight = new THREE.PointLight(0xff6633, 0.3, 2000);
+rimLight.position.set(0, -300, 400);
+scene.add(rimLight);
+
+// ===== HELPERS =====
 const axesHelper = new THREE.AxesHelper(250);
 scene.add(axesHelper);
-const gridHelper = new THREE.GridHelper(2200, 60, 0x5a9aaa, 0x3a6a7a);
-gridHelper.position.y = -1;
+
+const gridHelper = new THREE.GridHelper(2200, 60, 0x4a8a9a, 0x2a5a6a);
+gridHelper.position.y = -2;
 scene.add(gridHelper);
 
-// State
+// ===== STATE =====
 let mainGroup = null;
 let allMeshes = [];
-let originalPositions = [];
 let wireframe = false;
-let explode = false;
 let currentRotation = new THREE.Euler(0, 0, 0);
 let currentScale = 1;
-let dragMode = false;
+let dragMode = true;
 
-// Màu sắc cho parts
-const brightColors = [
-  0x3a86ff, 0xf4a261, 0xe76f51, 0x2a9d8f, 0xe9c46a, 0x9c89b8,
-  0xf08080, 0x70d6ff, 0xffb703, 0x8ecae6, 0x219ebc, 0xfb8500,
-  0x8338ec, 0xf15bb5, 0x00bbf9, 0xfee440, 0x06d6a0, 0xef476f
+const colors = [
+    0x3a86ff, 0xf4a261, 0xe76f51, 0x2a9d8f,
+    0xe9c46a, 0x9c89b8, 0xf08080, 0x70d6ff, 0xffb703,
+    0x06d6a0, 0xef476f, 0xffd166
 ];
 
-// Biến cho drag model
+// ===== SMOOTH DRAG =====
 let isDragging = false;
-let lastMousePos = new THREE.Vector2();
-let dragStartGroupPos = new THREE.Vector3();
+let dragLastX = 0, dragLastY = 0;
+let dragVelX = 0, dragVelY = 0;
+let dragMomentumX = 0, dragMomentumY = 0;
+const DRAG_FRICTION = 0.88;
+const DRAG_SPEED = 1.0;
 
+function screenToWorldDelta(dx, dy) {
+    const dist = camera.position.distanceTo(mainGroup ? mainGroup.position : orbitControls.target);
+    const fovRad = camera.fov * Math.PI / 180;
+    const heightAtDist = 2 * Math.tan(fovRad / 2) * dist;
+    const pixelToWorld = heightAtDist / window.innerHeight * DRAG_SPEED;
+    return { dx: dx * pixelToWorld, dy: dy * pixelToWorld };
+}
+
+canvas.addEventListener('mousedown', e => {
+    if (!dragMode || !mainGroup) return;
+    isDragging = true;
+    dragLastX = e.clientX;
+    dragLastY = e.clientY;
+    dragMomentumX = 0;
+    dragMomentumY = 0;
+    canvas.style.cursor = 'grabbing';
+    e.preventDefault();
+});
+
+window.addEventListener('mousemove', e => {
+    if (!isDragging || !dragMode || !mainGroup) return;
+    const rawDX = e.clientX - dragLastX;
+    const rawDY = e.clientY - dragLastY;
+    dragVelX = rawDX;
+    dragVelY = rawDY;
+
+    const { dx, dy } = screenToWorldDelta(rawDX, rawDY);
+    const right = new THREE.Vector3();
+    const up = new THREE.Vector3(0, 1, 0);
+    camera.getWorldDirection(new THREE.Vector3()).cross(up).normalize().negate().multiplyScalar(-1);
+    right.crossVectors(camera.getWorldDirection(new THREE.Vector3()), up).normalize();
+
+    mainGroup.position.addScaledVector(right, dx);
+    mainGroup.position.y -= dy;
+
+    dragLastX = e.clientX;
+    dragLastY = e.clientY;
+});
+
+window.addEventListener('mouseup', () => {
+    if (!isDragging) return;
+    isDragging = false;
+    dragMomentumX = dragVelX;
+    dragMomentumY = dragVelY;
+    canvas.style.cursor = dragMode ? 'grab' : 'default';
+});
+
+function applyDragMomentum() {
+    if (isDragging || !mainGroup || (Math.abs(dragMomentumX) < 0.01 && Math.abs(dragMomentumY) < 0.01)) return;
+    const { dx, dy } = screenToWorldDelta(dragMomentumX, dragMomentumY);
+    const right = new THREE.Vector3();
+    camera.getWorldDirection(new THREE.Vector3()).cross(new THREE.Vector3(0,1,0)).normalize();
+    right.crossVectors(camera.getWorldDirection(new THREE.Vector3()), new THREE.Vector3(0,1,0)).normalize();
+    mainGroup.position.addScaledVector(right, dx);
+    mainGroup.position.y -= dy;
+    dragMomentumX *= DRAG_FRICTION;
+    dragMomentumY *= DRAG_FRICTION;
+}
+
+// ===== HELPERS =====
 function applyRotation() {
-  if (!mainGroup) return;
-  mainGroup.rotation.set(currentRotation.x, currentRotation.y, currentRotation.z);
+    if (mainGroup) mainGroup.rotation.set(currentRotation.x, currentRotation.y, currentRotation.z, 'XYZ');
 }
 
 function applyScale() {
-  if (!mainGroup) return;
-  mainGroup.scale.set(currentScale, currentScale, currentScale);
+    if (mainGroup) mainGroup.scale.setScalar(currentScale);
+    const pct = ((currentScale - 0.2) / (3 - 0.2)) * 100;
+    document.getElementById('scaleFill').style.width = pct + '%';
+    document.getElementById('scaleVal').innerText = currentScale.toFixed(2) + '×';
 }
 
+// ===== TOAST =====
+let toastTimer;
+function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+// ===== MODE =====
 function setDragMode(enabled) {
-  dragMode = enabled;
-  const modeIndicator = document.getElementById('mode-indicator');
-  const dragBtn = document.getElementById('mode-drag');
-  const rotateBtn = document.getElementById('mode-rotate');
-  
-  if (dragMode) {
-    modeIndicator.innerHTML = '✋ MODE: KÉO MODEL (di chuyển)';
-    modeIndicator.style.background = '#ff6b0022';
-    dragBtn.style.background = '#ff6b00';
-    rotateBtn.style.background = '#2a3a44';
-    controls.enabled = false;
-    canvas.style.cursor = 'grab';
-    addLog('✋ Chế độ kéo model - Kéo chuột để di chuyển', 'info');
-  } else {
-    modeIndicator.innerHTML = '🔄 MODE: XOAY CAMERA';
-    modeIndicator.style.background = '#00e5ff22';
-    dragBtn.style.background = '#2a3a44';
-    rotateBtn.style.background = '#00e5ff';
-    controls.enabled = true;
-    canvas.style.cursor = 'default';
-    addLog('🔄 Chế độ xoay camera', 'info');
-  }
+    dragMode = enabled;
+    dragMomentumX = 0; dragMomentumY = 0;
+    const dragBtn = document.getElementById('modeDrag');
+    const rotBtn = document.getElementById('modeRotate');
+    if (dragMode) {
+        dragBtn.classList.add('active');
+        rotBtn.classList.remove('active');
+        orbitControls.enabled = false;
+        canvas.style.cursor = 'grab';
+    } else {
+        dragBtn.classList.remove('active');
+        rotBtn.classList.add('active');
+        orbitControls.enabled = true;
+        canvas.style.cursor = 'default';
+    }
 }
 
-// Xử lý kéo model
-function onMouseDown(event) {
-  if (!dragMode || !mainGroup) return;
-  isDragging = true;
-  lastMousePos.set(event.clientX, event.clientY);
-  dragStartGroupPos.copy(mainGroup.position);
-  canvas.style.cursor = 'grabbing';
-  event.preventDefault();
-}
+// ===== UI BINDINGS =====
+document.getElementById('modeDrag').onclick = () => setDragMode(true);
+document.getElementById('modeRotate').onclick = () => setDragMode(false);
 
-function onMouseMove(event) {
-  if (!isDragging || !dragMode || !mainGroup) return;
-  
-  const deltaX = event.clientX - lastMousePos.x;
-  const deltaY = event.clientY - lastMousePos.y;
-  
-  const cameraDirection = camera.getWorldDirection(new THREE.Vector3());
-  const right = new THREE.Vector3().crossVectors(cameraDirection, new THREE.Vector3(0, 1, 0)).normalize();
-  const up = new THREE.Vector3(0, 1, 0);
-  
-  const moveSpeed = 1.2;
-  const moveRight = right.clone().multiplyScalar(deltaX * moveSpeed);
-  const moveUp = up.clone().multiplyScalar(-deltaY * moveSpeed);
-  
-  mainGroup.position.copy(dragStartGroupPos.clone().add(moveRight).add(moveUp));
-  lastMousePos.set(event.clientX, event.clientY);
-  dragStartGroupPos.copy(mainGroup.position);
-}
-
-function onMouseUp() {
-  if (isDragging) {
-    isDragging = false;
-    canvas.style.cursor = 'grab';
-  }
-}
-
-canvas.addEventListener('mousedown', onMouseDown);
-window.addEventListener('mousemove', onMouseMove);
-window.addEventListener('mouseup', onMouseUp);
-
-// UI Events - Di chuyển model theo đúng trục RGB
-document.getElementById('mode-drag').onclick = () => setDragMode(true);
-document.getElementById('mode-rotate').onclick = () => setDragMode(false);
-
-// X (Đỏ)
-document.getElementById('move-left').onclick = () => { if(mainGroup) mainGroup.position.x -= 20; addLog('⬅️ Di chuyển X- (Trái)', 'info'); };
-document.getElementById('move-right').onclick = () => { if(mainGroup) mainGroup.position.x += 20; addLog('➡️ Di chuyển X+ (Phải)', 'info'); };
-
-// Y (Xanh dương)
-document.getElementById('move-back').onclick = () => { if(mainGroup) mainGroup.position.z -= 20; addLog('⬇️ Di chuyển Y- (Vào trong)', 'info'); };
-document.getElementById('move-forward').onclick = () => { if(mainGroup) mainGroup.position.z += 20; addLog('⬆️ Di chuyển Y+ (Ra ngoài)', 'info'); };
-
-// Z (Xanh lá)
-document.getElementById('move-down').onclick = () => { if(mainGroup) mainGroup.position.y -= 20; addLog('🔽 Di chuyển Z- (Xuống)', 'info'); };
-document.getElementById('move-up').onclick = () => { if(mainGroup) mainGroup.position.y += 20; addLog('🔼 Di chuyển Z+ (Lên)', 'info'); };
-
-document.getElementById('reset-pos').onclick = () => { 
-  if(mainGroup) {
-    mainGroup.position.set(0, 0, 0); 
-    addLog('📍 Đã reset vị trí model về gốc', 'success');
-  }
+const MOVE_STEP = 20;
+document.getElementById('moveLeft').onclick = () => { if (mainGroup) mainGroup.position.x -= MOVE_STEP; };
+document.getElementById('moveRight').onclick = () => { if (mainGroup) mainGroup.position.x += MOVE_STEP; };
+document.getElementById('moveBack').onclick = () => { if (mainGroup) mainGroup.position.z -= MOVE_STEP; };
+document.getElementById('moveForward').onclick = () => { if (mainGroup) mainGroup.position.z += MOVE_STEP; };
+document.getElementById('moveDown').onclick = () => { if (mainGroup) mainGroup.position.y -= MOVE_STEP; };
+document.getElementById('moveUp').onclick = () => { if (mainGroup) mainGroup.position.y += MOVE_STEP; };
+document.getElementById('resetPos').onclick = () => {
+    if (mainGroup) {
+        mainGroup.position.set(0, 0, 0);
+        showToast('Đã reset vị trí');
+    }
 };
 
-// Xoay model
-document.getElementById('rot-x-plus').onclick = () => { currentRotation.x += Math.PI/2; applyRotation(); addLog('🔄 Xoay X +90°', 'info'); };
-document.getElementById('rot-x-minus').onclick = () => { currentRotation.x -= Math.PI/2; applyRotation(); addLog('🔄 Xoay X -90°', 'info'); };
-document.getElementById('rot-y-plus').onclick = () => { currentRotation.y += Math.PI/2; applyRotation(); addLog('🔄 Xoay Y +90°', 'info'); };
-document.getElementById('rot-y-minus').onclick = () => { currentRotation.y -= Math.PI/2; applyRotation(); addLog('🔄 Xoay Y -90°', 'info'); };
-document.getElementById('rot-z-plus').onclick = () => { currentRotation.z += Math.PI/2; applyRotation(); addLog('🔄 Xoay Z +90°', 'info'); };
-document.getElementById('rot-z-minus').onclick = () => { currentRotation.z -= Math.PI/2; applyRotation(); addLog('🔄 Xoay Z -90°', 'info'); };
-document.getElementById('flip-x').onclick = () => { currentRotation.x += Math.PI; applyRotation(); addLog('🪞 Lật trục X', 'info'); };
-document.getElementById('flip-y').onclick = () => { currentRotation.y += Math.PI; applyRotation(); addLog('🪞 Lật trục Y', 'info'); };
-document.getElementById('flip-z').onclick = () => { currentRotation.z += Math.PI; applyRotation(); addLog('🪞 Lật trục Z', 'info'); };
-document.getElementById('reset-rot').onclick = () => { currentRotation.set(0, 0, 0); applyRotation(); addLog('🔄 Đã reset xoay', 'success'); };
-
-// Scale
-document.getElementById('scale-slider').oninput = (e) => { currentScale = parseFloat(e.target.value); applyScale(); };
-
-// Các control khác
-document.getElementById('btn-wire').onclick = () => {
-  wireframe = !wireframe;
-  allMeshes.forEach(m => { if (m.material) m.material.wireframe = wireframe; });
-  document.getElementById('btn-wire').classList.toggle('active', wireframe);
-};
-document.getElementById('btn-grid').onclick = () => {
-  gridHelper.visible = !gridHelper.visible;
-  document.getElementById('btn-grid').classList.toggle('active', gridHelper.visible);
-};
-document.getElementById('btn-axes').onclick = () => {
-  axesHelper.visible = !axesHelper.visible;
-  document.getElementById('btn-axes').classList.toggle('active', axesHelper.visible);
-};
-document.getElementById('btn-reset-cam').onclick = () => {
-  camera.position.set(500, 420, 700);
-  controls.target.set(0, 0, 0);
-  controls.update();
-  addLog('🔄 Đã reset camera', 'info');
-};
-document.getElementById('btn-explode').onclick = () => {
-  if (!allMeshes.length) return;
-  explode = !explode;
-  document.getElementById('btn-explode').classList.toggle('active', explode);
-  if (originalPositions.length === 0) originalPositions = allMeshes.map(m => m.position.clone());
-  if (explode) {
-    const center = new THREE.Vector3();
-    allMeshes.forEach(m => center.add(m.position));
-    center.divideScalar(allMeshes.length);
-    allMeshes.forEach(m => {
-      const dir = m.position.clone().sub(center).normalize();
-      m.position.add(dir.multiplyScalar(65));
-    });
-    addLog('💥 Bật chế độ explode', 'info');
-  } else {
-    allMeshes.forEach((m, i) => m.position.copy(originalPositions[i]));
-    addLog('💥 Tắt chế độ explode', 'info');
-  }
-};
-document.getElementById('ambient-slider').oninput = (e) => {
-  ambientLight.intensity = e.target.value / 100 * 1.3;
-};
-
-// ========== LƯU VÀ TẢI VỊ TRÍ ==========
-function saveModelState() {
-  if (!mainGroup) {
-    addLog('⚠️ Chưa có model để lưu', 'error');
-    return;
-  }
-  
-  const state = {
-    position: {
-      x: mainGroup.position.x,
-      y: mainGroup.position.y,
-      z: mainGroup.position.z
-    },
-    rotation: {
-      x: currentRotation.x,
-      y: currentRotation.y,
-      z: currentRotation.z
-    },
-    scale: currentScale,
-    timestamp: new Date().toISOString()
-  };
-  
-  localStorage.setItem('cnc_model_state', JSON.stringify(state));
-  addLog('💾 Đã lưu vị trí mô hình!', 'success');
-  
-  // Gửi thông báo về parent window (nếu đang trong iframe)
-  if (window.parent !== window) {
-    window.parent.postMessage({
-      type: 'cnc_response',
-      action: 'save',
-      status: 'success',
-      data: state
-    }, '*');
-  }
-}
-
-function loadModelState() {
-  const saved = localStorage.getItem('cnc_model_state');
-  if (saved && mainGroup) {
-    const state = JSON.parse(saved);
-    mainGroup.position.set(state.position.x, state.position.y, state.position.z);
-    currentRotation.set(state.rotation.x, state.rotation.y, state.rotation.z);
-    currentScale = state.scale;
-    document.getElementById('scale-slider').value = currentScale;
-    applyRotation();
+document.getElementById('scaleSlider').oninput = e => {
+    currentScale = parseFloat(e.target.value);
     applyScale();
-    addLog('📂 Đã tải vị trí mô hình đã lưu', 'success');
-    return true;
-  }
-  return false;
+};
+
+document.getElementById('lightSlider').oninput = e => {
+    const val = parseInt(e.target.value);
+    ambientLight.intensity = (val / 100) * 1.5;
+    mainLight.intensity = (val / 100) * 2.5;
+    document.getElementById('lightFill').style.width = val + '%';
+    document.getElementById('lightVal').innerText = val + '%';
+};
+
+document.getElementById('btnWire').onclick = () => {
+    wireframe = !wireframe;
+    allMeshes.forEach(m => { if (m.material) m.material.wireframe = wireframe; });
+    document.getElementById('btnWire').classList.toggle('active', wireframe);
+    showToast(wireframe ? 'Wireframe ON' : 'Wireframe OFF');
+};
+
+document.getElementById('btnGrid').onclick = () => {
+    gridHelper.visible = !gridHelper.visible;
+    document.getElementById('btnGrid').classList.toggle('active', gridHelper.visible);
+};
+
+document.getElementById('btnAxes').onclick = () => {
+    axesHelper.visible = !axesHelper.visible;
+    document.getElementById('btnAxes').classList.toggle('active', axesHelper.visible);
+};
+
+document.getElementById('btnResetCam').onclick = () => {
+    const target = orbitControls.target.clone();
+    const startPos = camera.position.clone();
+    const endPos = new THREE.Vector3(500, 420, 700);
+    let t = 0;
+    function animCam() {
+        t += 0.06;
+        const ease = 1 - Math.pow(1 - Math.min(t, 1), 3);
+        camera.position.lerpVectors(startPos, endPos, ease);
+        orbitControls.target.lerp(new THREE.Vector3(0,0,0), ease * 0.15);
+        orbitControls.update();
+        if (t < 1) requestAnimationFrame(animCam);
+        else {
+            camera.position.copy(endPos);
+            orbitControls.target.set(0,0,0);
+        }
+    }
+    animCam();
+    showToast('Camera reset');
+};
+
+// Rotation buttons
+const HPI = Math.PI / 2;
+document.getElementById('rotXP').onclick = () => { currentRotation.x += HPI; applyRotation(); };
+document.getElementById('rotXM').onclick = () => { currentRotation.x -= HPI; applyRotation(); };
+document.getElementById('rotYP').onclick = () => { currentRotation.y += HPI; applyRotation(); };
+document.getElementById('rotYM').onclick = () => { currentRotation.y -= HPI; applyRotation(); };
+document.getElementById('rotZP').onclick = () => { currentRotation.z += HPI; applyRotation(); };
+document.getElementById('rotZM').onclick = () => { currentRotation.z -= HPI; applyRotation(); };
+document.getElementById('flipX').onclick = () => { currentRotation.x += Math.PI; applyRotation(); };
+document.getElementById('flipY').onclick = () => { currentRotation.y += Math.PI; applyRotation(); };
+document.getElementById('flipZ').onclick = () => { currentRotation.z += Math.PI; applyRotation(); };
+document.getElementById('resetRot').onclick = () => {
+    currentRotation.set(0, 0, 0);
+    applyRotation();
+    showToast('Đã reset góc xoay');
+};
+
+// Panel toggle
+let panelCollapsed = false;
+function setPanelCollapsed(val) {
+    panelCollapsed = val;
+    document.getElementById('viewerPanel').classList.toggle('collapsed', panelCollapsed);
+    document.getElementById('panelReopen').classList.toggle('visible', panelCollapsed);
 }
 
-// Nút lưu vị trí
-document.getElementById('save-position-btn').onclick = saveModelState;
+document.getElementById('panelToggle').onclick = e => {
+    e.stopPropagation();
+    setPanelCollapsed(true);
+};
+document.getElementById('panelReopen').onclick = () => {
+    setPanelCollapsed(false);
+};
 
 // Upload
-const uploadArea = document.getElementById('upload-area');
-const fileInput = document.getElementById('file-input');
-uploadArea.onclick = () => fileInput.click();
-uploadArea.ondragover = (e) => { e.preventDefault(); uploadArea.style.borderColor = '#ff6b00'; };
-uploadArea.ondragleave = () => uploadArea.style.borderColor = '#00e5ff';
-uploadArea.ondrop = async (e) => {
-  e.preventDefault();
-  uploadArea.style.borderColor = '#00e5ff';
-  const file = e.dataTransfer.files[0];
-  if (file) await processFile(file);
+document.getElementById('uploadArea').onclick = () => document.getElementById('fileInput').click();
+document.getElementById('fileInput').onchange = async e => {
+    if (e.target.files[0]) await processFile(e.target.files[0]);
 };
-fileInput.onchange = async (e) => { if (e.target.files[0]) await processFile(e.target.files[0]); };
 
+// Drag & drop on canvas
+document.body.addEventListener('dragover', e => e.preventDefault());
+document.body.addEventListener('drop', e => {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    if (file && /\.(stp|step)$/i.test(file.name)) processFile(file);
+});
+
+// ===== OCCT =====
 let occt = null;
+async function loadOCCT() {
+    return new Promise((resolve, reject) => {
+        if (window.occtimportjs) {
+            window.occtimportjs({ locateFile: p => `https://cdn.jsdelivr.net/npm/occt-import-js@0.0.18/dist/${p}` }).then(resolve).catch(reject);
+            return;
+        }
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/occt-import-js@0.0.18/dist/occt-import-js.js';
+        script.onload = () => {
+            window.occtimportjs({ locateFile: p => `https://cdn.jsdelivr.net/npm/occt-import-js@0.0.18/dist/${p}` }).then(resolve).catch(reject);
+        };
+        script.onerror = () => reject(new Error('Không tải được OCCT'));
+        document.head.appendChild(script);
+    });
+}
 
-async function loadOCCTFast() {
-  return new Promise((resolve, reject) => {
-    const script = document.createElement('script');
-    script.src = 'https://cdn.jsdelivr.net/npm/occt-import-js@0.0.18/dist/occt-import-js.js';
-    script.onload = () => {
-      window.occtimportjs({
-        locateFile: (path) => `https://cdn.jsdelivr.net/npm/occt-import-js@0.0.18/dist/${path}`
-      }).then(resolve).catch(reject);
-    };
-    script.onerror = () => reject(new Error('Tải OCCT thất bại'));
-    document.head.appendChild(script);
-  });
+function setProgress(pct, msg) {
+    document.getElementById('progress-fill').style.width = pct + '%';
+    if (msg) document.getElementById('load-msg').innerHTML = msg;
 }
 
 async function processFile(file) {
-  const overlay = document.getElementById('overlay');
-  const progressFill = document.getElementById('progress-fill');
-  const loadMsg = document.getElementById('load-msg');
-  
-  overlay.classList.remove('hidden');
-  progressFill.style.width = '5%';
-  loadMsg.innerHTML = `📄 Đang đọc: ${file.name}...`;
-  addLog(`📁 ${file.name} (${(file.size/1024).toFixed(0)} KB)`, 'info');
-  document.getElementById('file-name').innerHTML = file.name;
-  
-  try {
-    if (!occt) {
-      progressFill.style.width = '15%';
-      loadMsg.innerHTML = '⚙ Đang tải OCCT...';
-      addLog('⏳ Tải OCCT...', 'info');
-      occt = await loadOCCTFast();
-      addLog('✅ OCCT sẵn sàng', 'success');
-    }
-    
-    progressFill.style.width = '40%';
-    loadMsg.innerHTML = '🔍 Đang parse STEP...';
-    
-    const buffer = await file.arrayBuffer();
-    const uint8Array = new Uint8Array(buffer);
-    
-    let result;
+    const overlay = document.getElementById('overlay');
+    overlay.classList.remove('hidden');
+    setProgress(5, `📄 ${file.name}`);
+    document.getElementById('fileName').textContent = file.name;
+    document.getElementById('status').textContent = '⏳ Đang xử lý...';
+
     try {
-      result = occt.ReadStepFile(uint8Array, { linearDeflection: 0.1, angularDeflection: 0.5 });
-    } catch(e) {
-      result = occt.ReadStepFile(uint8Array);
+        if (!occt) {
+            setProgress(15, 'Tải OCCT engine...');
+            occt = await loadOCCT();
+        }
+        setProgress(35, 'Đọc file STEP...');
+
+        const buffer = await file.arrayBuffer();
+        const uint8Array = new Uint8Array(buffer);
+
+        setProgress(55, 'Phân tích hình học...');
+        let result;
+        try {
+            result = occt.ReadStepFile(uint8Array, { linearDeflection: 0.1, angularDeflection: 0.5 });
+        } catch {
+            result = occt.ReadStepFile(uint8Array);
+        }
+
+        if (!result?.meshes?.length) throw new Error('Không có mesh trong file');
+
+        setProgress(75, 'Dựng mô hình 3D...');
+
+        if (mainGroup) {
+            scene.remove(mainGroup);
+            allMeshes.forEach(m => { m.geometry.dispose(); m.material.dispose(); });
+        }
+        allMeshes = [];
+        mainGroup = new THREE.Group();
+        currentRotation.set(0, 0, 0);
+        currentScale = 1;
+        document.getElementById('scaleSlider').value = 1;
+        applyScale();
+
+        for (let i = 0; i < result.meshes.length; i++) {
+            const m = result.meshes[i];
+            const geom = new THREE.BufferGeometry();
+            geom.setAttribute('position', new THREE.BufferAttribute(new Float32Array(m.attributes.position.array), 3));
+            if (m.index?.array) geom.setIndex(new THREE.BufferAttribute(new Uint32Array(m.index.array), 1));
+            geom.computeVertexNormals();
+
+            const mat = new THREE.MeshStandardMaterial({
+                color: colors[i % colors.length],
+                roughness: 0.3,
+                metalness: 0.7,
+                envMapIntensity: 0.8,
+            });
+            const mesh = new THREE.Mesh(geom, mat);
+            mainGroup.add(mesh);
+            allMeshes.push(mesh);
+        }
+
+        scene.add(mainGroup);
+
+        const box = new THREE.Box3().setFromObject(mainGroup);
+        const center = box.getCenter(new THREE.Vector3());
+        mainGroup.position.sub(center);
+
+        document.getElementById('partsCount').textContent = allMeshes.length;
+        setProgress(100, `✅ ${allMeshes.length} parts`);
+        document.getElementById('status').textContent = `✅ ${allMeshes.length} parts`;
+
+        setTimeout(() => overlay.classList.add('hidden'), 600);
+        showToast(`Đã tải ${allMeshes.length} parts`);
+
+    } catch (err) {
+        setProgress(100, `❌ ${err.message}`);
+        document.getElementById('status').textContent = '❌ Lỗi';
+        setTimeout(() => overlay.classList.add('hidden'), 2500);
     }
-    
-    if (!result?.meshes?.length) throw new Error('Không có dữ liệu mesh');
-    
-    addLog(`📊 Số component: ${result.meshes.length}`, 'success');
-    
-    progressFill.style.width = '60%';
-    loadMsg.innerHTML = `🎨 Đang dựng 3D (${result.meshes.length} parts)...`;
-    
-    if (mainGroup) scene.remove(mainGroup);
-    allMeshes = [];
-    mainGroup = new THREE.Group();
-    
-    let totalTris = 0, totalVerts = 0;
-    
-    for (let idx = 0; idx < result.meshes.length; idx++) {
-      const m = result.meshes[idx];
-      const attrs = m.attributes;
-      
-      if (!attrs?.position?.array) continue;
-      
-      const positions = attrs.position.array;
-      const normals = attrs.normal?.array;
-      const indices = m.index?.array;
-      
-      const geometry = new THREE.BufferGeometry();
-      geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3));
-      if (normals) geometry.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(normals), 3));
-      else geometry.computeVertexNormals();
-      if (indices) geometry.setIndex(new THREE.BufferAttribute(new Uint32Array(indices), 1));
-      
-      const baseColor = brightColors[idx % brightColors.length];
-      const material = new THREE.MeshStandardMaterial({
-        color: baseColor,
-        roughness: 0.3,
-        metalness: 0.6,
-        emissive: 0x221100,
-        emissiveIntensity: 0.05,
-        side: THREE.DoubleSide
-      });
-      
-      const mesh = new THREE.Mesh(geometry, material);
-      mesh.castShadow = true;
-      mesh.receiveShadow = true;
-      mesh.userData = { 
-        partId: idx, 
-        name: m.name || `Part_${idx+1}`,
-        originalColor: baseColor
-      };
-      mainGroup.add(mesh);
-      allMeshes.push(mesh);
-      
-      totalVerts += positions.length / 3;
-      if (indices) totalTris += indices.length / 3;
-      else totalTris += positions.length / 3 / 3;
+}
+
+function saveState() {
+    if (!mainGroup) return;
+    localStorage.setItem('cnc_model_state', JSON.stringify({
+        position: mainGroup.position.toArray(),
+        rotation: [currentRotation.x, currentRotation.y, currentRotation.z],
+        scale: currentScale,
+    }));
+    showToast('💾 Đã lưu trạng thái');
+}
+
+// postMessage API
+window.addEventListener('message', ev => {
+    if (ev.data?.type !== 'cnc_control') return;
+    switch (ev.data.action) {
+        case 'reset': document.getElementById('resetPos').click(); document.getElementById('resetRot').click(); break;
+        case 'wire': document.getElementById('btnWire').click(); break;
+        case 'grid': document.getElementById('btnGrid').click(); break;
+        case 'axes': document.getElementById('btnAxes').click(); break;
+        case 'save': saveState(); break;
+        case 'load':
+            const saved = localStorage.getItem('cnc_model_state');
+            if (saved && mainGroup) {
+                const s = JSON.parse(saved);
+                mainGroup.position.fromArray(s.position);
+                currentRotation.set(...s.rotation);
+                currentScale = s.scale;
+                document.getElementById('scaleSlider').value = currentScale;
+                applyRotation(); applyScale();
+                showToast('📂 Đã tải trạng thái');
+            }
+            break;
     }
-    
-    if (allMeshes.length === 0) throw new Error('Không tạo được mesh');
-    
-    scene.add(mainGroup);
-    
-    // Căn chỉnh về tâm
-    const box = new THREE.Box3().setFromObject(mainGroup);
-    const center = box.getCenter(new THREE.Vector3());
-    mainGroup.position.sub(center);
-    
-    // Lưu vị trí cho explode
-    originalPositions = allMeshes.map(m => m.position.clone());
-    
-    // Reset các thông số
-    currentRotation.set(0, 0, 0);
-    mainGroup.rotation.set(0, 0, 0);
-    currentScale = 1;
-    document.getElementById('scale-slider').value = 1;
-    mainGroup.position.set(0, 0, 0);
-    
-    // Đặt camera
-    const size = box.getSize(new THREE.Vector3());
-    const maxDim = Math.max(size.x, size.y, size.z);
-    const dist = maxDim * 1.2;
-    camera.position.set(dist * 0.8, dist * 0.6, dist);
-    controls.target.set(0, 0, 0);
-    controls.maxDistance = maxDim * 2.5;
-    controls.update();
-    
-    // Stats
-    document.getElementById('parts-count').innerHTML = allMeshes.length;
-    document.getElementById('tri-count').innerHTML = totalTris.toLocaleString();
-    
-    progressFill.style.width = '100%';
-    loadMsg.innerHTML = '✅ Hoàn tất!';
-    addLog(`✅ Thành công! ${allMeshes.length} parts, ${totalTris.toLocaleString()} triangles`, 'success');
-    addLog(`📍 Hướng di chuyển: 🔴X(Trái/Phải) 🔵Y(Vào/Ra) 🟢Z(Lên/Xuống)`, 'info');
-    
-    // Tự động tải vị trí đã lưu
-    loadModelState();
-    
-    setTimeout(() => overlay.classList.add('hidden'), 500);
-    
-  } catch (err) {
-    addLog(`❌ ${err.message}`, 'error');
-    loadMsg.innerHTML = `❌ Lỗi: ${err.message}`;
-    setTimeout(() => overlay.classList.add('hidden'), 2000);
-  }
+});
+
+// ===== ANIMATION LOOP =====
+let lastTime = 0;
+function animate(time) {
+    requestAnimationFrame(animate);
+    const delta = time - lastTime;
+    lastTime = time;
+
+    orbitControls.update();
+    applyDragMomentum();
+    renderer.render(scene, camera);
 }
+animate(0);
 
-// Animation
-function animate() {
-  requestAnimationFrame(animate);
-  controls.update();
-  renderer.render(scene, camera);
+// ===== RESIZE =====
+const resizeObserver = new ResizeObserver(() => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+});
+resizeObserver.observe(document.body);
+
+// ===== INIT =====
+setDragMode(true);
+async function init() {
+    try {
+        setProgress(10, 'Tải OCCT engine...');
+        occt = await loadOCCT();
+        setProgress(100, '✅ Sẵn sàng — kéo thả file STEP vào đây');
+        setTimeout(() => document.getElementById('overlay').classList.add('hidden'), 600);
+    } catch {
+        document.getElementById('load-msg').textContent = '❌ Lỗi tải OCCT';
+    }
 }
-animate();
-
-window.onresize = () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-};
-
-// Khởi động
-async function start() {
-  const progressFill = document.getElementById('progress-fill');
-  const loadMsg = document.getElementById('load-msg');
-  try {
-    progressFill.style.width = '10%';
-    loadMsg.innerHTML = 'Đang tải OCCT...';
-    addLog('⏳ Khởi tạo OCCT...', 'info');
-    occt = await loadOCCTFast();
-    progressFill.style.width = '100%';
-    loadMsg.innerHTML = '✅ Sẵn sàng! Chọn file STEP';
-    addLog('✅ OCCT sẵn sàng', 'success');
-    setTimeout(() => {
-      document.getElementById('overlay').classList.add('hidden');
-    }, 800);
-  } catch(err) {
-    loadMsg.innerHTML = `❌ Lỗi: ${err.message}`;
-    addLog(`❌ ${err.message}`, 'error');
-  }
-}
-
-start();
+init();
 </script>
 </body>
 </html>
