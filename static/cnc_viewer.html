@@ -1,11 +1,22 @@
+ commands
+Ran 2 commands
+
+Copy file to working dir
+
+Script
+
+Create the final HTML file with auto-load from same directory
+bash
+
+cat > /mnt/user-data/outputs/CNC_3D_Viewer.html << 'HTMLEOF'
 <!DOCTYPE html>
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CNC 3D Viewer - Auto Save</title>
+<title>CNC 3D Viewer</title>
 <style>
-    * {
+    *, *::before, *::after {
         margin: 0;
         padding: 0;
         box-sizing: border-box;
@@ -14,7 +25,7 @@
 
     body {
         background: #0a0e14;
-        font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+        font-family: 'SF Pro Display', -apple-system, 'Segoe UI', system-ui, sans-serif;
         overflow: hidden;
     }
 
@@ -24,19 +35,27 @@
         inset: 0;
         width: 100%;
         height: 100%;
+        will-change: transform;
     }
 
     .viewer-panel {
         position: fixed;
         top: 16px;
         right: 16px;
-        background: rgba(10, 14, 20, 0.85);
-        backdrop-filter: blur(20px);
+        background: rgba(10, 14, 20, 0.82);
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
         border-radius: 18px;
         border: 1px solid rgba(0, 229, 255, 0.12);
+        box-shadow: 0 4px 6px rgba(0,0,0,0.3), 0 20px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
         z-index: 100;
+        transition: opacity 0.25s ease, transform 0.25s ease, box-shadow 0.2s ease;
         width: 228px;
         overflow: hidden;
+    }
+
+    .viewer-panel:hover {
+        box-shadow: 0 4px 6px rgba(0,0,0,0.3), 0 24px 48px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,229,255,0.18), inset 0 1px 0 rgba(255,255,255,0.07);
     }
 
     .viewer-panel.collapsed {
@@ -53,6 +72,7 @@
         height: 40px;
         background: rgba(10, 14, 20, 0.88);
         backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
         border: 1px solid rgba(0, 229, 255, 0.25);
         border-radius: 12px;
         display: flex;
@@ -63,13 +83,22 @@
         z-index: 101;
         opacity: 0;
         pointer-events: none;
-        transition: all 0.25s ease;
+        transform: scale(0.8);
+        transition: opacity 0.25s ease, transform 0.25s ease, box-shadow 0.2s ease, background 0.2s ease;
         color: #00e5ff;
     }
 
     .panel-reopen.visible {
         opacity: 1;
         pointer-events: all;
+        transform: scale(1);
+    }
+
+    .panel-reopen:hover {
+        background: rgba(0, 229, 255, 0.12);
+        border-color: rgba(0, 229, 255, 0.5);
+        box-shadow: 0 0 16px rgba(0, 229, 255, 0.2);
+        transform: scale(1.08);
     }
 
     .panel-header {
@@ -77,7 +106,14 @@
         justify-content: space-between;
         align-items: center;
         padding: 12px 14px;
+        cursor: pointer;
+        background: linear-gradient(135deg, rgba(0,229,255,0.06), rgba(0,229,255,0.02));
         border-bottom: 1px solid rgba(0, 229, 255, 0.08);
+        transition: background 0.2s;
+    }
+
+    .panel-header:hover {
+        background: linear-gradient(135deg, rgba(0,229,255,0.1), rgba(0,229,255,0.04));
     }
 
     .panel-title {
@@ -85,6 +121,8 @@
         font-weight: 700;
         color: #00e5ff;
         letter-spacing: 1.5px;
+        text-transform: uppercase;
+        white-space: nowrap;
     }
 
     .panel-toggle {
@@ -95,7 +133,12 @@
         font-size: 16px;
         width: 24px;
         height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         border-radius: 6px;
+        transition: background 0.15s, color 0.15s, transform 0.2s;
+        flex-shrink: 0;
     }
 
     .panel-toggle:hover {
@@ -105,8 +148,10 @@
 
     .panel-content {
         padding: 12px;
+        transition: opacity 0.25s ease, transform 0.25s ease;
         max-height: 520px;
         overflow-y: auto;
+        overflow-x: hidden;
     }
 
     .btn-group {
@@ -115,6 +160,8 @@
         gap: 5px;
         margin-bottom: 10px;
     }
+
+    .btn-group:last-child { margin-bottom: 0; }
 
     .btn-icon {
         background: rgba(255,255,255,0.04);
@@ -125,7 +172,14 @@
         border-radius: 9px;
         font-size: 10.5px;
         font-weight: 600;
-        transition: all 0.15s ease;
+        letter-spacing: 0.3px;
+        transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.12s ease, box-shadow 0.15s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        -webkit-tap-highlight-color: transparent;
+        position: relative;
+        overflow: hidden;
     }
 
     .btn-icon:hover {
@@ -133,179 +187,134 @@
         border-color: rgba(0,229,255,0.3);
         color: #00e5ff;
         transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0,229,255,0.15);
     }
+
+    .btn-icon:active { transform: translateY(0px) scale(0.97); box-shadow: none; }
 
     .btn-icon.active {
         background: rgba(0,229,255,0.15);
         border-color: rgba(0,229,255,0.4);
         color: #00e5ff;
+        box-shadow: 0 0 12px rgba(0,229,255,0.2), inset 0 0 8px rgba(0,229,255,0.1);
     }
 
-    .btn-mode-drag.active { background: rgba(255, 107, 0, 0.25); border-color: rgba(255, 107, 0, 0.6); color: #ff6b00; }
-    .btn-mode-rotate.active { background: rgba(0,229,255,0.15); border-color: rgba(0,229,255,0.4); color: #00e5ff; }
-    .btn-axis-x { color: #ff7777; }
-    .btn-axis-y { color: #7799ff; }
-    .btn-axis-z { color: #77ee88; }
+    .btn-mode-drag { background: rgba(255, 107, 0, 0.15); border-color: rgba(255, 107, 0, 0.3); color: #ff8c40; }
+    .btn-mode-drag.active { background: rgba(255, 107, 0, 0.25); border-color: rgba(255, 107, 0, 0.6); color: #ff6b00; box-shadow: 0 0 12px rgba(255,107,0,0.2); }
+    .btn-mode-rotate.active { background: rgba(0,229,255,0.15); border-color: rgba(0,229,255,0.4); color: #00e5ff; box-shadow: 0 0 12px rgba(0,229,255,0.2); }
+
+    .btn-axis-x { color: #ff7777; border-color: rgba(255,119,119,0.15); }
+    .btn-axis-x:hover { background: rgba(255,119,119,0.12); border-color: rgba(255,119,119,0.4); color: #ff9999; }
+    .btn-axis-y { color: #7799ff; border-color: rgba(119,153,255,0.15); }
+    .btn-axis-y:hover { background: rgba(119,153,255,0.12); border-color: rgba(119,153,255,0.4); color: #aabbff; }
+    .btn-axis-z { color: #77ee88; border-color: rgba(119,238,136,0.15); }
+    .btn-axis-z:hover { background: rgba(119,238,136,0.12); border-color: rgba(119,238,136,0.4); color: #aaffbb; }
+
     .btn-danger { background: rgba(231, 76, 60, 0.1); border-color: rgba(231,76,60,0.2); color: #ff8877; }
+    .btn-danger:hover { background: rgba(231,76,60,0.2); border-color: rgba(231,76,60,0.5); color: #ff6655; box-shadow: 0 4px 12px rgba(231,76,60,0.2); }
+
     .btn-warning { background: rgba(243, 156, 18, 0.1); border-color: rgba(243,156,18,0.2); color: #ffcc66; }
+    .btn-warning:hover { background: rgba(243,156,18,0.2); border-color: rgba(243,156,18,0.5); color: #ffbb33; box-shadow: 0 4px 12px rgba(243,156,18,0.2); }
 
-    .separator {
-        height: 1px;
-        background: linear-gradient(90deg, transparent, rgba(0,229,255,0.15), transparent);
-        margin: 10px 0;
-    }
+    .separator { height: 1px; background: linear-gradient(90deg, transparent, rgba(0,229,255,0.15), transparent); margin: 10px 0; }
 
-    .section-label {
-        font-size: 8.5px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 1.2px;
-        color: rgba(255, 170, 102, 0.7);
-        margin: 6px 0 5px 0;
-    }
+    .section-label { font-size: 8.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; color: rgba(255, 170, 102, 0.7); margin: 6px 0 5px 0; }
 
     .slider-item { margin: 8px 0; }
-    .slider-label {
-        display: flex;
-        justify-content: space-between;
-        font-size: 10px;
-        color: rgba(138, 174, 192, 0.8);
-        margin-bottom: 5px;
-    }
-    .slider-track {
-        position: relative;
-        height: 4px;
-        background: rgba(255,255,255,0.06);
-        border-radius: 10px;
-    }
-    .slider-fill {
-        position: absolute;
-        left: 0;
-        top: 0;
-        height: 100%;
-        background: linear-gradient(90deg, #0099bb, #00e5ff);
-        border-radius: 10px;
-        pointer-events: none;
-    }
-    input[type="range"] {
-        position: absolute;
-        inset: -6px 0;
-        width: 100%;
-        height: calc(100% + 12px);
-        opacity: 0;
-        cursor: pointer;
-    }
+    .slider-label { display: flex; justify-content: space-between; font-size: 10px; color: rgba(138, 174, 192, 0.8); margin-bottom: 5px; letter-spacing: 0.2px; }
+    .slider-label span:last-child { color: #00e5ff; font-weight: 600; }
+    .slider-track { position: relative; height: 4px; background: rgba(255,255,255,0.06); border-radius: 10px; overflow: visible; }
+    .slider-fill { position: absolute; left: 0; top: 0; height: 100%; background: linear-gradient(90deg, #0099bb, #00e5ff); border-radius: 10px; pointer-events: none; transition: width 0.05s; }
+    input[type="range"] { position: absolute; inset: -6px 0; width: 100%; height: calc(100% + 12px); opacity: 0; cursor: pointer; margin: 0; }
 
-    .info-badge {
-        background: rgba(0,0,0,0.3);
-        border: 1px solid rgba(0,229,255,0.08);
-        border-radius: 10px;
-        padding: 6px 10px;
-        display: flex;
-        justify-content: space-between;
-        font-size: 10px;
-        margin-top: 6px;
-    }
-    .info-badge .badge-val { color: #00e5ff; font-weight: 700; }
+    .info-badge { background: rgba(0,0,0,0.3); border: 1px solid rgba(0,229,255,0.08); border-radius: 10px; padding: 6px 10px; display: flex; align-items: center; justify-content: space-between; font-size: 10px; color: rgba(107, 143, 168, 0.8); margin-top: 6px; }
+    .info-badge .badge-val { color: #00e5ff; font-weight: 700; font-size: 12px; }
 
-    .upload-area {
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        background: rgba(10, 14, 20, 0.88);
-        backdrop-filter: blur(16px);
-        border: 1px solid rgba(0, 229, 255, 0.25);
-        border-radius: 40px;
-        padding: 10px 22px;
-        cursor: pointer;
-        z-index: 100;
-        font-size: 12px;
-        font-weight: 600;
-        color: #00e5ff;
+    /* ── Auto-load badge ── */
+    .autoload-badge {
+        background: rgba(0,229,255,0.07);
+        border: 1px solid rgba(0,229,255,0.15);
+        border-radius: 10px;
+        padding: 7px 10px;
+        font-size: 10px;
+        color: rgba(138,174,192,0.85);
+        margin-bottom: 8px;
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 7px;
+        line-height: 1.4;
     }
-
-    .file-info {
-        position: fixed;
-        bottom: 20px;
-        left: 20px;
-        background: rgba(0,0,0,0.55);
-        backdrop-filter: blur(10px);
-        padding: 7px 16px;
-        border-radius: 30px;
-        font-size: 10.5px;
-        z-index: 100;
-        border-left: 2px solid #00e5ff;
-    }
-
-    .status {
-        position: fixed;
-        bottom: 64px;
-        left: 20px;
-        background: rgba(0,0,0,0.4);
-        backdrop-filter: blur(6px);
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 9.5px;
-        pointer-events: none;
-    }
-
-    #overlay {
-        position: fixed;
-        inset: 0;
-        background: #0a0e14;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 20px;
-        z-index: 200;
-        transition: opacity 0.5s;
-    }
-    #overlay.hidden { opacity: 0; pointer-events: none; }
-    .spinner-ring {
-        width: 48px;
-        height: 48px;
+    .autoload-badge .al-dot {
+        width: 7px; height: 7px;
         border-radius: 50%;
-        border: 2px solid transparent;
-        border-top-color: #00e5ff;
-        animation: spin 0.8s linear infinite;
+        background: #00e5ff;
+        flex-shrink: 0;
+        box-shadow: 0 0 6px #00e5ff;
+        animation: pulse 1.8s ease-in-out infinite;
     }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .progress-bar {
-        width: 220px;
-        height: 2px;
-        background: rgba(255,255,255,0.06);
-        border-radius: 10px;
-        overflow: hidden;
-    }
-    .progress-fill {
-        width: 0%;
-        height: 100%;
-        background: linear-gradient(90deg, #00e5ff, #ff6b00);
-        transition: width 0.3s;
-    }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
-    .toast {
-        position: fixed;
-        top: 20px;
-        left: 50%;
-        transform: translateX(-50%) translateY(-8px);
-        background: rgba(0,229,255,0.12);
-        border: 1px solid rgba(0,229,255,0.3);
-        backdrop-filter: blur(12px);
-        color: #00e5ff;
-        padding: 8px 20px;
-        border-radius: 20px;
-        font-size: 11px;
-        font-weight: 600;
-        pointer-events: none;
-        z-index: 300;
-        opacity: 0;
-        transition: all 0.25s ease;
-    }
+    .upload-area { position: fixed; bottom: 20px; right: 20px; background: rgba(10, 14, 20, 0.88); backdrop-filter: blur(16px) saturate(180%); -webkit-backdrop-filter: blur(16px) saturate(180%); border: 1px solid rgba(0, 229, 255, 0.25); border-radius: 40px; padding: 10px 22px; cursor: pointer; z-index: 100; font-size: 12px; font-weight: 600; color: #00e5ff; transition: border-color 0.2s ease, background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease; display: flex; align-items: center; gap: 8px; letter-spacing: 0.5px; }
+    .upload-area:hover { border-color: rgba(0,229,255,0.6); background: rgba(0,229,255,0.08); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,229,255,0.2); }
+
+    .file-info { position: fixed; bottom: 20px; left: 20px; background: rgba(0,0,0,0.55); backdrop-filter: blur(10px); padding: 7px 16px; border-radius: 30px; font-size: 10.5px; z-index: 100; border-left: 2px solid #00e5ff; color: rgba(184, 212, 232, 0.9); letter-spacing: 0.2px; }
+    .status { position: fixed; bottom: 64px; left: 20px; background: rgba(0,0,0,0.4); backdrop-filter: blur(6px); padding: 4px 12px; border-radius: 20px; font-size: 9.5px; color: rgba(107, 143, 168, 0.8); font-family: 'SF Mono', 'Fira Code', monospace; pointer-events: none; letter-spacing: 0.3px; }
+
+    #overlay { position: fixed; inset: 0; background: #0a0e14; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; z-index: 200; transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+    #overlay.hidden { opacity: 0; pointer-events: none; }
+
+    .spinner-ring { position: relative; width: 48px; height: 48px; }
+    .spinner-ring::before, .spinner-ring::after { content: ''; position: absolute; inset: 0; border-radius: 50%; border: 2px solid transparent; }
+    .spinner-ring::before { border-top-color: #00e5ff; border-right-color: rgba(0,229,255,0.3); animation: spinA 0.9s cubic-bezier(0.5, 0, 0.5, 1) infinite; }
+    .spinner-ring::after { border-bottom-color: rgba(255, 107, 0, 0.7); border-left-color: rgba(255,107,0,0.2); animation: spinB 1.4s cubic-bezier(0.5, 0, 0.5, 1) infinite reverse; inset: 6px; }
+    @keyframes spinA { to { transform: rotate(360deg); } }
+    @keyframes spinB { to { transform: rotate(360deg); } }
+
+    .progress-bar { width: 220px; height: 2px; background: rgba(255,255,255,0.06); border-radius: 10px; overflow: hidden; }
+    .progress-fill { width: 0%; height: 100%; background: linear-gradient(90deg, #00e5ff, #ff6b00); border-radius: 10px; transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 0 8px rgba(0,229,255,0.6); }
+    #load-msg { color: rgba(138, 174, 192, 0.8); font-size: 11px; letter-spacing: 0.3px; }
+
+    .panel-content::-webkit-scrollbar { width: 2px; }
+    .panel-content::-webkit-scrollbar-track { background: transparent; }
+    .panel-content::-webkit-scrollbar-thumb { background: rgba(0,229,255,0.3); border-radius: 4px; }
+
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(6px); z-index: 500; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.25s ease; }
+    .modal-backdrop.open { opacity: 1; pointer-events: all; }
+    .modal { background: rgba(10,14,20,0.97); border: 1px solid rgba(0,229,255,0.2); border-radius: 20px; box-shadow: 0 32px 64px rgba(0,0,0,0.6), 0 0 0 1px rgba(0,229,255,0.08); width: 340px; max-width: calc(100vw - 32px); overflow: hidden; transform: translateY(12px) scale(0.97); transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1); }
+    .modal-backdrop.open .modal { transform: translateY(0) scale(1); }
+    .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px 14px; border-bottom: 1px solid rgba(0,229,255,0.08); background: linear-gradient(135deg, rgba(0,229,255,0.06), transparent); }
+    .modal-title { font-size: 13px; font-weight: 700; color: #00e5ff; letter-spacing: 0.8px; }
+    .modal-close { background: none; border: none; color: rgba(0,229,255,0.4); font-size: 20px; cursor: pointer; width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; transition: background 0.15s, color 0.15s; }
+    .modal-close:hover { background: rgba(0,229,255,0.12); color: #00e5ff; }
+    .modal-body { padding: 14px 16px; }
+    .save-input-row { display: flex; gap: 8px; margin-bottom: 14px; }
+    .save-name-input { flex: 1; background: rgba(255,255,255,0.04); border: 1px solid rgba(0,229,255,0.18); border-radius: 10px; padding: 8px 12px; font-size: 12px; color: #c8dde8; font-family: inherit; outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
+    .save-name-input:focus { border-color: rgba(0,229,255,0.45); box-shadow: 0 0 0 3px rgba(0,229,255,0.08); }
+    .save-name-input::placeholder { color: rgba(138,174,192,0.4); }
+    .btn-save-new { background: rgba(0,229,255,0.12); border: 1px solid rgba(0,229,255,0.3); border-radius: 10px; color: #00e5ff; font-size: 11px; font-weight: 700; padding: 8px 14px; cursor: pointer; transition: background 0.15s, transform 0.12s, box-shadow 0.15s; white-space: nowrap; font-family: inherit; letter-spacing: 0.3px; }
+    .btn-save-new:hover { background: rgba(0,229,255,0.22); box-shadow: 0 0 12px rgba(0,229,255,0.2); transform: translateY(-1px); }
+    .btn-save-new:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+    .slots-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; color: rgba(255,170,102,0.7); margin-bottom: 8px; }
+    .slots-list { display: flex; flex-direction: column; gap: 6px; max-height: 260px; overflow-y: auto; padding-right: 2px; }
+    .slots-list::-webkit-scrollbar { width: 2px; }
+    .slots-list::-webkit-scrollbar-thumb { background: rgba(0,229,255,0.2); border-radius: 4px; }
+    .slot-item { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 10px 12px; display: flex; align-items: center; gap: 10px; transition: border-color 0.2s, background 0.2s; animation: slotIn 0.25s ease; }
+    @keyframes slotIn { from{opacity:0;transform:translateY(-6px)} to{opacity:1;transform:translateY(0)} }
+    .slot-item:hover { border-color: rgba(0,229,255,0.2); background: rgba(0,229,255,0.04); }
+    .slot-icon { font-size: 20px; flex-shrink: 0; width: 32px; height: 32px; background: rgba(0,229,255,0.07); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+    .slot-info { flex: 1; min-width: 0; }
+    .slot-name { font-size: 12px; font-weight: 600; color: #c8dde8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .slot-meta { font-size: 9.5px; color: rgba(107,143,168,0.7); margin-top: 2px; display: flex; gap: 8px; }
+    .slot-actions { display: flex; gap: 5px; flex-shrink: 0; }
+    .btn-slot { background: none; border: 1px solid rgba(255,255,255,0.08); border-radius: 7px; color: #7a9ab0; font-size: 13px; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.15s; }
+    .btn-slot-load:hover { background: rgba(0,229,255,0.15); border-color: rgba(0,229,255,0.4); color: #00e5ff; }
+    .btn-slot-del:hover { background: rgba(231,76,60,0.15); border-color: rgba(231,76,60,0.4); color: #ff6655; }
+    .slots-empty { text-align: center; padding: 24px 0; color: rgba(107,143,168,0.4); font-size: 11px; }
+    .slots-empty-icon { font-size: 28px; margin-bottom: 8px; opacity: 0.4; }
+    .slots-limit { font-size: 9.5px; color: rgba(107,143,168,0.5); text-align: right; margin-top: 10px; }
+    .slots-limit span { color: #00e5ff; }
+
+    .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-8px); background: rgba(0,229,255,0.12); border: 1px solid rgba(0,229,255,0.3); backdrop-filter: blur(12px); color: #00e5ff; padding: 8px 20px; border-radius: 20px; font-size: 11px; font-weight: 600; pointer-events: none; z-index: 300; opacity: 0; transition: opacity 0.25s ease, transform 0.25s ease; letter-spacing: 0.5px; }
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 </style>
 </head>
@@ -318,14 +327,21 @@
 </div>
 
 <div class="toast" id="toast"></div>
-<div class="panel-reopen" id="panelReopen">🎮</div>
+<div class="panel-reopen" id="panelReopen" title="Mở panel điều khiển">🎮</div>
 
 <div class="viewer-panel" id="viewerPanel">
-    <div class="panel-header">
+    <div class="panel-header" id="panelHeader">
         <span class="panel-title">CNC VIEWER</span>
         <button class="panel-toggle" id="panelToggle">−</button>
     </div>
     <div class="panel-content">
+
+        <!-- Auto-load info -->
+        <div class="autoload-badge">
+            <div class="al-dot"></div>
+            <span>Tự động tải: <strong id="autoFileName" style="color:#00e5ff;">VIRTUAL_MILLING_CNC.stp</strong></span>
+        </div>
+
         <div class="section-label">Hiển thị</div>
         <div class="btn-group">
             <button class="btn-icon" id="btnWire">WIRE</button>
@@ -333,12 +349,15 @@
             <button class="btn-icon" id="btnAxes">AXES</button>
             <button class="btn-icon btn-danger" id="btnResetCam">↩ CAM</button>
         </div>
+
         <div class="separator"></div>
+
         <div class="section-label">Chế độ</div>
         <div class="btn-group">
             <button class="btn-icon btn-mode-drag active" id="modeDrag">✋ Kéo</button>
             <button class="btn-icon btn-mode-rotate" id="modeRotate">⌛ Xoay</button>
         </div>
+
         <div class="section-label">Di chuyển</div>
         <div class="btn-group">
             <button class="btn-icon btn-axis-x" id="moveLeft">◀ X-</button>
@@ -349,7 +368,9 @@
             <button class="btn-icon btn-axis-z" id="moveUp">Z+ ▲</button>
             <button class="btn-icon btn-warning" id="resetPos">↺ Reset</button>
         </div>
+
         <div class="separator"></div>
+
         <div class="section-label">Xoay</div>
         <div class="btn-group">
             <button class="btn-icon btn-axis-x" id="rotXP">X+90°</button>
@@ -365,22 +386,70 @@
             <button class="btn-icon btn-axis-z" id="flipZ">🪞 Z</button>
             <button class="btn-icon btn-warning" id="resetRot">⟳ Reset</button>
         </div>
+
         <div class="separator"></div>
+
         <div class="slider-item">
             <div class="slider-label"><span>🔍 Scale</span><span id="scaleVal">1.00×</span></div>
-            <div class="slider-track"><div class="slider-fill" id="scaleFill" style="width:31%"></div><input type="range" id="scaleSlider" min="0.2" max="3" step="0.01" value="1"></div>
+            <div class="slider-track">
+                <div class="slider-fill" id="scaleFill" style="width:31%"></div>
+                <input type="range" id="scaleSlider" min="0.2" max="3" step="0.01" value="1">
+            </div>
         </div>
         <div class="slider-item">
             <div class="slider-label"><span>💡 Ánh sáng</span><span id="lightVal">70%</span></div>
-            <div class="slider-track"><div class="slider-fill" id="lightFill" style="width:70%"></div><input type="range" id="lightSlider" min="0" max="100" value="70"></div>
+            <div class="slider-track">
+                <div class="slider-fill" id="lightFill" style="width:70%"></div>
+                <input type="range" id="lightSlider" min="0" max="100" value="70">
+            </div>
         </div>
-        <div class="info-badge"><span>Parts</span><span class="badge-val" id="partsCount">0</span></div>
+
+        <div class="info-badge">
+            <span>Parts</span>
+            <span class="badge-val" id="partsCount">0</span>
+        </div>
+
+        <div class="separator"></div>
+
+        <div class="section-label">Lưu / Tải</div>
+        <div class="btn-group">
+            <button class="btn-icon" id="btnOpenSave" style="width:100%;justify-content:center;">💾 Quản lý mô hình đã lưu</button>
+        </div>
+
+        <div class="separator"></div>
+
+        <div class="section-label">Upload thủ công</div>
+        <div class="btn-group">
+            <button class="btn-icon" id="btnManualUpload" style="width:100%;justify-content:center;">📂 Mở file STEP khác</button>
+        </div>
     </div>
 </div>
 
-<div class="upload-area" id="uploadArea">📂 Mở file STEP<input type="file" id="fileInput" accept=".stp,.step" style="display:none"></div>
-<div class="file-info" id="fileInfo">📄 <span id="fileName">Chưa có file</span></div>
-<div class="status" id="status">✅ Sẵn sàng</div>
+<!-- Save/Load Modal -->
+<div class="modal-backdrop" id="saveModal">
+    <div class="modal">
+        <div class="modal-header">
+            <span class="modal-title">💾 Mô hình đã lưu</span>
+            <button class="modal-close" id="modalClose">×</button>
+        </div>
+        <div class="modal-body">
+            <div class="save-input-row">
+                <input class="save-name-input" id="saveNameInput" type="text" placeholder="Tên mô hình..." maxlength="40">
+                <button class="btn-save-new" id="btnSaveSlot">+ Lưu</button>
+            </div>
+            <div class="slots-label">Danh sách đã lưu</div>
+            <div class="slots-list" id="slotsList"></div>
+            <div class="slots-limit">Đã dùng <span id="slotsUsed">0</span> / 5 slot</div>
+        </div>
+    </div>
+</div>
+
+<input type="file" id="fileInput" accept=".stp,.step" style="display:none">
+
+<div class="file-info" id="fileInfo">
+    📄 <span id="fileName">Đang tải...</span>
+</div>
+<div class="status" id="status">⏳ Đang khởi động...</div>
 
 <script type="importmap">
 {
@@ -395,134 +464,27 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-// ===== KHAI BÁO BIẾN =====
-let occt = null;
-let mainGroup = null;
-let allMeshes = [];
-let wireframe = false;
-let currentRotation = new THREE.Euler(0, 0, 0);
-let currentScale = 1;
-let dragMode = true;
-let isDragging = false;
-let dragLastX = 0, dragLastY = 0;
+// =============================================
+// CẤU HÌNH: Tên file STP đặt cùng thư mục HTML
+// =============================================
+const AUTO_LOAD_FILE = 'VIRTUAL_MILLING_CNC.stp';
+// =============================================
 
-// ===== AUTO SAVE =====
-let saveTimeout = null;
+document.getElementById('autoFileName').textContent = AUTO_LOAD_FILE;
 
-function autoSaveModelState() {
-    if (!mainGroup) return;
-
-    clearTimeout(saveTimeout);
-
-    saveTimeout = setTimeout(() => {
-        localStorage.setItem(
-            'cnc_model_state',
-            JSON.stringify({
-                position: [
-                    mainGroup.position.x,
-                    mainGroup.position.y,
-                    mainGroup.position.z
-                ],
-                rotation: [
-                    currentRotation.x,
-                    currentRotation.y,
-                    currentRotation.z
-                ],
-                scale: currentScale
-            })
-        );
-
-        console.log("💾 Auto Saved");
-
-        const status = document.getElementById("status");
-        if (status) {
-            status.textContent = "💾 Đã lưu";
-            setTimeout(() => {
-                status.textContent = `✅ ${allMeshes.length} parts`;
-            }, 1000);
-        }
-    }, 300);
-}
-
-const colors = [0x3a86ff, 0xf4a261, 0xe76f51, 0x2a9d8f, 0xe9c46a, 0x9c89b8, 0xf08080, 0x70d6ff, 0xffb703];
-
-// ===== INDEXEDDB - LƯU FILE STEP =====
-const DB_NAME = 'CNCViewerDB';
-const STORE_NAME = 'stepFiles';
-const DB_VERSION = 1;
-
-function openDB() {
-    return new Promise((resolve, reject) => {
-        const request = indexedDB.open(DB_NAME, DB_VERSION);
-        request.onerror = () => reject(request.error);
-        request.onsuccess = () => resolve(request.result);
-        request.onupgradeneeded = (event) => {
-            const db = event.target.result;
-            if (!db.objectStoreNames.contains(STORE_NAME)) {
-                db.createObjectStore(STORE_NAME, { keyPath: 'id' });
-            }
-        };
-    });
-}
-
-async function saveFileToIndexedDB(file) {
-    const db = await openDB();
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = async () => {
-            const transaction = db.transaction([STORE_NAME], 'readwrite');
-            const store = transaction.objectStore(STORE_NAME);
-            const record = {
-                id: 'current_step',
-                name: file.name,
-                size: file.size,
-                type: file.type,
-                data: reader.result,
-                timestamp: Date.now()
-            };
-            const request = store.put(record);
-            request.onsuccess = () => {
-                console.log('✅ File saved to IndexedDB:', file.name);
-                resolve();
-            };
-            request.onerror = () => reject(request.error);
-        };
-        reader.onerror = () => reject(reader.error);
-        reader.readAsArrayBuffer(file);
-    });
-}
-
-async function loadFileFromIndexedDB() {
-    const db = await openDB();
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction([STORE_NAME], 'readonly');
-        const store = transaction.objectStore(STORE_NAME);
-        const request = store.get('current_step');
-        request.onsuccess = () => {
-            const record = request.result;
-            if (record && record.data) {
-                const file = new File([record.data], record.name, { type: record.type || 'application/step' });
-                resolve(file);
-            } else {
-                resolve(null);
-            }
-        };
-        request.onerror = () => reject(request.error);
-    });
-}
-
-// ===== THREE.JS SETUP =====
+// ===== RENDERER =====
 const canvas = document.createElement('canvas');
 document.body.insertBefore(canvas, document.body.firstChild);
-canvas.style.position = 'fixed';
-canvas.style.inset = '0';
-canvas.style.width = '100%';
-canvas.style.height = '100%';
+canvas.style.cssText = 'position:fixed;inset:0;display:block;width:100%;height:100%;';
 
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: 'high-performance' });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setClearColor(0x0a0e14, 1);
+renderer.physicallyCorrectLights = true;
+renderer.outputEncoding = THREE.sRGBEncoding;
 
+// ===== SCENE =====
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x0a0e14);
 scene.fog = new THREE.FogExp2(0x0a0e14, 0.00012);
@@ -533,11 +495,14 @@ camera.position.set(500, 420, 700);
 const orbitControls = new OrbitControls(camera, renderer.domElement);
 orbitControls.enableDamping = true;
 orbitControls.dampingFactor = 0.06;
-orbitControls.target.set(0, 0, 0);
-orbitControls.zoomSpeed = 1.2;
+orbitControls.rotateSpeed = 0.65;
+orbitControls.zoomSpeed = 1.1;
 orbitControls.panSpeed = 0.8;
+orbitControls.target.set(0, 0, 0);
+orbitControls.minDistance = 20;
+orbitControls.maxDistance = 4000;
 
-// Lighting
+// ===== LIGHTING =====
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.9);
 scene.add(ambientLight);
 const mainLight = new THREE.DirectionalLight(0xfff5e0, 2.0);
@@ -546,364 +511,373 @@ scene.add(mainLight);
 const fillLight = new THREE.DirectionalLight(0x3399ff, 0.4);
 fillLight.position.set(-400, -200, -300);
 scene.add(fillLight);
-const backLight = new THREE.PointLight(0xffaa66, 0.3);
-backLight.position.set(0, 200, -500);
-scene.add(backLight);
+const rimLight = new THREE.PointLight(0xff6633, 0.3, 2000);
+rimLight.position.set(0, -300, 400);
+scene.add(rimLight);
 
-// Helpers
+// ===== HELPERS =====
 const axesHelper = new THREE.AxesHelper(250);
 scene.add(axesHelper);
 const gridHelper = new THREE.GridHelper(2200, 60, 0x4a8a9a, 0x2a5a6a);
 gridHelper.position.y = -2;
 scene.add(gridHelper);
 
-// ===== DRAG MODEL =====
+// ===== STATE =====
+let mainGroup = null, allMeshes = [], wireframe = false;
+let currentRotation = new THREE.Euler(0, 0, 0);
+let currentScale = 1, dragMode = true;
+
+const colors = [0x3a86ff,0xf4a261,0xe76f51,0x2a9d8f,0xe9c46a,0x9c89b8,0xf08080,0x70d6ff,0xffb703,0x06d6a0,0xef476f,0xffd166];
+
+// ===== DRAG =====
+let isDragging = false, dragLastX = 0, dragLastY = 0;
+let dragVelX = 0, dragVelY = 0, dragMomentumX = 0, dragMomentumY = 0;
+const DRAG_FRICTION = 0.88, DRAG_SPEED = 1.0;
+
 function screenToWorldDelta(dx, dy) {
     const dist = camera.position.distanceTo(mainGroup ? mainGroup.position : orbitControls.target);
-    const fovRad = camera.fov * Math.PI / 180;
-    const heightAtDist = 2 * Math.tan(fovRad / 2) * dist;
-    const pixelToWorld = heightAtDist / window.innerHeight * 1.0;
-    return { dx: dx * pixelToWorld, dy: dy * pixelToWorld };
+    const h = 2 * Math.tan(camera.fov * Math.PI / 360) * dist;
+    const s = h / window.innerHeight * DRAG_SPEED;
+    return { dx: dx * s, dy: dy * s };
 }
 
-canvas.addEventListener('mousedown', (e) => {
+canvas.addEventListener('mousedown', e => {
     if (!dragMode || !mainGroup) return;
-    isDragging = true;
-    dragLastX = e.clientX;
-    dragLastY = e.clientY;
-    canvas.style.cursor = 'grabbing';
-    e.preventDefault();
+    isDragging = true; dragLastX = e.clientX; dragLastY = e.clientY;
+    dragMomentumX = 0; dragMomentumY = 0;
+    canvas.style.cursor = 'grabbing'; e.preventDefault();
 });
-
-window.addEventListener('mousemove', (e) => {
+window.addEventListener('mousemove', e => {
     if (!isDragging || !dragMode || !mainGroup) return;
-    const { dx, dy } = screenToWorldDelta(e.clientX - dragLastX, e.clientY - dragLastY);
-    const right = new THREE.Vector3().crossVectors(camera.getWorldDirection(new THREE.Vector3()), new THREE.Vector3(0, 1, 0)).normalize();
+    const rawDX = e.clientX - dragLastX, rawDY = e.clientY - dragLastY;
+    dragVelX = rawDX; dragVelY = rawDY;
+    const { dx, dy } = screenToWorldDelta(rawDX, rawDY);
+    const right = new THREE.Vector3();
+    right.crossVectors(camera.getWorldDirection(new THREE.Vector3()), new THREE.Vector3(0,1,0)).normalize();
     mainGroup.position.addScaledVector(right, dx);
     mainGroup.position.y -= dy;
-    dragLastX = e.clientX;
-    dragLastY = e.clientY;
-    autoSaveModelState();
+    dragLastX = e.clientX; dragLastY = e.clientY;
+    autoSaveTransform();
 });
-
 window.addEventListener('mouseup', () => {
-    isDragging = false;
+    if (!isDragging) return;
+    isDragging = false; dragMomentumX = dragVelX; dragMomentumY = dragVelY;
     canvas.style.cursor = dragMode ? 'grab' : 'default';
 });
 
-function applyRotation() {
-    if (!mainGroup) return;
-    mainGroup.rotation.set(currentRotation.x, currentRotation.y, currentRotation.z);
-    autoSaveModelState();
+function applyDragMomentum() {
+    if (isDragging || !mainGroup || (Math.abs(dragMomentumX) < 0.01 && Math.abs(dragMomentumY) < 0.01)) return;
+    const { dx, dy } = screenToWorldDelta(dragMomentumX, dragMomentumY);
+    const right = new THREE.Vector3();
+    right.crossVectors(camera.getWorldDirection(new THREE.Vector3()), new THREE.Vector3(0,1,0)).normalize();
+    mainGroup.position.addScaledVector(right, dx);
+    mainGroup.position.y -= dy;
+    dragMomentumX *= DRAG_FRICTION; dragMomentumY *= DRAG_FRICTION;
 }
 
+// ===== HELPERS =====
+function applyRotation() { if (mainGroup) mainGroup.rotation.set(currentRotation.x, currentRotation.y, currentRotation.z, 'XYZ'); autoSaveTransform(); }
 function applyScale() {
-    if (!mainGroup) return;
-    mainGroup.scale.setScalar(currentScale);
-    document.getElementById('scaleFill').style.width = ((currentScale - 0.2) / 2.8) * 100 + '%';
+    if (mainGroup) mainGroup.scale.setScalar(currentScale);
+    const pct = ((currentScale - 0.2) / (3 - 0.2)) * 100;
+    document.getElementById('scaleFill').style.width = pct + '%';
     document.getElementById('scaleVal').innerText = currentScale.toFixed(2) + '×';
-    autoSaveModelState();
+    autoSaveTransform();
+}
+
+let toastTimer;
+function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 1800);
 }
 
 function setDragMode(enabled) {
-    dragMode = enabled;
-    const dragBtn = document.getElementById('modeDrag');
-    const rotBtn = document.getElementById('modeRotate');
-    if (dragMode) { 
-        dragBtn.classList.add('active'); 
-        rotBtn.classList.remove('active'); 
-        orbitControls.enabled = false; 
-        canvas.style.cursor = 'grab';
-    } else { 
-        dragBtn.classList.remove('active'); 
-        rotBtn.classList.add('active'); 
-        orbitControls.enabled = true; 
-        canvas.style.cursor = 'default';
-    }
+    dragMode = enabled; dragMomentumX = 0; dragMomentumY = 0;
+    document.getElementById('modeDrag').classList.toggle('active', dragMode);
+    document.getElementById('modeRotate').classList.toggle('active', !dragMode);
+    orbitControls.enabled = !dragMode;
+    canvas.style.cursor = dragMode ? 'grab' : 'default';
 }
 
-// ===== UI BINDINGS =====
+// ===== UI =====
 document.getElementById('modeDrag').onclick = () => setDragMode(true);
 document.getElementById('modeRotate').onclick = () => setDragMode(false);
 
-document.getElementById('moveLeft').onclick = () => { if (!mainGroup) return; mainGroup.position.x -= 20; autoSaveModelState(); };
-document.getElementById('moveRight').onclick = () => { if (!mainGroup) return; mainGroup.position.x += 20; autoSaveModelState(); };
-document.getElementById('moveBack').onclick = () => { if (!mainGroup) return; mainGroup.position.z -= 20; autoSaveModelState(); };
-document.getElementById('moveForward').onclick = () => { if (!mainGroup) return; mainGroup.position.z += 20; autoSaveModelState(); };
-document.getElementById('moveDown').onclick = () => { if (!mainGroup) return; mainGroup.position.y -= 20; autoSaveModelState(); };
-document.getElementById('moveUp').onclick = () => { if (!mainGroup) return; mainGroup.position.y += 20; autoSaveModelState(); };
-document.getElementById('resetPos').onclick = () => { if (!mainGroup) return; mainGroup.position.set(0, 0, 0); autoSaveModelState(); showToast('Reset vị trí'); };
+const MOVE_STEP = 20;
+document.getElementById('moveLeft').onclick    = () => { if(mainGroup){mainGroup.position.x-=MOVE_STEP;autoSaveTransform();} };
+document.getElementById('moveRight').onclick   = () => { if(mainGroup){mainGroup.position.x+=MOVE_STEP;autoSaveTransform();} };
+document.getElementById('moveBack').onclick    = () => { if(mainGroup){mainGroup.position.z-=MOVE_STEP;autoSaveTransform();} };
+document.getElementById('moveForward').onclick = () => { if(mainGroup){mainGroup.position.z+=MOVE_STEP;autoSaveTransform();} };
+document.getElementById('moveDown').onclick    = () => { if(mainGroup){mainGroup.position.y-=MOVE_STEP;autoSaveTransform();} };
+document.getElementById('moveUp').onclick      = () => { if(mainGroup){mainGroup.position.y+=MOVE_STEP;autoSaveTransform();} };
+document.getElementById('resetPos').onclick    = () => { if(mainGroup){mainGroup.position.set(0,0,0);autoSaveTransform();showToast('Đã reset vị trí');} };
 
-document.getElementById('scaleSlider').oninput = (e) => { currentScale = parseFloat(e.target.value); applyScale(); };
-document.getElementById('lightSlider').oninput = (e) => { 
-    let v = parseInt(e.target.value); 
-    ambientLight.intensity = v/100 * 1.5; 
-    mainLight.intensity = v/100 * 2.5; 
-    document.getElementById('lightFill').style.width = v + '%'; 
-    document.getElementById('lightVal').innerText = v + '%'; 
+document.getElementById('scaleSlider').oninput = e => { currentScale = parseFloat(e.target.value); applyScale(); };
+document.getElementById('lightSlider').oninput = e => {
+    const v = parseInt(e.target.value);
+    ambientLight.intensity = v/100*1.5; mainLight.intensity = v/100*2.5;
+    document.getElementById('lightFill').style.width = v+'%';
+    document.getElementById('lightVal').innerText = v+'%';
 };
 
-document.getElementById('btnWire').onclick = () => { 
-    wireframe = !wireframe; 
-    allMeshes.forEach(m => { if (m.material) m.material.wireframe = wireframe; }); 
-    document.getElementById('btnWire').classList.toggle('active', wireframe); 
+document.getElementById('btnWire').onclick = () => {
+    wireframe = !wireframe;
+    allMeshes.forEach(m => { if(m.material) m.material.wireframe = wireframe; });
+    document.getElementById('btnWire').classList.toggle('active', wireframe);
     showToast(wireframe ? 'Wireframe ON' : 'Wireframe OFF');
 };
-document.getElementById('btnGrid').onclick = () => { 
-    gridHelper.visible = !gridHelper.visible; 
-    document.getElementById('btnGrid').classList.toggle('active', gridHelper.visible); 
-};
-document.getElementById('btnAxes').onclick = () => { 
-    axesHelper.visible = !axesHelper.visible; 
-    document.getElementById('btnAxes').classList.toggle('active', axesHelper.visible); 
-};
-document.getElementById('btnResetCam').onclick = () => { 
-    camera.position.set(500, 420, 700); 
-    orbitControls.target.set(0, 0, 0); 
-    orbitControls.update(); 
-    showToast('Reset camera'); 
+document.getElementById('btnGrid').onclick = () => { gridHelper.visible = !gridHelper.visible; document.getElementById('btnGrid').classList.toggle('active', gridHelper.visible); };
+document.getElementById('btnAxes').onclick = () => { axesHelper.visible = !axesHelper.visible; document.getElementById('btnAxes').classList.toggle('active', axesHelper.visible); };
+document.getElementById('btnResetCam').onclick = () => {
+    const s = camera.position.clone(); const e = new THREE.Vector3(500,420,700); let t = 0;
+    function a() { t+=0.06; const ease=1-Math.pow(1-Math.min(t,1),3); camera.position.lerpVectors(s,e,ease); orbitControls.target.lerp(new THREE.Vector3(0,0,0),ease*0.15); orbitControls.update(); if(t<1)requestAnimationFrame(a); else{camera.position.copy(e);orbitControls.target.set(0,0,0);} }
+    a(); showToast('Camera reset');
 };
 
-document.getElementById('rotXP').onclick = () => { currentRotation.x += Math.PI/2; applyRotation(); };
-document.getElementById('rotXM').onclick = () => { currentRotation.x -= Math.PI/2; applyRotation(); };
-document.getElementById('rotYP').onclick = () => { currentRotation.y += Math.PI/2; applyRotation(); };
-document.getElementById('rotYM').onclick = () => { currentRotation.y -= Math.PI/2; applyRotation(); };
-document.getElementById('rotZP').onclick = () => { currentRotation.z += Math.PI/2; applyRotation(); };
-document.getElementById('rotZM').onclick = () => { currentRotation.z -= Math.PI/2; applyRotation(); };
-document.getElementById('flipX').onclick = () => { currentRotation.x += Math.PI; applyRotation(); };
-document.getElementById('flipY').onclick = () => { currentRotation.y += Math.PI; applyRotation(); };
-document.getElementById('flipZ').onclick = () => { currentRotation.z += Math.PI; applyRotation(); };
-document.getElementById('resetRot').onclick = () => { currentRotation.set(0, 0, 0); applyRotation(); showToast('Reset xoay'); };
+const HPI = Math.PI/2;
+document.getElementById('rotXP').onclick = () => { currentRotation.x+=HPI; applyRotation(); };
+document.getElementById('rotXM').onclick = () => { currentRotation.x-=HPI; applyRotation(); };
+document.getElementById('rotYP').onclick = () => { currentRotation.y+=HPI; applyRotation(); };
+document.getElementById('rotYM').onclick = () => { currentRotation.y-=HPI; applyRotation(); };
+document.getElementById('rotZP').onclick = () => { currentRotation.z+=HPI; applyRotation(); };
+document.getElementById('rotZM').onclick = () => { currentRotation.z-=HPI; applyRotation(); };
+document.getElementById('flipX').onclick  = () => { currentRotation.x+=Math.PI; applyRotation(); };
+document.getElementById('flipY').onclick  = () => { currentRotation.y+=Math.PI; applyRotation(); };
+document.getElementById('flipZ').onclick  = () => { currentRotation.z+=Math.PI; applyRotation(); };
+document.getElementById('resetRot').onclick = () => { currentRotation.set(0,0,0); applyRotation(); showToast('Đã reset góc xoay'); };
 
-// Panel toggle
 let panelCollapsed = false;
-document.getElementById('panelToggle').onclick = () => {
-    panelCollapsed = true;
-    document.getElementById('viewerPanel').classList.add('collapsed');
-    document.getElementById('panelReopen').classList.add('visible');
-};
-document.getElementById('panelReopen').onclick = () => {
-    panelCollapsed = false;
-    document.getElementById('viewerPanel').classList.remove('collapsed');
-    document.getElementById('panelReopen').classList.remove('visible');
-};
+function setPanelCollapsed(v) {
+    panelCollapsed = v;
+    document.getElementById('viewerPanel').classList.toggle('collapsed', v);
+    document.getElementById('panelReopen').classList.toggle('visible', v);
+}
+document.getElementById('panelToggle').onclick = e => { e.stopPropagation(); setPanelCollapsed(true); };
+document.getElementById('panelReopen').onclick = () => setPanelCollapsed(false);
 
-function showToast(msg) { 
-    let t = document.getElementById('toast'); 
-    t.textContent = msg; 
-    t.classList.add('show'); 
-    setTimeout(() => t.classList.remove('show'), 1800); 
+// Upload thủ công
+document.getElementById('btnManualUpload').onclick = () => document.getElementById('fileInput').click();
+document.getElementById('fileInput').onchange = async e => { if(e.target.files[0]) await processFile(e.target.files[0], true); };
+document.body.addEventListener('dragover', e => e.preventDefault());
+document.body.addEventListener('drop', e => { e.preventDefault(); const f=e.dataTransfer.files[0]; if(f&&/\.(stp|step)$/i.test(f.name)) processFile(f,true); });
+
+// ===== OCCT =====
+let occt = null;
+async function loadOCCT() {
+    return new Promise((resolve, reject) => {
+        if (window.occtimportjs) { window.occtimportjs({ locateFile: p=>`https://cdn.jsdelivr.net/npm/occt-import-js@0.0.18/dist/${p}` }).then(resolve).catch(reject); return; }
+        const s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/occt-import-js@0.0.18/dist/occt-import-js.js';
+        s.onload = () => window.occtimportjs({ locateFile: p=>`https://cdn.jsdelivr.net/npm/occt-import-js@0.0.18/dist/${p}` }).then(resolve).catch(reject);
+        s.onerror = () => reject(new Error('Không tải được OCCT'));
+        document.head.appendChild(s);
+    });
 }
 
-// ===== XỬ LÝ FILE STEP =====
-async function processFile(file, shouldSave = true) {
+function setProgress(pct, msg) {
+    document.getElementById('progress-fill').style.width = pct+'%';
+    if (msg) document.getElementById('load-msg').innerHTML = msg;
+}
+
+async function processFile(file, saveToDb = false) {
     const overlay = document.getElementById('overlay');
-    const progressFill = document.getElementById('progress-fill');
-    const loadMsg = document.getElementById('load-msg');
     overlay.classList.remove('hidden');
-    progressFill.style.width = '5%';
-    loadMsg.innerHTML = `📄 ${file.name}`;
+    setProgress(5, `📄 ${file.name}`);
     document.getElementById('fileName').textContent = file.name;
     document.getElementById('status').textContent = '⏳ Đang xử lý...';
 
     try {
-        if (!occt) {
-            progressFill.style.width = '15%';
-            loadMsg.innerHTML = 'Tải OCCT engine...';
-            occt = await new Promise((resolve, reject) => {
-                const script = document.createElement('script');
-                script.src = 'https://cdn.jsdelivr.net/npm/occt-import-js@0.0.18/dist/occt-import-js.js';
-                script.onload = () => {
-                    window.occtimportjs({ 
-                        locateFile: (path) => `https://cdn.jsdelivr.net/npm/occt-import-js@0.0.18/dist/${path}` 
-                    }).then(resolve).catch(reject);
-                };
-                script.onerror = () => reject(new Error('Load OCCT failed'));
-                document.head.appendChild(script);
-            });
-        }
-        progressFill.style.width = '35%';
-        loadMsg.innerHTML = 'Đọc file STEP...';
-        
+        if (!occt) { setProgress(15, 'Tải OCCT engine...'); occt = await loadOCCT(); }
+        setProgress(35, 'Đọc file STEP...');
         const buffer = await file.arrayBuffer();
-        const uint8Array = new Uint8Array(buffer);
-        
-        progressFill.style.width = '55%';
-        loadMsg.innerHTML = 'Phân tích hình học...';
+        const uint8 = new Uint8Array(buffer);
+        setProgress(55, 'Phân tích hình học...');
         let result;
-        try {
-            result = occt.ReadStepFile(uint8Array, { linearDeflection: 0.1, angularDeflection: 0.5 });
-        } catch(e) { 
-            result = occt.ReadStepFile(uint8Array); 
-        }
-        
+        try { result = occt.ReadStepFile(uint8, { linearDeflection:0.1, angularDeflection:0.5 }); }
+        catch { result = occt.ReadStepFile(uint8); }
         if (!result?.meshes?.length) throw new Error('Không có mesh trong file');
-        
-        progressFill.style.width = '75%';
-        loadMsg.innerHTML = 'Dựng mô hình 3D...';
-        
-        if (mainGroup) scene.remove(mainGroup);
-        allMeshes = [];
-        mainGroup = new THREE.Group();
-        currentRotation.set(0, 0, 0);
-        currentScale = 1;
-        document.getElementById('scaleSlider').value = 1;
-        applyScale();
-        
-        for (let i = 0; i < result.meshes.length; i++) {
-            const m = result.meshes[i];
-            const geom = new THREE.BufferGeometry();
-            geom.setAttribute('position', new THREE.BufferAttribute(new Float32Array(m.attributes.position.array), 3));
-            if (m.index && m.index.array) geom.setIndex(new THREE.BufferAttribute(new Uint32Array(m.index.array), 1));
-            geom.computeVertexNormals();
-            const mat = new THREE.MeshStandardMaterial({ color: colors[i % colors.length], roughness: 0.3, metalness: 0.7 });
-            const mesh = new THREE.Mesh(geom, mat);
-            mainGroup.add(mesh);
-            allMeshes.push(mesh);
-        }
-        
+        setProgress(75, 'Dựng mô hình 3D...');
+        if (mainGroup) { scene.remove(mainGroup); allMeshes.forEach(m=>{m.geometry.dispose();m.material.dispose();}); }
+        allMeshes = []; mainGroup = new THREE.Group();
+        currentRotation.set(0,0,0); currentScale = 1;
+        document.getElementById('scaleSlider').value = 1; applyScale();
+        result.meshes.forEach((m, i) => {
+            const g = new THREE.BufferGeometry();
+            g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(m.attributes.position.array), 3));
+            if (m.index?.array) g.setIndex(new THREE.BufferAttribute(new Uint32Array(m.index.array), 1));
+            g.computeVertexNormals();
+            const mat = new THREE.MeshStandardMaterial({ color: colors[i%colors.length], roughness:0.3, metalness:0.7 });
+            const mesh = new THREE.Mesh(g, mat);
+            mainGroup.add(mesh); allMeshes.push(mesh);
+        });
         scene.add(mainGroup);
-        const box = new THREE.Box3().setFromObject(mainGroup);
-        const center = box.getCenter(new THREE.Vector3());
-        mainGroup.position.sub(center);
-        
-        // Khôi phục vị trí đã lưu
-        loadModelState();
-        
+        const box3 = new THREE.Box3().setFromObject(mainGroup);
+        mainGroup.position.sub(box3.getCenter(new THREE.Vector3()));
+        restoreTransform();
         document.getElementById('partsCount').textContent = allMeshes.length;
-        progressFill.style.width = '100%';
-        loadMsg.innerHTML = `✅ ${allMeshes.length} parts`;
+        setProgress(100, `✅ ${allMeshes.length} parts`);
         document.getElementById('status').textContent = `✅ ${allMeshes.length} parts`;
-        
-        if (shouldSave) {
-            await saveFileToIndexedDB(file);
-            console.log('✅ File saved to IndexedDB');
-        }
-        
-        setTimeout(() => overlay.classList.add('hidden'), 500);
+        if (saveToDb) { dbSaveCurrentFile(file).catch(()=>{}); localStorage.removeItem('cnc_transform'); }
+        setTimeout(() => overlay.classList.add('hidden'), 600);
         showToast(`Đã tải ${allMeshes.length} parts`);
-        
     } catch (err) {
-        console.error(err);
-        progressFill.style.width = '100%';
-        loadMsg.innerHTML = `❌ ${err.message}`;
-        document.getElementById('status').textContent = '❌ Lỗi';
-        setTimeout(() => overlay.classList.add('hidden'), 2500);
+        setProgress(100, `❌ ${err.message}`);
+        document.getElementById('status').textContent = '❌ Lỗi: ' + err.message;
+        setTimeout(() => overlay.classList.add('hidden'), 3000);
     }
 }
 
-// ===== TỰ ĐỘNG KHÔI PHỤC =====
-async function autoRestoreFile() {
+// ===== TRANSFORM AUTO-SAVE =====
+let _saveTimer = null;
+function autoSaveTransform() {
+    clearTimeout(_saveTimer);
+    _saveTimer = setTimeout(() => {
+        if (!mainGroup) return;
+        localStorage.setItem('cnc_transform', JSON.stringify({
+            pos: mainGroup.position.toArray(),
+            rot: [currentRotation.x, currentRotation.y, currentRotation.z],
+            scale: currentScale,
+        }));
+    }, 400);
+}
+function restoreTransform() {
+    const raw = localStorage.getItem('cnc_transform');
+    if (!raw || !mainGroup) return;
     try {
-        const savedFile = await loadFileFromIndexedDB();
-        if (savedFile) {
-            console.log('🔄 Restoring saved file:', savedFile.name);
-            document.getElementById('fileName').textContent = savedFile.name;
-            await processFile(savedFile, false);
-            showToast(`📂 Đã khôi phục: ${savedFile.name}`);
-            return true;
-        }
-    } catch(e) {
-        console.log('No saved file found');
-    }
-    return false;
+        const s = JSON.parse(raw);
+        mainGroup.position.fromArray(s.pos);
+        currentRotation.set(s.rot[0], s.rot[1], s.rot[2]);
+        currentScale = s.scale ?? 1;
+        document.getElementById('scaleSlider').value = currentScale;
+        applyRotation(); applyScale();
+    } catch {}
 }
 
-// ===== UPLOAD HANDLER =====
-document.getElementById('uploadArea').onclick = () => document.getElementById('fileInput').click();
-document.getElementById('fileInput').onchange = async (e) => {
-    if (e.target.files[0]) await processFile(e.target.files[0], true);
-};
+// ===== INDEXED DB =====
+const DB_NAME='CNCViewer', DB_VER=2, STORE='slots', STORE_FILE='currentFile', MAX_SLOTS=5;
+function openDB() {
+    return new Promise((res,rej) => {
+        const r = indexedDB.open(DB_NAME, DB_VER);
+        r.onupgradeneeded = e => { const db=e.target.result; if(!db.objectStoreNames.contains(STORE))db.createObjectStore(STORE,{keyPath:'id'}); if(!db.objectStoreNames.contains(STORE_FILE))db.createObjectStore(STORE_FILE,{keyPath:'id'}); };
+        r.onsuccess = e => res(e.target.result);
+        r.onerror = () => rej(r.error);
+    });
+}
+async function dbGetAll() { const db=await openDB(); return new Promise((res,rej)=>{const tx=db.transaction(STORE,'readonly');const r=tx.objectStore(STORE).getAll();r.onsuccess=()=>res(r.result||[]);r.onerror=()=>rej(r.error);}); }
+async function dbPut(slot) { const db=await openDB(); return new Promise((res,rej)=>{const tx=db.transaction(STORE,'readwrite');tx.objectStore(STORE).put(slot);tx.oncomplete=res;tx.onerror=()=>rej(tx.error);}); }
+async function dbDelete(id) { const db=await openDB(); return new Promise((res,rej)=>{const tx=db.transaction(STORE,'readwrite');tx.objectStore(STORE).delete(id);tx.oncomplete=res;tx.onerror=()=>rej(tx.error);}); }
+async function dbSaveCurrentFile(file) { const db=await openDB(); const buf=await file.arrayBuffer(); return new Promise((res,rej)=>{const tx=db.transaction(STORE_FILE,'readwrite');tx.objectStore(STORE_FILE).put({id:'current',name:file.name,data:buf,ts:Date.now()});tx.oncomplete=res;tx.onerror=()=>rej(tx.error);}); }
+async function dbLoadCurrentFile() { const db=await openDB(); return new Promise((res,rej)=>{const tx=db.transaction(STORE_FILE,'readonly');const r=tx.objectStore(STORE_FILE).get('current');r.onsuccess=()=>{const x=r.result;if(x)res(new File([x.data],x.name,{type:'application/step'}));else res(null);};r.onerror=()=>rej(r.error);}); }
 
-// Drag & drop
-document.body.addEventListener('dragover', (e) => e.preventDefault());
-document.body.addEventListener('drop', async (e) => {
-    e.preventDefault();
-    const file = e.dataTransfer.files[0];
-    if (file && /\.(stp|step)$/i.test(file.name)) await processFile(file, true);
-});
-
-// ===== LƯU VÀ KHÔI PHỤC TRẠNG THÁI =====
-function saveModelState() {
-    if (!mainGroup) return;
-    localStorage.setItem('cnc_model_state', JSON.stringify({
-        position: [mainGroup.position.x, mainGroup.position.y, mainGroup.position.z],
-        rotation: [currentRotation.x, currentRotation.y, currentRotation.z],
-        scale: currentScale
-    }));
-    showToast('💾 Đã lưu trạng thái');
+function meshesToData() {
+    if (!mainGroup) return null;
+    return { meshData: allMeshes.map(m=>({position:Array.from(m.geometry.attributes.position.array),index:m.geometry.index?Array.from(m.geometry.index.array):null,color:m.material.color.getHex()})), groupPos:mainGroup.position.toArray(), rotation:[currentRotation.x,currentRotation.y,currentRotation.z], scale:currentScale, fileName:document.getElementById('fileName').textContent };
+}
+function rebuildFromData(data) {
+    if (mainGroup){scene.remove(mainGroup);allMeshes.forEach(m=>{m.geometry.dispose();m.material.dispose();}); }
+    allMeshes=[]; mainGroup=new THREE.Group();
+    data.meshData.forEach(md=>{const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(new Float32Array(md.position),3));if(md.index)g.setIndex(new THREE.BufferAttribute(new Uint32Array(md.index),1));g.computeVertexNormals();const mat=new THREE.MeshStandardMaterial({color:md.color,roughness:0.3,metalness:0.7});const mesh=new THREE.Mesh(g,mat);mainGroup.add(mesh);allMeshes.push(mesh);});
+    scene.add(mainGroup);
+    mainGroup.position.fromArray(data.groupPos);
+    currentRotation.set(...data.rotation); currentScale=data.scale;
+    document.getElementById('scaleSlider').value=currentScale;
+    document.getElementById('fileName').textContent=data.fileName||'Đã tải từ slot';
+    document.getElementById('partsCount').textContent=allMeshes.length;
+    document.getElementById('status').textContent=`✅ ${allMeshes.length} parts`;
+    applyRotation(); applyScale();
+    if(wireframe)allMeshes.forEach(m=>m.material.wireframe=true);
 }
 
-function loadModelState() {
-    const saved = localStorage.getItem('cnc_model_state');
-    if (!saved || !mainGroup) return;
-    
-    const s = JSON.parse(saved);
-    mainGroup.position.set(s.position[0], s.position[1], s.position[2]);
-    currentRotation.set(s.rotation[0], s.rotation[1], s.rotation[2]);
-    currentScale = s.scale || 1;
-    document.getElementById('scaleSlider').value = currentScale;
-    mainGroup.rotation.set(currentRotation.x, currentRotation.y, currentRotation.z);
-    mainGroup.scale.setScalar(currentScale);
-    document.getElementById('scaleVal').innerText = currentScale.toFixed(2) + '×';
-    document.getElementById('scaleFill').style.width = ((currentScale - 0.2) / 2.8) * 100 + '%';
-    console.log("🔄 Model state restored");
+function formatDate(ts){const d=new Date(ts);return d.toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit'})+' '+d.toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'});}
+
+async function renderSlots() {
+    const slots = await dbGetAll(); slots.sort((a,b)=>b.savedAt-a.savedAt);
+    const list = document.getElementById('slotsList');
+    document.getElementById('slotsUsed').textContent = slots.length;
+    document.getElementById('btnSaveSlot').disabled = slots.length>=MAX_SLOTS;
+    if (!slots.length){list.innerHTML=`<div class="slots-empty"><div class="slots-empty-icon">📭</div>Chưa có mô hình nào được lưu</div>`;return;}
+    list.innerHTML = slots.map(s=>`<div class="slot-item" data-id="${s.id}"><div class="slot-icon">📦</div><div class="slot-info"><div class="slot-name">${s.name}</div><div class="slot-meta"><span>🕐 ${formatDate(s.savedAt)}</span><span>⚙️ ${s.parts} parts</span></div></div><div class="slot-actions"><button class="btn-slot btn-slot-load" data-id="${s.id}" title="Tải">↩</button><button class="btn-slot btn-slot-del" data-id="${s.id}" title="Xoá">🗑</button></div></div>`).join('');
+    list.querySelectorAll('.btn-slot-load').forEach(btn=>{btn.onclick=async()=>{const sl=slots.find(s=>s.id===btn.dataset.id);if(!sl)return;rebuildFromData(sl.modelData);closeModal();showToast(`📦 Đã tải "${sl.name}"`);};});
+    list.querySelectorAll('.btn-slot-del').forEach(btn=>{btn.onclick=async()=>{await dbDelete(btn.dataset.id);await renderSlots();showToast('🗑 Đã xoá');};});
 }
 
-// postMessage API cho iframe
-window.addEventListener('message', (ev) => {
-    if (ev.data?.type !== 'cnc_control') return;
-    switch (ev.data.action) {
-        case 'reset': document.getElementById('resetPos').click(); document.getElementById('resetRot').click(); break;
-        case 'wire': document.getElementById('btnWire').click(); break;
-        case 'grid': document.getElementById('btnGrid').click(); break;
-        case 'axes': document.getElementById('btnAxes').click(); break;
-        case 'save': saveModelState(); break;
-        case 'load': loadModelState(); break;
-    }
-});
+async function saveCurrentSlot() {
+    if (!mainGroup){showToast('⚠️ Chưa có mô hình');return;}
+    const slots=await dbGetAll(); if(slots.length>=MAX_SLOTS){showToast('⚠️ Đã đầy 5 slot');return;}
+    const name=(document.getElementById('saveNameInput').value.trim())||document.getElementById('fileName').textContent||'Mô hình';
+    await dbPut({id:'slot_'+Date.now(),name,savedAt:Date.now(),parts:allMeshes.length,modelData:meshesToData()});
+    document.getElementById('saveNameInput').value='';
+    await renderSlots(); showToast(`💾 Đã lưu "${name}"`);
+}
+
+function openModal(){document.getElementById('saveModal').classList.add('open');renderSlots();}
+function closeModal(){document.getElementById('saveModal').classList.remove('open');}
+document.getElementById('btnOpenSave').onclick=openModal;
+document.getElementById('modalClose').onclick=closeModal;
+document.getElementById('saveModal').onclick=e=>{if(e.target===document.getElementById('saveModal'))closeModal();};
+document.getElementById('btnSaveSlot').onclick=saveCurrentSlot;
+document.getElementById('saveNameInput').addEventListener('keydown',e=>{if(e.key==='Enter')saveCurrentSlot();});
 
 // ===== ANIMATION =====
-function animate() {
-    requestAnimationFrame(animate);
-    orbitControls.update();
-    renderer.render(scene, camera);
-}
-animate();
+function animate(time){ requestAnimationFrame(animate); orbitControls.update(); applyDragMomentum(); renderer.render(scene,camera); }
+animate(0);
 
-window.addEventListener('resize', () => {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-});
+const ro=new ResizeObserver(()=>{camera.aspect=window.innerWidth/window.innerHeight;camera.updateProjectionMatrix();renderer.setSize(window.innerWidth,window.innerHeight);});
+ro.observe(document.body);
 
-// ===== KHỞI TẠO =====
+// ===== INIT — TỰ ĐỘNG TẢI FILE =====
 setDragMode(true);
+
 async function init() {
     try {
-        const occtPromise = new Promise((resolve, reject) => {
-            const script = document.createElement('script');
-            script.src = 'https://cdn.jsdelivr.net/npm/occt-import-js@0.0.18/dist/occt-import-js.js';
-            script.onload = () => {
-                window.occtimportjs({ 
-                    locateFile: (path) => `https://cdn.jsdelivr.net/npm/occt-import-js@0.0.18/dist/${path}` 
-                }).then(resolve).catch(reject);
-            };
-            script.onerror = () => reject(new Error('Load OCCT failed'));
-            document.head.appendChild(script);
-        });
-        
-        occt = await occtPromise;
-        document.getElementById('overlay').classList.add('hidden');
-        
-        await autoRestoreFile();
-        
-    } catch(err) {
-        console.error(err);
-        document.getElementById('load-msg').innerHTML = '❌ Lỗi tải OCCT: ' + err.message;
+        setProgress(10, 'Tải OCCT engine...');
+        occt = await loadOCCT();
+
+        // Bước 1: Thử fetch file STP cùng thư mục (ưu tiên cao nhất)
+        setProgress(25, `🔍 Tìm ${AUTO_LOAD_FILE}...`);
+        let autoFile = null;
+        try {
+            const response = await fetch(AUTO_LOAD_FILE);
+            if (response.ok) {
+                const blob = await response.blob();
+                autoFile = new File([blob], AUTO_LOAD_FILE, { type: 'application/step' });
+                setProgress(40, `✅ Tìm thấy ${AUTO_LOAD_FILE}`);
+            }
+        } catch (fetchErr) {
+            // fetch thất bại → thử từ IndexedDB
+        }
+
+        if (autoFile) {
+            // Tải file tìm được từ cùng thư mục
+            await processFile(autoFile, false);
+            showToast(`🚀 Tự động tải ${AUTO_LOAD_FILE}`);
+        } else {
+            // Bước 2: Fallback → thử khôi phục file đã lưu trong IndexedDB
+            setProgress(40, '🔄 Kiểm tra lưu trữ...');
+            const savedFile = await dbLoadCurrentFile().catch(() => null);
+            if (savedFile) {
+                setProgress(55, `🔄 Khôi phục: ${savedFile.name}...`);
+                await processFile(savedFile, false);
+                showToast(`🔄 Đã khôi phục ${savedFile.name}`);
+            } else {
+                // Bước 3: Không có gì cả → chờ người dùng upload
+                setProgress(100, `⚠️ Không tìm thấy ${AUTO_LOAD_FILE} — hãy đặt file cùng thư mục HTML`);
+                document.getElementById('status').textContent = '📂 Chờ file...';
+                setTimeout(() => document.getElementById('overlay').classList.add('hidden'), 2500);
+            }
+        }
+    } catch (err) {
+        document.getElementById('load-msg').textContent = '❌ Lỗi: ' + err.message;
+        document.getElementById('status').textContent = '❌ Lỗi khởi động';
+        setTimeout(() => document.getElementById('overlay').classList.add('hidden'), 3000);
     }
 }
+
 init();
 </script>
 </body>
 </html>
+HTMLEOF
+echo "done"
