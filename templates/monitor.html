@@ -333,7 +333,7 @@
             border: 1px solid var(--border);
             border-radius: 6px;
             background: rgba(13, 27, 42, .6);
-            max-height: 400px;
+            max-height: 350px;
         }
 
         table {
@@ -430,6 +430,38 @@
         .refresh-btn:hover {
             border-color: var(--cyan);
             color: var(--cyan);
+        }
+
+        /* 3D Viewer Card */
+        .viewer-card {
+            background: rgba(13, 27, 42, .6);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px;
+            margin-top: 16px;
+        }
+        .viewer-title {
+            font-family: 'Orbitron';
+            font-size: 11px;
+            color: var(--cyan);
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .load-status {
+            font-size: 10px;
+            background: rgba(0,0,0,0.4);
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+        .cnc-viewer-frame {
+            width: 100%;
+            height: 450px;
+            border: none;
+            border-radius: 10px;
+            background: #0a0f14;
         }
 
         .navbar {
@@ -553,15 +585,9 @@
                 <div class="chart-label">
                     📍 VỊ TRÍ (mm)
                     <div class="legend">
-                        <div class="legend-item">
-                            <div class="legend-color x"></div><span>X</span>
-                        </div>
-                        <div class="legend-item">
-                            <div class="legend-color y"></div><span>Y</span>
-                        </div>
-                        <div class="legend-item">
-                            <div class="legend-color z"></div><span>Z</span>
-                        </div>
+                        <div class="legend-item"><div class="legend-color x"></div><span>X</span></div>
+                        <div class="legend-item"><div class="legend-color y"></div><span>Y</span></div>
+                        <div class="legend-item"><div class="legend-color z"></div><span>Z</span></div>
                     </div>
                 </div>
                 <canvas id="chartPosition" height="90"></canvas>
@@ -570,15 +596,9 @@
                 <div class="chart-label">
                     ⚡ VẬN TỐC (mm/s)
                     <div class="legend">
-                        <div class="legend-item">
-                            <div class="legend-color x"></div><span>X</span>
-                        </div>
-                        <div class="legend-item">
-                            <div class="legend-color y"></div><span>Y</span>
-                        </div>
-                        <div class="legend-item">
-                            <div class="legend-color z"></div><span>Z</span>
-                        </div>
+                        <div class="legend-item"><div class="legend-color x"></div><span>X</span></div>
+                        <div class="legend-item"><div class="legend-color y"></div><span>Y</span></div>
+                        <div class="legend-item"><div class="legend-color z"></div><span>Z</span></div>
                     </div>
                 </div>
                 <canvas id="chartVelocity" height="90"></canvas>
@@ -587,15 +607,9 @@
                 <div class="chart-label">
                     🔩 MOMENT (N·m)
                     <div class="legend">
-                        <div class="legend-item">
-                            <div class="legend-color x"></div><span>X</span>
-                        </div>
-                        <div class="legend-item">
-                            <div class="legend-color y"></div><span>Y</span>
-                        </div>
-                        <div class="legend-item">
-                            <div class="legend-color z"></div><span>Z</span>
-                        </div>
+                        <div class="legend-item"><div class="legend-color x"></div><span>X</span></div>
+                        <div class="legend-item"><div class="legend-color y"></div><span>Y</span></div>
+                        <div class="legend-item"><div class="legend-color z"></div><span>Z</span></div>
                     </div>
                 </div>
                 <canvas id="chartMoment" height="90"></canvas>
@@ -604,10 +618,8 @@
         </div>
 
         <div class="panel-right">
-            <div class="panel-title"
-                style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;">
-                <span style="font-family:Orbitron;font-size:12px;letter-spacing:2px;color:var(--cyan)">KHẨN
-                    CẤP</span>
+            <div class="panel-title" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;">
+                <span style="font-family:Orbitron;font-size:12px;letter-spacing:2px;color:var(--cyan)">KHẨN CẤP</span>
                 <div style="display:flex;gap:8px;align-items:center;">
                     <span class="alarm-count" id="alarmCount">0 cảnh báo</span>
                     <button class="refresh-btn" onclick="fetchAlarms()">↺ Làm mới</button>
@@ -645,10 +657,31 @@
                     </tbody>
                 </table>
             </div>
-            <div style="display:flex;gap:14px;font-size:11px;color:#4a6a80;padding:4px 2px;">
+
+            <!-- 🎯 3D VIEWER CARD - THÊM MỚI -->
+            <div class="viewer-card">
+                <div class="viewer-title">
+                    <span>🎮 MÔ PHỎNG 3D CNC</span>
+                    <span class="load-status" id="loadStatusDisplay">🟢 Đang kết nối...</span>
+                </div>
+                <iframe 
+                    id="cncViewerFrame"
+                    src="/static/cnc_viewer.html" 
+                    class="cnc-viewer-frame"
+                    allow="autoplay; fullscreen"
+                ></iframe>
+                <div style="margin-top: 8px; font-size: 10px; color: #6b8fa8; text-align: center;">
+                    💡 Màu sắc mô hình thay đổi theo tải trọng động cơ
+                </div>
+            </div>
+
+            <div style="display:flex;gap:14px;font-size:11px;color:#4a6a80;padding:4px 2px;margin-top:4px;">
                 <span><span style="color:var(--warn)">■</span> Cảnh báo</span>
                 <span><span style="color:var(--danger)">■</span> Dừng khẩn cấp</span>
                 <span><span style="color:var(--ok)">■</span> Đã xử lý</span>
+                <span><span style="color:#00b894">●</span> Tải nhẹ &lt;30%</span>
+                <span><span style="color:#f39c12">●</span> Tải TB 30-70%</span>
+                <span><span style="color:#e74c3c">●</span> Tải nặng &gt;70%</span>
             </div>
         </div>
     </main>
@@ -668,6 +701,7 @@
         let alarmFilter = 'all';
         let allAlarms = [];
         let currentData = [];
+        let lastLoad = 0;
 
         // Màu sắc cho 3 trục
         const colors = {
@@ -676,7 +710,7 @@
             z: '#3498db'
         };
 
-        // ========== TẠO CHART (HÀM DÙNG CHUNG) ==========
+        // ========== TẠO CHART ==========
         function createMultiChart(ctx) {
             return new Chart(ctx, {
                 type: 'line',
@@ -710,7 +744,7 @@
             });
         }
 
-        // ========== HIỂN THỊ TOOLTIP CHI TIẾT ==========
+        // ========== TOOLTIP CHI TIẾT ==========
         function showTooltipAtPoint(index, event) {
             const point = currentData[index];
             if (!point) return;
@@ -734,7 +768,7 @@
                 <div class="data-row"><span class="data-label">🔩 Moment Y:</span><span class="data-value y">${(point.mom_y || 0).toFixed(2)} N·m</span></div>
                 <div class="data-row"><span class="data-label">🔩 Moment Z:</span><span class="data-value z">${(point.mom_z || 0).toFixed(2)} N·m</span></div>
                 <div class="data-row"><span class="data-label">🌡️ Nhiệt độ:</span><span class="data-value">${(point.temp || 0).toFixed(1)} °C</span></div>
-                <div class="data-row"><span class="data-label">📊 Tải:</span><span class="data-value">${(point.load || 0).toFixed(1)} %</span></div>
+                <div class="data-row"><span class="data-label">📊 Tải trọng:</span><span class="data-value">${(point.load || 0).toFixed(1)} %</span></div>
             `;
 
             tooltip.style.display = 'block';
@@ -744,7 +778,7 @@
             setTimeout(() => { tooltip.style.display = 'none'; }, 5000);
         }
 
-        // Ẩn tooltip khi click ra ngoài canvas
+        // Ẩn tooltip khi click ra ngoài
         document.addEventListener('click', (e) => {
             if (!e.target.closest('canvas')) {
                 document.getElementById('customTooltip').style.display = 'none';
@@ -764,7 +798,7 @@
             fetchChart();
         }
 
-        // Xóa dữ liệu cũ trên charts
+        // Xóa dữ liệu cũ
         function clearCharts() {
             [chartPosition, chartVelocity, chartMoment].forEach(chart => {
                 chart.data.labels = [];
@@ -772,7 +806,7 @@
             });
         }
 
-        // ========== LẤY DỮ LIỆU TỪ API ==========
+        // ========== LẤY DỮ LIỆU BIỂU ĐỒ ==========
         function fetchChart() {
             document.getElementById('chartInfo').innerHTML = '<span style="color:var(--cyan)">🔄 Đang tải...</span>';
             fetch('/api/history?minutes=' + currentMinutes + '&_t=' + Date.now())
@@ -782,7 +816,6 @@
                     currentData = [];
 
                     data.forEach(d => {
-                        // Định dạng thời gian hiển thị trên trục X
                         let t = '';
                         try {
                             const dt = new Date(d.time);
@@ -791,7 +824,6 @@
                                 : dt.toLocaleDateString('vi-VN', { month: '2-digit', day: '2-digit' }) + ' ' + dt.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
                         } catch (e) { t = d.time || ''; }
 
-                        // Lưu dữ liệu gốc để dùng cho tooltip
                         currentData.push({
                             time: d.time,
                             pos_x: d.vi_tri_x || d.vi_tri || 0,
@@ -807,28 +839,23 @@
                             load: d.load || 0
                         });
 
-                        // Gán label cho cả 3 chart
                         chartPosition.data.labels.push(t);
                         chartVelocity.data.labels.push(t);
                         chartMoment.data.labels.push(t);
 
-                        // Gán dữ liệu cho chart Vị trí
                         chartPosition.data.datasets[0].data.push(currentData[currentData.length - 1].pos_x);
                         chartPosition.data.datasets[1].data.push(currentData[currentData.length - 1].pos_y);
                         chartPosition.data.datasets[2].data.push(currentData[currentData.length - 1].pos_z);
 
-                        // Gán dữ liệu cho chart Vận tốc
                         chartVelocity.data.datasets[0].data.push(currentData[currentData.length - 1].vel_x);
                         chartVelocity.data.datasets[1].data.push(currentData[currentData.length - 1].vel_y);
                         chartVelocity.data.datasets[2].data.push(currentData[currentData.length - 1].vel_z);
 
-                        // Gán dữ liệu cho chart Moment
                         chartMoment.data.datasets[0].data.push(currentData[currentData.length - 1].mom_x);
                         chartMoment.data.datasets[1].data.push(currentData[currentData.length - 1].mom_y);
                         chartMoment.data.datasets[2].data.push(currentData[currentData.length - 1].mom_z);
                     });
 
-                    // Cập nhật lại 3 biểu đồ
                     chartPosition.update();
                     chartVelocity.update();
                     chartMoment.update();
@@ -839,6 +866,52 @@
                 .catch(() => {
                     document.getElementById('chartInfo').innerHTML = '❌ Lỗi tải dữ liệu';
                 });
+        }
+
+        // ========== GỬI DỮ LIỆU LOAD SANG 3D VIEWER ==========
+        const viewerFrame = document.getElementById('cncViewerFrame');
+
+        function sendLoadToViewer(loadPercent) {
+            if (viewerFrame && viewerFrame.contentWindow) {
+                viewerFrame.contentWindow.postMessage({
+                    type: 'update_load',
+                    load: loadPercent
+                }, '*');
+            }
+        }
+
+        function updateLoadStatus(loadPercent) {
+            const statusEl = document.getElementById('loadStatusDisplay');
+            if (loadPercent < 30) {
+                statusEl.innerHTML = '🟢 Tải nhẹ (' + loadPercent.toFixed(1) + '%)';
+                statusEl.style.color = '#00b894';
+            } else if (loadPercent < 70) {
+                statusEl.innerHTML = '🟡 Tải trung bình (' + loadPercent.toFixed(1) + '%)';
+                statusEl.style.color = '#f39c12';
+            } else if (loadPercent < 100) {
+                statusEl.innerHTML = '🟠 Tải nặng (' + loadPercent.toFixed(1) + '%)';
+                statusEl.style.color = '#e67e22';
+            } else {
+                statusEl.innerHTML = '🔴 QUÁ TẢI (' + loadPercent.toFixed(1) + '%)';
+                statusEl.style.color = '#e74c3c';
+            }
+        }
+
+        // Lấy dữ liệu cảm biến mới nhất và gửi load
+        async function fetchAndSendLoad() {
+            try {
+                const res = await fetch('/api/latest?_t=' + Date.now());
+                const data = await res.json();
+                const loadPercent = data.load || 0;
+                
+                if (Math.abs(loadPercent - lastLoad) > 0.5) {
+                    lastLoad = loadPercent;
+                    sendLoadToViewer(loadPercent);
+                    updateLoadStatus(loadPercent);
+                }
+            } catch (e) {
+                console.log('Load fetch error:', e);
+            }
         }
 
         // ========== ALARM ==========
@@ -896,9 +969,17 @@
         // ========== KHỞI TẠO ==========
         fetchChart();
         fetchAlarms();
+        fetchAndSendLoad();
+
         setInterval(fetchChart, 30000);
         setInterval(fetchAlarms, 15000);
+        setInterval(fetchAndSendLoad, 2000);  // Gửi load mỗi 2 giây
+
+        // Đợi iframe load xong mới bắt đầu gửi
+        viewerFrame.addEventListener('load', () => {
+            console.log('3D Viewer loaded, starting load updates');
+            fetchAndSendLoad();
+        });
     </script>
 </body>
-
 </html>
