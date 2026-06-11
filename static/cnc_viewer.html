@@ -1,14 +1,3 @@
- commands
-Ran 2 commands
-
-Copy file to working dir
-
-Script
-
-Create the final HTML file with auto-load from same directory
-bash
-
-cat > /mnt/user-data/outputs/CNC_3D_Viewer.html << 'HTMLEOF'
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -316,6 +305,56 @@ cat > /mnt/user-data/outputs/CNC_3D_Viewer.html << 'HTMLEOF'
 
     .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-8px); background: rgba(0,229,255,0.12); border: 1px solid rgba(0,229,255,0.3); backdrop-filter: blur(12px); color: #00e5ff; padding: 8px 20px; border-radius: 20px; font-size: 11px; font-weight: 600; pointer-events: none; z-index: 300; opacity: 0; transition: opacity 0.25s ease, transform 0.25s ease; letter-spacing: 0.5px; }
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    /* ===== LOAD STATUS ===== */
+    .load-badge {
+        margin-top: 8px;
+        background: rgba(0,0,0,0.35);
+        border: 1px solid rgba(255,255,255,0.06);
+        border-radius: 10px;
+        padding: 8px 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        transition: border-color 1.2s ease, box-shadow 1.2s ease;
+    }
+    .load-badge.state-light  { border-color: rgba(0,184,148,0.4); }
+    .load-badge.state-medium { border-color: rgba(243,156,18,0.4); }
+    .load-badge.state-heavy  { border-color: rgba(230,126,34,0.4); }
+    .load-badge.state-over   { border-color: rgba(231,76,60,0.6); box-shadow: 0 0 12px rgba(231,76,60,0.2); }
+
+    .load-badge-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .load-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,170,102,0.7); }
+    #loadStatus  { font-size: 11px; font-weight: 700; transition: color 1.2s ease; color: #6b8fa8; }
+
+    .load-bar-track {
+        height: 4px;
+        background: rgba(255,255,255,0.06);
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    .load-bar-fill {
+        height: 100%;
+        width: 0%;
+        border-radius: 10px;
+        transition: width 1.2s cubic-bezier(0.4,0,0.2,1), background 1.2s ease;
+        background: #00b894;
+    }
+
+    .load-value {
+        text-align: right;
+        font-size: 18px;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+        line-height: 1;
+        transition: color 1.2s ease;
+        color: #6b8fa8;
+        font-family: 'SF Mono', 'Fira Code', monospace;
+    }
+
 </style>
 </head>
 <body>
@@ -407,6 +446,18 @@ cat > /mnt/user-data/outputs/CNC_3D_Viewer.html << 'HTMLEOF'
         <div class="info-badge">
             <span>Parts</span>
             <span class="badge-val" id="partsCount">0</span>
+        </div>
+
+        <!-- Tải trọng -->
+        <div class="load-badge" id="loadBadge">
+            <div class="load-badge-top">
+                <span class="load-label">⚡ Tải trọng</span>
+                <span id="loadStatus">— Chưa có dữ liệu</span>
+            </div>
+            <div class="load-bar-track">
+                <div class="load-bar-fill" id="loadBarFill"></div>
+            </div>
+            <div class="load-value" id="loadValue">—</div>
         </div>
 
         <div class="separator"></div>
@@ -716,6 +767,7 @@ async function processFile(file, saveToDb = false) {
         const box3 = new THREE.Box3().setFromObject(mainGroup);
         mainGroup.position.sub(box3.getCenter(new THREE.Vector3()));
         restoreTransform();
+        snapshotOriginalColors();   // lưu màu gốc để có thể reset load về 0
         document.getElementById('partsCount').textContent = allMeshes.length;
         setProgress(100, `✅ ${allMeshes.length} parts`);
         document.getElementById('status').textContent = `✅ ${allMeshes.length} parts`;
@@ -820,8 +872,104 @@ document.getElementById('saveModal').onclick=e=>{if(e.target===document.getEleme
 document.getElementById('btnSaveSlot').onclick=saveCurrentSlot;
 document.getElementById('saveNameInput').addEventListener('keydown',e=>{if(e.key==='Enter')saveCurrentSlot();});
 
+// =============================================
+// TÍNH NĂNG ĐỔI MÀU THEO TẢI TRỌNG
+// =============================================
+let currentLoad = 0;
+let _originalColors = [];
+let _targetMeshColor = null;   // THREE.Color đích, null = về màu gốc
+const _currentMeshColors = []; // màu lerp hiện tại từng mesh
+const MESH_LERP_SPEED = 0.018; // nhỏ = chậm hơn (0.01–0.05)
+
+function snapshotOriginalColors() {
+    _originalColors = allMeshes.map(m => m.material.color.getHex());
+    // Sync current lerp colors với màu gốc
+    _currentMeshColors.length = 0;
+    allMeshes.forEach(m => _currentMeshColors.push(m.material.color.clone()));
+    _targetMeshColor = null;
+}
+
+function updateColorByLoad(loadPercent) {
+    currentLoad = loadPercent;
+
+    let hex, cssColor, stateClass, label;
+    if (loadPercent <= 0) {
+        _targetMeshColor = null; // về màu gốc
+        document.getElementById('loadBadge').className = 'load-badge';
+        document.getElementById('loadStatus').textContent = '— Chưa có dữ liệu';
+        document.getElementById('loadStatus').style.color = '#6b8fa8';
+        document.getElementById('loadValue').textContent = '—';
+        document.getElementById('loadValue').style.color = '#6b8fa8';
+        document.getElementById('loadBarFill').style.width = '0%';
+        document.getElementById('loadBarFill').style.background = '#6b8fa8';
+        ambientLight.intensity = 0.9;
+        mainLight.intensity   = 2.0;
+        return;
+    }
+
+    if (loadPercent < 30) {
+        hex = 0x00b894; cssColor = '#00b894'; stateClass = 'state-light';  label = '🟢 Tải nhẹ';
+    } else if (loadPercent < 70) {
+        hex = 0xf39c12; cssColor = '#f39c12'; stateClass = 'state-medium'; label = '🟡 Tải trung bình';
+    } else if (loadPercent < 100) {
+        hex = 0xe67e22; cssColor = '#e67e22'; stateClass = 'state-heavy';  label = '🟠 Tải nặng';
+    } else {
+        hex = 0xe74c3c; cssColor = '#e74c3c'; stateClass = 'state-over';   label = '🔴 QUÁ TẢI';
+    }
+
+    // Chỉ đặt màu đích — render loop sẽ lerp dần
+    _targetMeshColor = new THREE.Color(hex);
+
+    if (loadPercent >= 90) { ambientLight.intensity = 1.4; mainLight.intensity = 3.0; }
+    else                   { ambientLight.intensity = 0.9; mainLight.intensity = 2.0; }
+
+    const badge = document.getElementById('loadBadge');
+    badge.className = `load-badge ${stateClass}`;
+    document.getElementById('loadStatus').textContent = label;
+    document.getElementById('loadStatus').style.color = cssColor;
+    document.getElementById('loadValue').textContent = loadPercent.toFixed(1) + '%';
+    document.getElementById('loadValue').style.color = cssColor;
+    const fill = document.getElementById('loadBarFill');
+    fill.style.width = Math.min(loadPercent, 100) + '%';
+    fill.style.background = cssColor;
+}
+
+// Nhận dữ liệu tải từ bên ngoài (postMessage / iframe)
+window.addEventListener('message', ev => {
+    if (ev.data?.type === 'update_load') {
+        const load = parseFloat(ev.data.load);
+        if (!isNaN(load)) updateColorByLoad(load);
+    }
+    // Các lệnh điều khiển cũ
+    if (ev.data?.type !== 'cnc_control') return;
+    switch (ev.data.action) {
+        case 'reset': document.getElementById('resetPos').click(); document.getElementById('resetRot').click(); break;
+        case 'wire':  document.getElementById('btnWire').click(); break;
+        case 'grid':  document.getElementById('btnGrid').click(); break;
+        case 'axes':  document.getElementById('btnAxes').click(); break;
+    }
+});
+
 // ===== ANIMATION =====
-function animate(time){ requestAnimationFrame(animate); orbitControls.update(); applyDragMomentum(); renderer.render(scene,camera); }
+function animate(time) {
+    requestAnimationFrame(animate);
+    orbitControls.update();
+    applyDragMomentum();
+
+    // Lerp màu mesh chậm rãi về màu đích
+    if (allMeshes.length && _currentMeshColors.length === allMeshes.length) {
+        allMeshes.forEach((mesh, i) => {
+            const target = _targetMeshColor
+                ? _targetMeshColor
+                : (_originalColors[i] !== undefined ? new THREE.Color(_originalColors[i]) : null);
+            if (!target) return;
+            _currentMeshColors[i].lerp(target, MESH_LERP_SPEED);
+            mesh.material.color.copy(_currentMeshColors[i]);
+        });
+    }
+
+    renderer.render(scene, camera);
+}
 animate(0);
 
 const ro=new ResizeObserver(()=>{camera.aspect=window.innerWidth/window.innerHeight;camera.updateProjectionMatrix();renderer.setSize(window.innerWidth,window.innerHeight);});
@@ -879,5 +1027,3 @@ init();
 </script>
 </body>
 </html>
-HTMLEOF
-echo "done"
