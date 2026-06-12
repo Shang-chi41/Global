@@ -5,14 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cấu Hình - CNC Smart System</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&family=Be+Vietnam+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/static/css/isa101.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         :root {
             --red: #c0392b;
             --gold: #d4a017;
@@ -24,7 +17,7 @@
             --success: #00b894;
             --warning: #f39c12;
         }
-
+        * { margin:0; padding:0; box-sizing:border-box; }
         body {
             font-family: 'Be Vietnam Pro', sans-serif;
             background: var(--navy);
@@ -33,7 +26,6 @@
             display: flex;
             flex-direction: column;
         }
-
         body::before {
             content: '';
             position: fixed;
@@ -57,7 +49,6 @@
             position: relative;
             z-index: 10;
         }
-
         .logo-bk { display: flex; align-items: center; gap: 10px; }
         .logo-bk-text { font-size: 11px; font-weight: 600; color: var(--gold); line-height: 1.5; text-transform: uppercase; }
         .header-center { text-align: center; flex: 1; padding: 0 16px; }
@@ -104,7 +95,11 @@
             width: 100%;
         }
 
-        /* Settings Menu */
+        /* Settings Layout */
+        .settings-wrapper {
+            display: flex;
+            gap: 24px;
+        }
         .settings-menu {
             width: 280px;
             background: rgba(30,58,95,.35);
@@ -261,7 +256,7 @@
             white-space: pre-wrap;
         }
 
-        /* Color Picker Button */
+        /* ===== COLOR PICKER BUTTON (CỌ VẼ) ===== */
         .color-palette-btn {
             position: fixed;
             bottom: 100px;
@@ -269,7 +264,7 @@
             width: 56px;
             height: 56px;
             border-radius: 50%;
-            background: var(--cyan);
+            background: linear-gradient(135deg, var(--cyan), #0099a8);
             border: 2px solid var(--gold);
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
             cursor: pointer;
@@ -285,11 +280,12 @@
             box-shadow: 0 6px 20px rgba(0,0,0,0.4);
         }
 
+        /* ===== COLOR MODAL ===== */
         .color-modal {
             position: fixed;
             bottom: 170px;
             right: 20px;
-            width: 340px;
+            width: 360px;
             background: var(--steel);
             border: 1px solid var(--border);
             border-radius: 16px;
@@ -307,6 +303,8 @@
             justify-content: space-between;
             align-items: center;
             font-weight: bold;
+            font-family: 'Orbitron';
+            font-size: 12px;
         }
         .color-modal-close {
             background: none;
@@ -315,7 +313,20 @@
             font-size: 20px;
             cursor: pointer;
         }
-        .color-modal-content { padding: 16px; max-height: 450px; overflow-y: auto; }
+        .color-modal-content {
+            padding: 16px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .color-group-title {
+            font-family: 'Orbitron';
+            font-size: 10px;
+            color: var(--gold);
+            margin: 12px 0 8px 0;
+            letter-spacing: 1px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 4px;
+        }
         .color-item {
             display: flex;
             align-items: center;
@@ -360,11 +371,13 @@
         }
         .modal-actions button {
             flex: 1;
-            padding: 8px;
-            border-radius: 6px;
+            padding: 10px;
+            border-radius: 8px;
             border: none;
             cursor: pointer;
             font-weight: bold;
+            font-family: 'Orbitron';
+            font-size: 11px;
         }
         .btn-save { background: var(--success); color: white; }
         .btn-reset { background: rgba(255,255,255,0.2); color: var(--white); }
@@ -400,14 +413,29 @@
 
 <header class="header">
     <div class="logo-bk">
-        <img src="/static/images/hust_logo.png" alt="ĐHBK Hà Nội" onerror="this.src='https://via.placeholder.com/55x55?text=HUST'">
+        <svg width="78" height="98" viewBox="0 0 90 113">
+          <rect x="0" y="0" width="90" height="113" rx="2" fill="#E8A800"/>
+          <rect x="2" y="2" width="43" height="88" fill="#CC1111"/>
+          <rect x="45" y="2" width="43" height="88" fill="#FAFAFA"/>
+          <rect x="2" y="90" width="86" height="21" fill="#E8A800"/>
+          <text x="45" y="104" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="12.5" font-weight="900" fill="#CC1111" letter-spacing="2">BÁCH KHOA</text>
+          <polygon points="16,7 17.6,12 22.8,12 18.6,15 20.2,20 16,17 11.8,20 13.4,15 9.2,12 14.4,12" fill="#FFD700"/>
+          <text x="67" y="17" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" font-weight="bold" fill="#CC1111" letter-spacing="1">ĐẠI HỌC</text>
+          <circle cx="45" cy="60" r="24" fill="#CC1111"/>
+          <circle cx="45" cy="60" r="24" fill="none" stroke="#E8A800" stroke-width="3"/>
+        </svg>
         <div class="logo-bk-text">ĐH Bách Khoa<br>Hà Nội</div>
     </div>
     <div class="header-center">
         <div class="main-title">TÍNH TOÁN, THIẾT KẾ HỆ THỐNG ĐIỀU KHIỂN<br>MÁY CNC ĐỂ BÀN TỰ CHỦ THÔNG MINH</div>
         <div class="sub-title">GVHD: LÊ GIANG NAM</div>
     </div>
- <img src="/static/images/vimes_logo.png" alt="Vimes Lab" style="height: 55px; width: auto;" onerror="this.src='https://via.placeholder.com/55x55?text=V'">
+    <svg width="78" height="78" viewBox="0 0 110 110">
+      <circle cx="55" cy="55" r="54" fill="#00B5B8"/>
+      <circle cx="55" cy="55" r="47" fill="white"/>
+      <text x="8" y="84" font-family="Georgia" font-size="85" fill="#7DCFCF">V</text>
+      <text x="50" y="84" font-family="Georgia" font-size="85" fill="#7DCFCF">R</text>
+    </svg>
 </header>
 
 <div class="user-badge">
@@ -419,8 +447,8 @@
 </div>
 
 <main class="main">
-    <div style="display: flex; gap: 24px;">
-        <!-- Left: Menu -->
+    <div class="settings-wrapper">
+        <!-- Left Menu -->
         <div class="settings-menu">
             <div class="menu-header">⚙️ CẤU HÌNH MÁY</div>
             
@@ -476,7 +504,7 @@
             </div>
         </div>
 
-        <!-- Right: Actions -->
+        <!-- Right Actions -->
         <div class="settings-actions">
             <div class="action-buttons">
                 <button class="btn btn-primary" onclick="saveConfig()">💾 LƯU CẤU HÌNH</button>
@@ -497,59 +525,78 @@
     </div>
 </main>
 
-<!-- Color Picker Button -->
-<div class="color-palette-btn" id="colorPaletteBtn" title="Tùy chỉnh màu sắc giao diện">🎨</div>
+<!-- ===== COLOR PICKER BUTTON (CỌ VẼ) ===== -->
+<div class="color-palette-btn" id="colorPaletteBtn" title="Tùy chỉnh giao diện (Theme)">🎨</div>
 
-<!-- Color Modal -->
+<!-- ===== COLOR MODAL ===== -->
 <div class="color-modal" id="colorModal">
     <div class="color-modal-header">
-        <span>🎨 TÙY CHỈNH MÀU SẮC</span>
+        <span>🎨 TÙY CHỈNH GIAO DIỆN</span>
         <button class="color-modal-close" id="closeModalBtn">✖</button>
     </div>
     <div class="color-modal-content">
+        <div class="color-group-title">🏠 HEADER & NAVBAR</div>
         <div class="color-item">
-            <div class="color-label">
-                <div class="color-preview" id="previewCyan" style="background: var(--cyan);"></div>
-                <span>Màu chủ đạo (Cyan)</span>
-            </div>
-            <input type="color" id="colorCyan" value="#00c9d4">
-            <button class="btn-reset-small" onclick="resetColor('cyan')">↺</button>
+            <div class="color-label"><div class="color-preview" id="previewHeaderBg" style="background: #0d1b2a;"></div><span>Header Background</span></div>
+            <input type="color" id="headerBg" value="#0d1b2a">
+            <button class="btn-reset-small" onclick="resetColor('headerBg')">↺</button>
         </div>
         <div class="color-item">
-            <div class="color-label">
-                <div class="color-preview" id="previewGold" style="background: var(--gold);"></div>
-                <span>Màu vàng (Gold)</span>
-            </div>
-            <input type="color" id="colorGold" value="#d4a017">
-            <button class="btn-reset-small" onclick="resetColor('gold')">↺</button>
+            <div class="color-label"><div class="color-preview" id="previewSidebarBg" style="background: #1e3a5f;"></div><span>Sidebar Background</span></div>
+            <input type="color" id="sidebarBg" value="#1e3a5f">
+            <button class="btn-reset-small" onclick="resetColor('sidebarBg')">↺</button>
+        </div>
+
+        <div class="color-group-title">📦 PANEL & CARD</div>
+        <div class="color-item">
+            <div class="color-label"><div class="color-preview" id="previewPanelBg" style="background: rgba(30,58,95,.35);"></div><span>Panel Background</span></div>
+            <input type="color" id="panelBg" value="#1e3a5f">
+            <button class="btn-reset-small" onclick="resetColor('panelBg')">↺</button>
         </div>
         <div class="color-item">
-            <div class="color-label">
-                <div class="color-preview" id="previewRed" style="background: var(--red);"></div>
-                <span>Màu đỏ (Alert)</span>
-            </div>
-            <input type="color" id="colorRed" value="#c0392b">
-            <button class="btn-reset-small" onclick="resetColor('red')">↺</button>
+            <div class="color-label"><div class="color-preview" id="previewCardBg" style="background: rgba(13,27,42,.6);"></div><span>Card Background</span></div>
+            <input type="color" id="cardBg" value="#0d1b2a">
+            <button class="btn-reset-small" onclick="resetColor('cardBg')">↺</button>
+        </div>
+
+        <div class="color-group-title">🎨 MÀU CHÍNH (ACCENT)</div>
+        <div class="color-item">
+            <div class="color-label"><div class="color-preview" id="previewAccent" style="background: #00c9d4;"></div><span>Accent Color (Cyan)</span></div>
+            <input type="color" id="accentColor" value="#00c9d4">
+            <button class="btn-reset-small" onclick="resetColor('accentColor')">↺</button>
         </div>
         <div class="color-item">
-            <div class="color-label">
-                <div class="color-preview" id="previewNavY" style="background: var(--navy);"></div>
-                <span>Màu nền chính</span>
-            </div>
-            <input type="color" id="colorNavy" value="#0d1b2a">
-            <button class="btn-reset-small" onclick="resetColor('navy')">↺</button>
+            <div class="color-label"><div class="color-preview" id="previewGlow" style="background: rgba(0,201,212,.4);"></div><span>Glow Effect</span></div>
+            <input type="color" id="glowColor" value="#00c9d4">
+            <button class="btn-reset-small" onclick="resetColor('glowColor')">↺</button>
+        </div>
+
+        <div class="color-group-title">🔘 BUTTON</div>
+        <div class="color-item">
+            <div class="color-label"><div class="color-preview" id="previewBtnBg" style="background: #1e3a5f;"></div><span>Button Background</span></div>
+            <input type="color" id="btnBg" value="#1e3a5f">
+            <button class="btn-reset-small" onclick="resetColor('btnBg')">↺</button>
         </div>
         <div class="color-item">
-            <div class="color-label">
-                <div class="color-preview" id="previewSuccess" style="background: var(--success);"></div>
-                <span>Màu thành công (Success)</span>
-            </div>
-            <input type="color" id="colorSuccess" value="#00b894">
-            <button class="btn-reset-small" onclick="resetColor('success')">↺</button>
+            <div class="color-label"><div class="color-preview" id="previewBtnHover" style="background: #00c9d4;"></div><span>Button Hover</span></div>
+            <input type="color" id="btnHover" value="#00c9d4">
+            <button class="btn-reset-small" onclick="resetColor('btnHover')">↺</button>
+        </div>
+
+        <div class="color-group-title">📝 TEXT & BORDER</div>
+        <div class="color-item">
+            <div class="color-label"><div class="color-preview" id="previewText" style="background: #ffffff;"></div><span>Text Color</span></div>
+            <input type="color" id="textColor" value="#ffffff">
+            <button class="btn-reset-small" onclick="resetColor('textColor')">↺</button>
+        </div>
+        <div class="color-item">
+            <div class="color-label"><div class="color-preview" id="previewBorder" style="background: rgba(0,201,212,0.22);"></div><span>Border Color</span></div>
+            <input type="color" id="borderColor" value="#00c9d4">
+            <button class="btn-reset-small" onclick="resetColor('borderColor')">↺</button>
         </div>
 
         <div class="modal-actions">
-            <button class="btn-save" onclick="saveColors()">💾 LƯU</button>
+            <button class="btn-save" onclick="saveTheme()">💾 LƯU THEME</button>
             <button class="btn-reset" onclick="resetAllColors()">⟳ MẶC ĐỊNH</button>
         </div>
     </div>
@@ -574,11 +621,16 @@ let config = {
 
 // Default colors
 const defaultColors = {
-    cyan: '#00c9d4',
-    gold: '#d4a017',
-    red: '#c0392b',
-    navy: '#0d1b2a',
-    success: '#00b894'
+    headerBg: '#0d1b2a',
+    sidebarBg: '#1e3a5f',
+    panelBg: '#1e3a5f',
+    cardBg: '#0d1b2a',
+    accentColor: '#00c9d4',
+    glowColor: '#00c9d4',
+    btnBg: '#1e3a5f',
+    btnHover: '#00c9d4',
+    textColor: '#ffffff',
+    borderColor: '#00c9d4'
 };
 
 // ========== SUBMENU TOGGLE ==========
@@ -723,7 +775,7 @@ function syncUI() {
     });
 }
 
-// ========== COLOR PICKER ==========
+// ========== THEME MANAGEMENT ==========
 const modal = document.getElementById('colorModal');
 const openBtn = document.getElementById('colorPaletteBtn');
 const closeBtn = document.getElementById('closeModalBtn');
@@ -732,71 +784,98 @@ openBtn.onclick = () => modal.classList.toggle('show');
 closeBtn.onclick = () => modal.classList.remove('show');
 modal.onclick = (e) => { if (e.target === modal) modal.classList.remove('show'); };
 
-function applyColors(colors) {
-    document.documentElement.style.setProperty('--cyan', colors.cyan);
-    document.documentElement.style.setProperty('--gold', colors.gold);
-    document.documentElement.style.setProperty('--red', colors.red);
-    document.documentElement.style.setProperty('--navy', colors.navy);
-    document.documentElement.style.setProperty('--success', colors.success);
+function applyThemeToPage(theme) {
+    document.documentElement.style.setProperty('--navy', theme.headerBg);
+    document.documentElement.style.setProperty('--steel', theme.sidebarBg);
+    document.documentElement.style.setProperty('--cyan', theme.accentColor);
+    document.documentElement.style.setProperty('--border', theme.borderColor);
+    document.documentElement.style.setProperty('--white', theme.textColor);
     
-    document.getElementById('previewCyan').style.background = colors.cyan;
-    document.getElementById('previewGold').style.background = colors.gold;
-    document.getElementById('previewRed').style.background = colors.red;
-    document.getElementById('previewNavY').style.background = colors.navy;
-    document.getElementById('previewSuccess').style.background = colors.success;
+    // Update previews
+    document.getElementById('previewHeaderBg').style.background = theme.headerBg;
+    document.getElementById('previewSidebarBg').style.background = theme.sidebarBg;
+    document.getElementById('previewPanelBg').style.background = theme.panelBg;
+    document.getElementById('previewCardBg').style.background = theme.cardBg;
+    document.getElementById('previewAccent').style.background = theme.accentColor;
+    document.getElementById('previewGlow').style.background = theme.glowColor;
+    document.getElementById('previewBtnBg').style.background = theme.btnBg;
+    document.getElementById('previewBtnHover').style.background = theme.btnHover;
+    document.getElementById('previewText').style.background = theme.textColor;
+    document.getElementById('previewBorder').style.background = theme.borderColor;
 }
 
-function saveColors() {
-    const colors = {
-        cyan: document.getElementById('colorCyan').value,
-        gold: document.getElementById('colorGold').value,
-        red: document.getElementById('colorRed').value,
-        navy: document.getElementById('colorNavy').value,
-        success: document.getElementById('colorSuccess').value
+function getThemeFromInputs() {
+    return {
+        headerBg: document.getElementById('headerBg').value,
+        sidebarBg: document.getElementById('sidebarBg').value,
+        panelBg: document.getElementById('panelBg').value,
+        cardBg: document.getElementById('cardBg').value,
+        accentColor: document.getElementById('accentColor').value,
+        glowColor: document.getElementById('glowColor').value,
+        btnBg: document.getElementById('btnBg').value,
+        btnHover: document.getElementById('btnHover').value,
+        textColor: document.getElementById('textColor').value,
+        borderColor: document.getElementById('borderColor').value
     };
-    localStorage.setItem('cnc_theme_colors', JSON.stringify(colors));
-    applyColors(colors);
-    showStatus('💾 Đã lưu cấu hình màu sắc', 'success');
+}
+
+function updateColorInputs(theme) {
+    document.getElementById('headerBg').value = theme.headerBg;
+    document.getElementById('sidebarBg').value = theme.sidebarBg;
+    document.getElementById('panelBg').value = theme.panelBg;
+    document.getElementById('cardBg').value = theme.cardBg;
+    document.getElementById('accentColor').value = theme.accentColor;
+    document.getElementById('glowColor').value = theme.glowColor;
+    document.getElementById('btnBg').value = theme.btnBg;
+    document.getElementById('btnHover').value = theme.btnHover;
+    document.getElementById('textColor').value = theme.textColor;
+    document.getElementById('borderColor').value = theme.borderColor;
+}
+
+function saveTheme() {
+    const theme = getThemeFromInputs();
+    localStorage.setItem('cnc_theme', JSON.stringify(theme));
+    applyThemeToPage(theme);
+    
+    // Gửi lên server
+    fetch('/api/theme', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(theme)
+    }).catch(e => console.log('Save theme error:', e));
+    
+    showStatus('💾 Đã lưu cấu hình giao diện', 'success');
     modal.classList.remove('show');
 }
 
-function resetColor(type) {
-    const colors = {
-        cyan: document.getElementById('colorCyan').value,
-        gold: document.getElementById('colorGold').value,
-        red: document.getElementById('colorRed').value,
-        navy: document.getElementById('colorNavy').value,
-        success: document.getElementById('colorSuccess').value
-    };
-    colors[type] = defaultColors[type];
-    document.getElementById(`color${type.charAt(0).toUpperCase() + type.slice(1)}`).value = defaultColors[type];
-    applyColors(colors);
-    showStatus(`↺ Đã reset màu ${type}`, 'info');
+function loadTheme() {
+    const saved = localStorage.getItem('cnc_theme');
+    if (saved) {
+        try {
+            const theme = JSON.parse(saved);
+            applyThemeToPage(theme);
+            updateColorInputs(theme);
+        } catch(e) {}
+    } else {
+        applyThemeToPage(defaultColors);
+        updateColorInputs(defaultColors);
+    }
+}
+
+function resetColor(colorKey) {
+    const theme = getThemeFromInputs();
+    theme[colorKey] = defaultColors[colorKey];
+    document.getElementById(colorKey).value = defaultColors[colorKey];
+    applyThemeToPage(theme);
+    showStatus(`↺ Đã reset màu ${colorKey}`, 'info');
 }
 
 function resetAllColors() {
     if (confirm('⚠️ Reset tất cả màu về mặc định?')) {
-        applyColors(defaultColors);
-        document.getElementById('colorCyan').value = defaultColors.cyan;
-        document.getElementById('colorGold').value = defaultColors.gold;
-        document.getElementById('colorRed').value = defaultColors.red;
-        document.getElementById('colorNavy').value = defaultColors.navy;
-        document.getElementById('colorSuccess').value = defaultColors.success;
-        localStorage.setItem('cnc_theme_colors', JSON.stringify(defaultColors));
+        applyThemeToPage(defaultColors);
+        updateColorInputs(defaultColors);
+        localStorage.setItem('cnc_theme', JSON.stringify(defaultColors));
         showStatus('✅ Đã khôi phục màu mặc định', 'success');
-    }
-}
-
-function loadColors() {
-    const saved = localStorage.getItem('cnc_theme_colors');
-    if (saved) {
-        const colors = JSON.parse(saved);
-        applyColors(colors);
-        document.getElementById('colorCyan').value = colors.cyan;
-        document.getElementById('colorGold').value = colors.gold;
-        document.getElementById('colorRed').value = colors.red;
-        document.getElementById('colorNavy').value = colors.navy;
-        document.getElementById('colorSuccess').value = colors.success;
     }
 }
 
@@ -832,10 +911,22 @@ function loadConfig() {
     });
 }
 
+// Lắng nghe theme thay đổi từ tab khác
+window.addEventListener('storage', (event) => {
+    if (event.key === 'cnc_theme' && event.newValue) {
+        try {
+            const theme = JSON.parse(event.newValue);
+            applyThemeToPage(theme);
+            updateColorInputs(theme);
+            console.log('🎨 Theme updated from another tab');
+        } catch(e) {}
+    }
+});
+
 // ========== INIT ==========
 document.addEventListener('DOMContentLoaded', () => {
     loadConfig();
-    loadColors();
+    loadTheme();
     const firstMenu = document.querySelector('.menu-item-header');
     if (firstMenu) toggleSubmenu(firstMenu);
 });
