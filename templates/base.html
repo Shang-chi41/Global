@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart CNC Digital Twin</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&family=Be+Vietnam+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/static/css/isa101.css">
+    <!-- TẠM THỜI KHÔNG DÙNG isa101.css - GIỮ MÀU CŨ -->
     <style>
         :root {
             --red:    #c0392b;
@@ -51,6 +51,7 @@
         }
 
         .logo-bk { display:flex; align-items:center; gap:10px; }
+        .logo-bk img { height:55px; width:auto; object-fit:contain; }
         .logo-bk-text {
             font-size:11px; font-weight:600; color:var(--gold);
             line-height:1.5; text-transform:uppercase; letter-spacing:.4px;
@@ -68,10 +69,9 @@
         .navbar {
             background:rgba(13,27,42,.95);
             border-top:1px solid var(--border);
-            display:flex; align-items:center;
-            padding:0; flex-shrink:0;
-            position:sticky; bottom:0; z-index:10;
-            box-shadow:0 -4px 24px rgba(0,0,0,.4);
+            display:flex;
+            flex-shrink:0;
+            margin-top:auto;
         }
         .nav-link {
             flex:1; text-align:center; padding:14px 8px;
@@ -79,7 +79,7 @@
             letter-spacing:1.5px; color:#6b8fa8;
             text-decoration:none; text-transform:uppercase;
             border-top:3px solid transparent;
-            transition:.2s; cursor:pointer;
+            transition:.2s;
         }
         .nav-link:hover { color:var(--cyan); background:rgba(0,201,212,.05); }
         .nav-link.active {
@@ -149,7 +149,6 @@
             letter-spacing:2px; color:var(--light); text-transform:uppercase;
         }
 
-        /* Corner decoration */
         .menu-card::after {
             content:''; position:absolute;
             top:8px; right:8px; width:12px; height:12px;
@@ -157,12 +156,6 @@
             opacity:0; transition:.3s;
         }
         .menu-card:hover::after { opacity:1; }
-
-        /* Scan line animation */
-        @keyframes scanLine {
-            0%   { top:-10%; }
-            100% { top:110%; }
-        }
 
         /* ══════════════ USER BADGE ══════════════ */
         .user-badge {
@@ -183,7 +176,7 @@
         .logout-btn {
             background:transparent; border:1px solid rgba(192,57,43,.5);
             color:var(--red); font-size:11px; padding:3px 10px;
-            border-radius:10px; cursor:pointer; font-family:'Be Vietnam Pro';
+            border-radius:10px; cursor:pointer;
             transition:.2s; margin-left:4px;
         }
         .logout-btn:hover { background:var(--red); color:white; }
@@ -193,29 +186,21 @@
 
 <!-- ══════════ HEADER ══════════ -->
 <header class="header">
-    <!-- Logo Bách Khoa -->
     <div class="logo-bk">
         <img src="/static/images/hust_logo.png" alt="ĐHBK Hà Nội" onerror="this.src='https://via.placeholder.com/55x55?text=HUST'">
         <div class="logo-bk-text">ĐH Bách Khoa<br>Hà Nội</div>
     </div>
-
-    <!-- Tiêu đề -->
     <div class="header-center">
-        <div class="main-title">
-            TÍNH TOÁN, THIẾT KẾ HỆ THỐNG ĐIỀU KHIỂN<br>
-            MÁY CNC ĐỂ BÀN TỰ CHỦ THÔNG MINH
-        </div>
+        <div class="main-title">TÍNH TOÁN, THIẾT KẾ HỆ THỐNG ĐIỀU KHIỂN<br>MÁY CNC ĐỂ BÀN TỰ CHỦ THÔNG MINH</div>
         <div class="sub-title">GVHD: LÊ GIANG NAM</div>
     </div>
-
-    <!-- Logo VR -->
- <img src="/static/images/vimes_logo.png" alt="Vimes Lab" style="height: 55px; width: auto;" onerror="this.src='https://via.placeholder.com/55x55?text=V'">
+    <img src="/static/images/vimes_logo.png" alt="Vimes Lab" style="height:55px; width:auto;" onerror="this.src='https://via.placeholder.com/55x55?text=V'">
 </header>
 
 <!-- User badge -->
 <div class="user-badge">
     <span class="user-dot"></span>
-    <span id="usernameDisplay">admin</span>
+    <span id="usernameDisplay">{{ username }}</span>
     <form action="/logout" method="POST" style="display:inline">
         <button class="logout-btn" type="submit">LOGOUT</button>
     </form>
@@ -238,19 +223,13 @@
                     <svg width="72" height="72" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
                         <rect x="10" y="18" width="52" height="36" rx="4" fill="none" stroke="#00c9d4" stroke-width="2"/>
                         <rect x="14" y="22" width="22" height="28" rx="2" fill="rgba(0,201,212,.1)" stroke="#00c9d4" stroke-width="1.2"/>
-                        <!-- Buttons grid -->
                         <rect x="40" y="26" width="9" height="6" rx="1.5" fill="rgba(0,201,212,.25)" stroke="#00c9d4" stroke-width="1"/>
                         <rect x="52" y="26" width="6" height="6" rx="1.5" fill="rgba(192,57,43,.4)" stroke="#c0392b" stroke-width="1"/>
                         <rect x="40" y="35" width="9" height="6" rx="1.5" fill="rgba(0,201,212,.15)" stroke="#00c9d4" stroke-width="1"/>
                         <rect x="52" y="35" width="6" height="6" rx="1.5" fill="rgba(0,201,212,.15)" stroke="#00c9d4" stroke-width="1"/>
                         <rect x="40" y="44" width="18" height="4" rx="1.5" fill="rgba(212,160,23,.25)" stroke="#d4a017" stroke-width="1"/>
-                        <!-- Joystick -->
                         <circle cx="25" cy="36" r="7" fill="none" stroke="#00c9d4" stroke-width="1.5"/>
                         <circle cx="25" cy="36" r="2.5" fill="#00c9d4"/>
-                        <line x1="25" y1="28" x2="25" y2="31" stroke="#00c9d4" stroke-width="1.5"/>
-                        <line x1="25" y1="41" x2="25" y2="44" stroke="#00c9d4" stroke-width="1.5"/>
-                        <line x1="17" y1="36" x2="20" y2="36" stroke="#00c9d4" stroke-width="1.5"/>
-                        <line x1="30" y1="36" x2="33" y2="36" stroke="#00c9d4" stroke-width="1.5"/>
                     </svg>
                 </div>
                 <div class="card-label">ĐIỀU KHIỂN</div>
@@ -260,15 +239,10 @@
             <a class="menu-card" href="/monitor">
                 <div class="card-icon">
                     <svg width="72" height="72" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
-                        <!-- Monitor screen -->
                         <rect x="8" y="12" width="56" height="38" rx="3" fill="none" stroke="#00c9d4" stroke-width="2"/>
                         <rect x="12" y="16" width="48" height="30" fill="rgba(0,201,212,.06)"/>
-                        <!-- Chart line -->
-                        <polyline points="14,38 20,32 26,35 32,24 38,28 44,20 50,26 56,22"
-                                  fill="none" stroke="#00c9d4" stroke-width="2" stroke-linejoin="round"/>
-                        <polyline points="14,42 20,39 26,41 32,35 38,37 44,32 50,36 56,33"
-                                  fill="none" stroke="#c0392b" stroke-width="1.5" stroke-linejoin="round"/>
-                        <!-- Stand -->
+                        <polyline points="14,38 20,32 26,35 32,24 38,28 44,20 50,26 56,22" fill="none" stroke="#00c9d4" stroke-width="2"/>
+                        <polyline points="14,42 20,39 26,41 32,35 38,37 44,32 50,36 56,33" fill="none" stroke="#c0392b" stroke-width="1.5"/>
                         <line x1="36" y1="50" x2="36" y2="58" stroke="#00c9d4" stroke-width="2"/>
                         <line x1="26" y1="58" x2="46" y2="58" stroke="#00c9d4" stroke-width="2"/>
                     </svg>
@@ -280,19 +254,12 @@
             <a class="menu-card" href="/settings">
                 <div class="card-icon">
                     <svg width="72" height="72" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
-                        <!-- Gear -->
                         <circle cx="36" cy="36" r="10" fill="none" stroke="#00c9d4" stroke-width="2.2"/>
                         <circle cx="36" cy="36" r="4"  fill="rgba(0,201,212,.3)"/>
-                        <!-- Gear teeth -->
                         <rect x="33" y="18" width="6" height="7" rx="1.5" fill="none" stroke="#00c9d4" stroke-width="1.8"/>
                         <rect x="33" y="47" width="6" height="7" rx="1.5" fill="none" stroke="#00c9d4" stroke-width="1.8"/>
                         <rect x="18" y="33" width="7" height="6" rx="1.5" fill="none" stroke="#00c9d4" stroke-width="1.8"/>
                         <rect x="47" y="33" width="7" height="6" rx="1.5" fill="none" stroke="#00c9d4" stroke-width="1.8"/>
-                        <!-- Diagonal teeth -->
-                        <rect x="22" y="22" width="5" height="5" rx="1.2" fill="none" stroke="#00c9d4" stroke-width="1.5" transform="rotate(45 24.5 24.5)"/>
-                        <rect x="45" y="22" width="5" height="5" rx="1.2" fill="none" stroke="#00c9d4" stroke-width="1.5" transform="rotate(45 47.5 24.5)"/>
-                        <rect x="22" y="45" width="5" height="5" rx="1.2" fill="none" stroke="#00c9d4" stroke-width="1.5" transform="rotate(45 24.5 47.5)"/>
-                        <rect x="45" y="45" width="5" height="5" rx="1.2" fill="none" stroke="#00c9d4" stroke-width="1.5" transform="rotate(45 47.5 47.5)"/>
                     </svg>
                 </div>
                 <div class="card-label">THÔNG SỐ</div>
@@ -320,7 +287,6 @@
 </nav>
 
 <script>
-// Clock
 function updateClock() {
     const now = new Date();
     const t = now.toLocaleTimeString('vi-VN', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
@@ -331,7 +297,6 @@ function updateClock() {
 setInterval(updateClock, 1000);
 updateClock();
 
-// Active nav highlight
 const path = window.location.pathname;
 document.querySelectorAll('.nav-link').forEach(a => {
     a.classList.remove('active');
