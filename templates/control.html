@@ -870,5 +870,74 @@ window.sendMessage = sendMessage;
 window.downloadGCode = downloadGCode;
 window.clearGCode = clearGCode;
 </script>
+
+<script>
+// ========== QUẢN LÝ THEME TOÀN CỤC ==========
+// Áp dụng theme từ object
+function applyTheme(theme) {
+    if (!theme) return;
+    document.documentElement.style.setProperty('--cyan-portal', theme.primary || '#1E5FA8');
+    document.documentElement.style.setProperty('--cyan', theme.secondary || '#00c9d4');
+    document.documentElement.style.setProperty('--gray-bg', theme.bg_main || '#C8CACF');
+    document.documentElement.style.setProperty('--gray-card', theme.bg_panel || '#D0D2D6');
+    document.documentElement.style.setProperty('--gray-sidebar', theme.bg_sidebar || '#BABCBF');
+    document.documentElement.style.setProperty('--gray-hover', theme.bg_hover || '#B0B2B6');
+    document.documentElement.style.setProperty('--white-primary', theme.text_primary || '#1A1A1A');
+    document.documentElement.style.setProperty('--white-secondary', theme.text_secondary || '#3A3A3A');
+    document.documentElement.style.setProperty('--white-muted', theme.text_muted || '#5A5A5A');
+    document.documentElement.style.setProperty('--gray-border', theme.border || '#9A9C9F');
+    document.documentElement.style.setProperty('--status-active', theme.success || '#00AA00');
+    document.documentElement.style.setProperty('--status-warning', theme.warning || '#FFCC00');
+    document.documentElement.style.setProperty('--status-alarm', theme.alarm || '#CC0000');
+}
+
+// Tải theme từ localStorage khi trang load
+function loadThemeFromLocal() {
+    const saved = localStorage.getItem('cnc_theme');
+    if (saved) {
+        try {
+            const theme = JSON.parse(saved);
+            applyTheme(theme);
+            console.log('🎨 Theme loaded from localStorage');
+        } catch(e) { console.error('Theme parse error:', e); }
+    } else {
+        // Nếu chưa có, thử lấy từ Flask theme (đã được render)
+        {% if theme %}
+        const flaskTheme = {
+            primary: '{{ theme.primary }}',
+            secondary: '{{ theme.secondary }}',
+            bg_main: '{{ theme.bg_main }}',
+            bg_panel: '{{ theme.bg_panel }}',
+            bg_sidebar: '{{ theme.bg_sidebar }}',
+            bg_hover: '{{ theme.bg_hover }}',
+            text_primary: '{{ theme.text_primary }}',
+            text_secondary: '{{ theme.text_secondary }}',
+            text_muted: '{{ theme.text_muted }}',
+            border: '{{ theme.border }}',
+            success: '{{ theme.success }}',
+            warning: '{{ theme.warning }}',
+            alarm: '{{ theme.alarm }}'
+        };
+        localStorage.setItem('cnc_theme', JSON.stringify(flaskTheme));
+        applyTheme(flaskTheme);
+        {% endif %}
+    }
+}
+
+// Lắng nghe sự kiện storage (khi theme đổi ở tab khác)
+window.addEventListener('storage', (event) => {
+    if (event.key === 'cnc_theme' && event.newValue) {
+        try {
+            const theme = JSON.parse(event.newValue);
+            applyTheme(theme);
+            console.log('🎨 Theme updated from another tab');
+        } catch(e) {}
+    }
+});
+
+// Khởi tạo khi trang load xong
+document.addEventListener('DOMContentLoaded', loadThemeFromLocal);
+</script>
+
 </body>
 </html>
