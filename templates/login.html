@@ -39,9 +39,9 @@
             pointer-events:none;
         }
 
-        /* HEADER */
+        /* ===== HEADER ===== */
         .header {
-            background: linear-gradient(135deg, #0d1b2a 0%, #1e3a5f 100%);
+            background: var(--navy);
             border-bottom: 2px solid var(--gold);
             padding: 0 32px;
             display: flex;
@@ -54,7 +54,9 @@
         .header::after {
             content:'';
             position:absolute; bottom:-4px; left:0; right:0;
-            height:2px; background: var(--cyan); opacity:.4;
+            height: 2px;
+            background: var(--cyan);
+            opacity: .7;
         }
 
         .logo-bk {
@@ -63,7 +65,8 @@
         .logo-bk img { height:55px; width:auto; object-fit:contain; }
         .logo-bk-text {
             font-family:'Be Vietnam Pro'; font-size:11px; font-weight:600;
-            color:var(--gold); line-height:1.4; text-transform:uppercase; letter-spacing:.5px;
+            color: var(--gold);
+            line-height:1.4; text-transform:uppercase; letter-spacing:.5px;
         }
 
         .header-center {
@@ -71,25 +74,28 @@
         }
         .header-center .main-title {
             font-family:'Be Vietnam Pro'; font-weight:700;
-            font-size:13px; color:var(--white);
+            font-size:13px;
+            color: var(--white);
             text-transform:uppercase; letter-spacing:.8px; line-height:1.4;
         }
         .header-center .sub-title {
-            font-size:11px; color:var(--gold);
+            font-size:11px;
+            color: var(--gold);
             font-weight:400; margin-top:4px; letter-spacing:.5px;
         }
 
-        /* MAIN */
+        /* ===== MAIN ===== */
         .main {
             flex:1; display:flex;
             align-items:center; justify-content:center;
             padding:40px 20px;
         }
 
+        /* ===== LOGIN CARD ===== */
         .login-card {
-            background: rgba(30,58,95,0.55);
+            background: var(--steel);
             border: 1px solid var(--border);
-            border-radius: 4px;
+            border-radius: 8px;
             padding: 40px 48px;
             width: 100%; max-width: 420px;
             backdrop-filter: blur(16px);
@@ -103,7 +109,8 @@
 
         .login-title {
             font-family:'Orbitron'; font-size:14px; font-weight:600;
-            color:var(--cyan); text-align:center; letter-spacing:2px;
+            color: var(--cyan);
+            text-align:center; letter-spacing:2px;
             text-transform:uppercase; margin-bottom:32px;
             padding-bottom:16px;
             border-bottom: 1px solid var(--border);
@@ -113,14 +120,19 @@
             display:flex; align-items:center; gap:12px; margin-bottom:18px;
         }
         .form-row label {
-            font-size:13px; color:var(--light); width:72px;
+            font-size:13px;
+            color: var(--light);
+            width:72px;
             font-weight:600; letter-spacing:.5px; flex-shrink:0;
         }
         .form-row input {
-            flex:1; background:rgba(255,255,255,.06);
-            border:1px solid rgba(0,201,212,.25);
-            border-radius:2px; padding:9px 14px;
-            color:var(--white); font-size:13px;
+            flex:1;
+            background: rgba(255,255,255,.06);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 10px 14px;
+            color: var(--white);
+            font-size:13px;
             font-family:'Be Vietnam Pro';
             outline:none; transition:.2s;
         }
@@ -131,10 +143,12 @@
         }
 
         .error-msg {
-            color:#ff6b6b; font-size:12px; text-align:center;
+            color: #ff6b6b;
+            font-size:12px; text-align:center;
             margin-bottom:12px; min-height:18px;
         }
 
+        /* ===== BUTTON ===== */
         .btn-enter {
             display:block; width:140px; margin:24px auto 0;
             background: transparent;
@@ -142,18 +156,20 @@
             color: var(--cyan);
             font-family:'Orbitron'; font-size:13px; font-weight:600;
             letter-spacing:3px; padding:11px 20px;
-            border-radius:2px; cursor:pointer;
+            border-radius: 4px;
+            cursor:pointer;
             transition:.25s; text-transform:uppercase;
             position:relative; overflow:hidden;
         }
         .btn-enter::before {
             content:''; position:absolute; inset:0;
-            background:var(--cyan); transform:scaleX(0);
+            background: var(--cyan);
+            transform:scaleX(0);
             transform-origin:left; transition:.3s ease;
             z-index:0;
         }
         .btn-enter:hover::before { transform:scaleX(1); }
-        .btn-enter:hover { color:var(--navy); }
+        .btn-enter:hover { color: var(--navy); }
         .btn-enter span { position:relative; z-index:1; }
     </style>
 </head>
@@ -223,11 +239,11 @@ function loadThemeFromLocal() {
     if (saved) {
         try {
             const theme = JSON.parse(saved);
-            document.documentElement.style.setProperty('--red', theme.red || '#c0392b');
-            document.documentElement.style.setProperty('--gold', theme.gold || '#d4a017');
-            document.documentElement.style.setProperty('--navy', theme.navy || '#0d1b2a');
-            document.documentElement.style.setProperty('--cyan', theme.cyan || '#00c9d4');
-            document.documentElement.style.setProperty('--border', theme.border || 'rgba(0,201,212,0.3)');
+            document.documentElement.style.setProperty('--navy', theme.headerBg || '#0d1b2a');
+            document.documentElement.style.setProperty('--steel', theme.sidebarBg || '#1e3a5f');
+            document.documentElement.style.setProperty('--cyan', theme.accentColor || '#00c9d4');
+            document.documentElement.style.setProperty('--border', theme.borderColor || 'rgba(0,201,212,0.3)');
+            document.documentElement.style.setProperty('--white', theme.textColor || '#ffffff');
             console.log('🎨 Theme loaded from localStorage');
         } catch(e) { console.error('Theme parse error:', e); }
     }
@@ -238,11 +254,11 @@ window.addEventListener('storage', (event) => {
     if (event.key === 'cnc_theme' && event.newValue) {
         try {
             const theme = JSON.parse(event.newValue);
-            document.documentElement.style.setProperty('--red', theme.red || '#c0392b');
-            document.documentElement.style.setProperty('--gold', theme.gold || '#d4a017');
-            document.documentElement.style.setProperty('--navy', theme.navy || '#0d1b2a');
-            document.documentElement.style.setProperty('--cyan', theme.cyan || '#00c9d4');
-            document.documentElement.style.setProperty('--border', theme.border || 'rgba(0,201,212,0.3)');
+            document.documentElement.style.setProperty('--navy', theme.headerBg || '#0d1b2a');
+            document.documentElement.style.setProperty('--steel', theme.sidebarBg || '#1e3a5f');
+            document.documentElement.style.setProperty('--cyan', theme.accentColor || '#00c9d4');
+            document.documentElement.style.setProperty('--border', theme.borderColor || 'rgba(0,201,212,0.3)');
+            document.documentElement.style.setProperty('--white', theme.textColor || '#ffffff');
             console.log('🎨 Theme updated from another tab');
         } catch(e) {}
     }
