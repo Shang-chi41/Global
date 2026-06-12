@@ -1,0 +1,414 @@
+/* ============================================
+   ISA101 COLOR STANDARD - HUST (ĐHBK Hà Nội)
+   PHONG CÁCH XÁM NHẠT - TIA PORTAL / WINCC
+   Chuẩn ISA-101 Light Theme
+   ============================================ */
+
+:root {
+    /* ===== NỀN XÁM NHẠT (TIA Portal style) ===== */
+    --gray-bg: #C8CACF;          /* Nền chính - xám nhạt chuẩn HMI */
+    --gray-card: #D0D2D6;        /* Card, panel - sáng hơn nền */
+    --gray-sidebar: #BABCBF;     /* Sidebar - xám đậm hơn nền chút */
+    --gray-hover: #B0B2B6;       /* Hover effect */
+    --gray-border: #9A9C9F;      /* Border */
+
+    /* ===== MÀU CHỮ (đảo ngược so với dark) ===== */
+    --white-pure: #FFFFFF;       /* Trắng thuần - dùng cho background input */
+    --white-primary: #1A1A1A;    /* Chữ chính - gần đen */
+    --white-secondary: #3A3A3A;  /* Chữ phụ */
+    --white-muted: #5A5A5A;      /* Chữ mờ / nhãn */
+
+    /* ===== MÀU XANH ISA (Accent chính) ===== */
+    --cyan-portal: #1E5FA8;      /* Xanh navy ISA - thay cyan neon */
+    --cyan-dark: #154A8A;
+    --cyan-glow: rgba(30, 95, 168, 0.2);
+
+    /* ===== MÀU XANH LÁ - ISA NORMAL/RUNNING ===== */
+    --lime-green: #00AA00;       /* Xanh lá chuẩn ISA - normal state */
+    --lime-dark: #008800;
+    --lime-glow: rgba(0, 170, 0, 0.2);
+
+    /* ===== MÀU ĐỎ - ISA ALARM (bất biến) ===== */
+    --hust-red: #CC0000;         /* Đỏ chuẩn ISA - alarm/critical */
+    --hust-red-dark: #AA0000;
+    --red-glow: rgba(204, 0, 0, 0.2);
+
+    /* ===== MÀU VÀNG - ISA WARNING (bất biến) ===== */
+    --hust-gold: #FFCC00;        /* Vàng chuẩn ISA - warning state */
+    --gold-glow: rgba(255, 204, 0, 0.2);
+
+    /* ===== TRẠNG THÁI ISA-101 (KHÔNG THAY ĐỔI) ===== */
+    --status-alarm:   #CC0000;   /* ISA: ĐỎ = Alarm / Critical */
+    --status-warning: #FFCC00;   /* ISA: VÀNG = Warning */
+    --status-active:  #00AA00;   /* ISA: XANH LÁ = Normal / Running */
+    --status-off:     #4A4A4A;   /* ISA: XÁM ĐẬM = Tắt / Deactivated */
+    --status-unknown: #FFFFFF;   /* ISA: TRẮNG = Không xác định */
+
+    /* ===== HIỆU ỨNG ===== */
+    --border-subtle: rgba(0, 0, 0, 0.1);
+    --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+    --glass-effect: rgba(208, 210, 214, 0.9);
+}
+
+/* ===== RESET ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: var(--gray-bg);
+    color: var(--white-primary);
+    font-family: 'Segoe UI', 'Be Vietnam Pro', system-ui, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Pattern nền nhẹ (tùy chọn) */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: 
+        linear-gradient(rgba(30, 95, 168, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(30, 95, 168, 0.03) 1px, transparent 1px);
+    background-size: 32px 32px;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* ===== HEADER ===== */
+.header {
+    background: var(--gray-card);
+    border-bottom: 2px solid var(--gray-border);
+    padding: 0 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 80px;
+    position: relative;
+    z-index: 10;
+}
+
+/* Thanh đỏ BK mỏng phía trên header */
+.header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--hust-red);
+}
+
+/* ===== LOGO ===== */
+.logo-bk {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logo-bk img {
+    height: 55px;
+    width: auto;
+}
+
+.logo-bk-text {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--white-muted);
+    line-height: 1.4;
+    text-transform: uppercase;
+}
+
+/* ===== CARD, PANEL ===== */
+.card, .panel-container, .connection-card, .chart-wrap,
+.viewer-panel, .upload-area, .chat-messages {
+    background: var(--gray-card);
+    border: 1px solid var(--gray-border);
+    border-radius: 4px;           /* ISA style: góc vuông hơn */
+    box-shadow: var(--card-shadow);
+}
+
+.card-title, .panel-title {
+    color: var(--cyan-portal);
+    font-family: 'Orbitron', 'Courier New', monospace;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+/* ===== NÚT BẤM ===== */
+button, .btn, .mode-btn, .connect-btn, .send-btn,
+.tbtn, .btn-small, .btn-icon, .ctrl-btn {
+    background: var(--gray-hover);
+    color: var(--white-primary);
+    border: 1px solid var(--gray-border);
+    border-radius: 3px;           /* ISA style: góc vuông */
+    padding: 10px 18px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    min-height: 36px;
+}
+
+/* Nút HOVER */
+button:hover, .btn:hover, .mode-btn:hover {
+    background: var(--gray-border);
+    color: var(--white-primary);
+    border-color: var(--cyan-portal);
+}
+
+/* Nút ACTIVE - Xanh ISA */
+.btn-active, .mode-btn.active, .btn-success {
+    background: var(--status-active);
+    color: #FFFFFF;
+    border-color: var(--lime-dark);
+}
+.btn-active:hover, .mode-btn.active:hover {
+    background: var(--lime-dark);
+}
+
+/* Nút START - Xanh lá */
+.btn-start {
+    background: var(--status-active);
+    color: #FFFFFF;
+    border-color: var(--lime-dark);
+}
+
+/* Nút DỪNG khi có ALARM - Đỏ ISA */
+.btn-stop.alarm-active {
+    background: var(--status-alarm);
+    color: #FFFFFF;
+    border-color: var(--hust-red-dark);
+    animation: pulse-red 0.8s infinite;
+}
+
+/* Nút CẢNH BÁO - Vàng ISA */
+.btn-warning {
+    background: var(--status-warning);
+    color: #000000;               /* Chữ đen trên nền vàng - dễ đọc */
+    border-color: #CCAA00;
+}
+
+@keyframes pulse-red {
+    0%, 100% { background: var(--status-alarm); opacity: 1; }
+    50% { background: #FF2222; opacity: 0.9; }
+}
+
+/* ===== MODE TOGGLE ===== */
+.mode-btn.manual.active {
+    background: var(--status-warning);
+    color: #000000;
+    border-color: #CCAA00;
+}
+.mode-btn.auto.active {
+    background: var(--status-active);
+    color: #FFFFFF;
+    border-color: var(--lime-dark);
+}
+
+/* ===== NAVIGATION TABS (TIA Portal style) ===== */
+.nav-tab {
+    background: var(--gray-sidebar);
+    border: 1px solid var(--gray-border);
+    border-bottom: none;
+    padding: 8px 20px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--white-secondary);
+    cursor: pointer;
+    border-radius: 3px 3px 0 0;
+}
+.nav-tab.active {
+    background: var(--gray-card);
+    color: var(--white-primary);
+    border-bottom: 2px solid var(--gray-card);
+}
+.nav-tab:hover:not(.active) {
+    background: var(--gray-hover);
+}
+
+/* ===== CHART (Biểu đồ) ===== */
+.chart-wrap {
+    background: var(--gray-card);
+}
+.chart-wrap canvas {
+    background: #FFFFFF;          /* Canvas trắng - chuẩn trend ISA */
+    border: 1px solid var(--gray-border);
+    border-radius: 2px;
+}
+
+/* ===== ALARM ===== */
+.alarm-item {
+    background: var(--gray-bg);
+    border-left: 4px solid transparent;
+    padding: 8px 12px;
+    margin-bottom: 6px;
+    border-radius: 2px;
+    font-size: 11px;
+    font-weight: 600;
+}
+.alarm-item.critical {
+    border-left-color: var(--status-alarm);
+    background: rgba(204, 0, 0, 0.08);
+    color: #880000;
+}
+.alarm-item.warning {
+    border-left-color: var(--status-warning);
+    background: rgba(255, 204, 0, 0.1);
+    color: #664400;
+}
+.alarm-item.normal {
+    border-left-color: var(--status-active);
+    background: rgba(0, 170, 0, 0.06);
+    color: #004400;
+}
+
+/* Banner alarm viền đứt nét (TIA Portal style) */
+.alarm-banner {
+    border: 2px dashed var(--status-alarm);
+    background: rgba(204, 0, 0, 0.06);
+    border-radius: 3px;
+    padding: 6px 12px;
+    color: var(--status-alarm);
+    font-weight: 700;
+    font-size: 12px;
+}
+
+/* ===== STATUS LED ===== */
+.status-led {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 8px;
+    background: var(--gray-hover);
+    border: 1px solid var(--gray-border);
+}
+.status-led.normal  { background: var(--status-active);  border-color: var(--lime-dark); }
+.status-led.warning { background: var(--status-warning); border-color: #CCAA00; }
+.status-led.alarm   { background: var(--status-alarm);   border-color: var(--hust-red-dark); animation: pulse-red 1s infinite; }
+.status-led.off     { background: var(--status-off);     border-color: #333; }
+
+/* ===== FACEPLATE (cột đo ISA) ===== */
+.faceplate-bar {
+    background: var(--gray-border);
+    border: 1px solid #7A7C7F;
+    border-radius: 2px;
+    position: relative;
+    overflow: hidden;
+}
+.faceplate-fill-normal  { background: #00AAAA; }   /* Cyan trung tính - giá trị bình thường */
+.faceplate-fill-alarm   { background: var(--status-alarm); }
+.faceplate-fill-warning { background: var(--status-warning); }
+.faceplate-fill-off     { background: var(--status-off); }
+.faceplate-setpoint {
+    position: absolute;
+    left: -4px; right: -4px;
+    height: 2px;
+    background: #1A1A1A;         /* Vạch setpoint - đen rõ */
+}
+
+/* ===== VAN (VALVE SYMBOL) ===== */
+.valve-symbol {
+    width: 16px; height: 16px;
+    border: 2px solid var(--cyan-portal);
+    transform: rotate(45deg);
+    background: var(--gray-card);
+    display: inline-block;
+}
+.valve-symbol.alarm  { border-color: var(--status-alarm); }
+.valve-symbol.closed { background: var(--status-off); border-color: #4A4A4A; }
+
+/* ===== TEXT COLOR ===== */
+h1, h2, h3, .title, .main-title {
+    color: var(--white-primary);
+}
+.subtitle, .sub-title {
+    color: var(--white-secondary);
+}
+.muted, .info-text, .status-text {
+    color: var(--white-muted);
+}
+.text-alarm   { color: var(--status-alarm); font-weight: 700; }
+.text-warning { color: #886600; font-weight: 700; }  /* Vàng đậm hơn để đọc trên nền sáng */
+.text-normal  { color: #004400; font-weight: 700; }
+.text-accent  { color: var(--cyan-portal); }
+
+/* ===== INPUT ===== */
+input, textarea, .url-input, .chat-input {
+    background: var(--white-pure);
+    border: 1px solid var(--gray-border);
+    color: var(--white-primary);
+    border-radius: 3px;
+    padding: 8px 12px;
+    font-size: 13px;
+}
+input:focus, textarea:focus {
+    outline: none;
+    border-color: var(--cyan-portal);
+    box-shadow: 0 0 0 2px var(--cyan-glow);
+}
+
+/* ===== METRIC / GIÁ TRỊ PROCESS ===== */
+.metric-box {
+    background: var(--white-pure);
+    border: 1px solid var(--gray-border);
+    border-radius: 3px;
+    padding: 10px;
+    text-align: center;
+}
+.metric-label {
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--white-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+}
+.metric-value {
+    font-size: 20px;
+    font-weight: 700;
+    font-family: 'Courier New', monospace;
+    color: var(--cyan-portal);
+}
+.metric-value.alarm   { color: var(--status-alarm); }
+.metric-value.warning { color: #886600; }
+.metric-value.normal  { color: var(--status-active); }
+.metric-unit {
+    font-size: 11px;
+    color: var(--white-muted);
+    margin-left: 2px;
+}
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--gray-bg); }
+::-webkit-scrollbar-thumb {
+    background: var(--gray-border);
+    border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--cyan-portal); }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    button, .btn, .mode-btn {
+        padding: 8px 14px;
+        font-size: 12px;
+        min-height: 36px;
+    }
+}
+
+/* ============================================
+   GHI CHÚ CHUẨN ISA-101 (BẤT BIẾN)
+   - ĐỎ  (#CC0000) = Alarm / Critical
+   - VÀNG (#FFCC00) = Warning
+   - XANH LÁ (#00AA00) = Normal / Running
+   - XÁM ĐẬM (#4A4A4A) = Off / Deactivated
+   - TRẮNG (#FFFFFF) = Unknown / Undefined
+   Các màu trên KHÔNG được thay đổi bất kể theme.
+   ============================================ */
