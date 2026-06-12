@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Đăng Nhập - CNC Smart System</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&family=Be+Vietnam+Pro:wght@300;400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/static/css/isa101.css">
+    <!-- TẠM THỜI KHÔNG DÙNG isa101.css - GIỮ MÀU CŨ -->
     <style>
         :root {
             --red:    #c0392b;
@@ -29,7 +29,7 @@
             overflow: hidden;
         }
 
-        /* ── Grid background ── */
+        /* Grid background */
         body::before {
             content:'';
             position:fixed; inset:0;
@@ -40,7 +40,7 @@
             pointer-events:none;
         }
 
-        /* ══════════════ HEADER ══════════════ */
+        /* HEADER */
         .header {
             background: linear-gradient(135deg, #0d1b2a 0%, #1e3a5f 100%);
             border-bottom: 2px solid var(--gold);
@@ -58,17 +58,15 @@
             height:2px; background: var(--cyan); opacity:.4;
         }
 
-        /* Logo Bách Khoa */
         .logo-bk {
             display:flex; align-items:center; gap:10px;
         }
-        .logo-bk svg { flex-shrink:0; }
+        .logo-bk img { height:55px; width:auto; object-fit:contain; }
         .logo-bk-text {
             font-family:'Be Vietnam Pro'; font-size:11px; font-weight:600;
             color:var(--gold); line-height:1.4; text-transform:uppercase; letter-spacing:.5px;
         }
 
-        /* Header center text */
         .header-center {
             text-align:center; flex:1; padding:0 20px;
         }
@@ -82,10 +80,7 @@
             font-weight:400; margin-top:4px; letter-spacing:.5px;
         }
 
-        /* Logo VR */
-        .logo-vr svg { border-radius:50%; overflow:hidden; }
-
-        /* ══════════════ MAIN ══════════════ */
+        /* MAIN */
         .main {
             flex:1; display:flex;
             align-items:center; justify-content:center;
@@ -165,28 +160,20 @@
 </head>
 <body>
 
-<!-- ══════════ HEADER ══════════ -->
+<!-- HEADER -->
 <header class="header">
-    <!-- Logo Bách Khoa (SVG) -->
     <div class="logo-bk">
         <img src="/static/images/hust_logo.png" alt="ĐHBK Hà Nội" onerror="this.src='https://via.placeholder.com/55x55?text=HUST'">
         <div class="logo-bk-text">ĐH Bách Khoa<br>Hà Nội</div>
     </div>
-
-    <!-- Tiêu đề trung tâm -->
     <div class="header-center">
-        <div class="main-title">
-            TÍNH TOÁN, THIẾT KẾ HỆ THỐNG ĐIỀU KHIỂN<br>
-            MÁY CNC ĐỂ BÀN TỰ CHỦ THÔNG MINH
-        </div>
+        <div class="main-title">TÍNH TOÁN, THIẾT KẾ HỆ THỐNG ĐIỀU KHIỂN<br>MÁY CNC ĐỂ BÀN TỰ CHỦ THÔNG MINH</div>
         <div class="sub-title">GVHD: LÊ GIANG NAM</div>
     </div>
+    <img src="/static/images/vimes_logo.png" alt="Vimes Lab" style="height:55px; width:auto;" onerror="this.src='https://via.placeholder.com/55x55?text=V'">
+</header>
 
-    <!-- Logo VR -->
-    <img src="/static/images/vimes_logo.png" alt="Vimes Lab" style="height: 55px; width: auto;" onerror="this.src='https://via.placeholder.com/55x55?text=V'">
-    </header>
-
-<!-- ══════════ LOGIN FORM ══════════ -->
+<!-- LOGIN FORM -->
 <main class="main">
     <div class="login-card">
         <div class="login-title">ĐĂNG NHẬP HỆ THỐNG</div>
@@ -224,11 +211,9 @@ function handleLogin(e) {
     }
     return true;
 }
-// Xóa lỗi khi gõ lại
 document.querySelectorAll('input').forEach(el =>
     el.addEventListener('input', () => document.getElementById('errMsg').textContent = '')
 );
-// Enter key focus
 document.getElementById('username').addEventListener('keydown', e => {
     if (e.key === 'Enter') document.getElementById('password').focus();
 });
