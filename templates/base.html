@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart CNC Digital Twin</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&family=Be+Vietnam+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <!-- TẠM THỜI KHÔNG DÙNG isa101.css - GIỮ MÀU CŨ -->
     <style>
         :root {
             --red:    #c0392b;
@@ -37,7 +36,7 @@
             pointer-events:none; z-index:0;
         }
 
-        /* ══════════════ HEADER ══════════════ */
+        /* HEADER */
         .header {
             background:linear-gradient(135deg,#0d1b2a 0%,#1e3a5f 100%);
             border-bottom:2px solid var(--gold);
@@ -51,7 +50,6 @@
         }
 
         .logo-bk { display:flex; align-items:center; gap:10px; }
-        .logo-bk img { height:55px; width:auto; object-fit:contain; }
         .logo-bk-text {
             font-size:11px; font-weight:600; color:var(--gold);
             line-height:1.5; text-transform:uppercase; letter-spacing:.4px;
@@ -65,7 +63,7 @@
             font-size:11px; color:var(--gold); margin-top:4px; letter-spacing:.5px;
         }
 
-        /* ══════════════ NAVBAR ══════════════ */
+        /* NAVBAR */
         .navbar {
             background:rgba(13,27,42,.95);
             border-top:1px solid var(--border);
@@ -88,13 +86,13 @@
             background:rgba(192,57,43,.05);
         }
 
-        /* ══════════════ CONTENT ══════════════ */
+        /* CONTENT */
         .content {
             flex:1; position:relative; z-index:1;
             padding:32px 28px;
         }
 
-        /* ══════════════ HOME PAGE ══════════════ */
+        /* HOME PAGE */
         .home-wrapper {
             display:flex; flex-direction:column;
             align-items:center; justify-content:center;
@@ -157,7 +155,7 @@
         }
         .menu-card:hover::after { opacity:1; }
 
-        /* ══════════════ USER BADGE ══════════════ */
+        /* USER BADGE */
         .user-badge {
             position:fixed; top:100px; right:20px;
             background:rgba(30,58,95,.8);
@@ -184,7 +182,7 @@
 </head>
 <body>
 
-<!-- ══════════ HEADER ══════════ -->
+<!-- HEADER -->
 <header class="header">
     <div class="logo-bk">
         <img src="/static/images/hust_logo.png" alt="ĐHBK Hà Nội" onerror="this.src='https://via.placeholder.com/55x55?text=HUST'">
@@ -194,33 +192,30 @@
         <div class="main-title">TÍNH TOÁN, THIẾT KẾ HỆ THỐNG ĐIỀU KHIỂN<br>MÁY CNC ĐỂ BÀN TỰ CHỦ THÔNG MINH</div>
         <div class="sub-title">GVHD: LÊ GIANG NAM</div>
     </div>
-    <img src="/static/images/vimes_logo.png" alt="Vimes Lab" style="height:55px; width:auto;" onerror="this.src='https://via.placeholder.com/55x55?text=V'">
+    <img src="/static/images/vimes_logo.png" alt="Vimes Lab" style="height: 55px; width: auto;" onerror="this.src='https://via.placeholder.com/55x55?text=V'">
 </header>
 
 <!-- User badge -->
 <div class="user-badge">
     <span class="user-dot"></span>
-    <span id="usernameDisplay">{{ username }}</span>
+    <span>{{ username }}</span>
     <form action="/logout" method="POST" style="display:inline">
         <button class="logout-btn" type="submit">LOGOUT</button>
     </form>
 </div>
 
-<!-- ══════════ MAIN CONTENT ══════════ -->
+<!-- MAIN CONTENT -->
 <main class="content">
-
-    <!-- ── HOME / DASHBOARD ── -->
-    <div class="home-wrapper" id="pageHome">
+    <div class="home-wrapper">
         <div>
             <div class="home-title">SMART CNC DIGITAL TWIN</div>
             <div class="home-subtitle">HỆ THỐNG ĐIỀU KHIỂN THÔNG MINH</div>
         </div>
 
         <div class="menu-grid">
-            <!-- ĐIỀU KHIỂN -->
             <a class="menu-card" href="/control">
                 <div class="card-icon">
-                    <svg width="72" height="72" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
+                    <svg width="72" height="72" viewBox="0 0 72 72">
                         <rect x="10" y="18" width="52" height="36" rx="4" fill="none" stroke="#00c9d4" stroke-width="2"/>
                         <rect x="14" y="22" width="22" height="28" rx="2" fill="rgba(0,201,212,.1)" stroke="#00c9d4" stroke-width="1.2"/>
                         <rect x="40" y="26" width="9" height="6" rx="1.5" fill="rgba(0,201,212,.25)" stroke="#00c9d4" stroke-width="1"/>
@@ -235,10 +230,9 @@
                 <div class="card-label">ĐIỀU KHIỂN</div>
             </a>
 
-            <!-- GIÁM SÁT -->
             <a class="menu-card" href="/monitor">
                 <div class="card-icon">
-                    <svg width="72" height="72" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
+                    <svg width="72" height="72" viewBox="0 0 72 72">
                         <rect x="8" y="12" width="56" height="38" rx="3" fill="none" stroke="#00c9d4" stroke-width="2"/>
                         <rect x="12" y="16" width="48" height="30" fill="rgba(0,201,212,.06)"/>
                         <polyline points="14,38 20,32 26,35 32,24 38,28 44,20 50,26 56,22" fill="none" stroke="#00c9d4" stroke-width="2"/>
@@ -250,12 +244,11 @@
                 <div class="card-label">GIÁM SÁT</div>
             </a>
 
-            <!-- THÔNG SỐ -->
             <a class="menu-card" href="/settings">
                 <div class="card-icon">
-                    <svg width="72" height="72" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
+                    <svg width="72" height="72" viewBox="0 0 72 72">
                         <circle cx="36" cy="36" r="10" fill="none" stroke="#00c9d4" stroke-width="2.2"/>
-                        <circle cx="36" cy="36" r="4"  fill="rgba(0,201,212,.3)"/>
+                        <circle cx="36" cy="36" r="4" fill="rgba(0,201,212,.3)"/>
                         <rect x="33" y="18" width="6" height="7" rx="1.5" fill="none" stroke="#00c9d4" stroke-width="1.8"/>
                         <rect x="33" y="47" width="6" height="7" rx="1.5" fill="none" stroke="#00c9d4" stroke-width="1.8"/>
                         <rect x="18" y="33" width="7" height="6" rx="1.5" fill="none" stroke="#00c9d4" stroke-width="1.8"/>
@@ -266,7 +259,6 @@
             </a>
         </div>
 
-        <!-- Status bar -->
         <div style="display:flex;gap:24px;align-items:center;margin-top:8px;">
             <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:#6b8fa8;">
                 <span style="width:8px;height:8px;border-radius:50%;background:#00b894;display:inline-block;animation:pulse 2s infinite;"></span>
@@ -275,10 +267,9 @@
             <div style="font-size:12px;color:#6b8fa8;" id="clockDisplay"></div>
         </div>
     </div>
-
 </main>
 
-<!-- ══════════ NAVBAR ══════════ -->
+<!-- NAVBAR -->
 <nav class="navbar">
     <a class="nav-link active" href="/">HOME</a>
     <a class="nav-link" href="/control">ĐIỀU KHIỂN</a>
@@ -287,6 +278,7 @@
 </nav>
 
 <script>
+// Clock
 function updateClock() {
     const now = new Date();
     const t = now.toLocaleTimeString('vi-VN', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
@@ -297,6 +289,7 @@ function updateClock() {
 setInterval(updateClock, 1000);
 updateClock();
 
+// Active nav highlight
 const path = window.location.pathname;
 document.querySelectorAll('.nav-link').forEach(a => {
     a.classList.remove('active');
@@ -307,6 +300,39 @@ document.querySelectorAll('.nav-link').forEach(a => {
         a.classList.add('active');
     }
 });
+
+// ========== LOAD THEME TỪ LOCALSTORAGE ==========
+function loadThemeFromLocal() {
+    const saved = localStorage.getItem('cnc_theme');
+    if (saved) {
+        try {
+            const theme = JSON.parse(saved);
+            document.documentElement.style.setProperty('--red', theme.red || '#c0392b');
+            document.documentElement.style.setProperty('--gold', theme.gold || '#d4a017');
+            document.documentElement.style.setProperty('--navy', theme.navy || '#0d1b2a');
+            document.documentElement.style.setProperty('--cyan', theme.cyan || '#00c9d4');
+            console.log('🎨 Theme loaded from localStorage');
+        } catch(e) { console.error('Theme parse error:', e); }
+    }
+}
+
+// Lắng nghe theme thay đổi từ tab khác
+window.addEventListener('storage', (event) => {
+    if (event.key === 'cnc_theme' && event.newValue) {
+        try {
+            const theme = JSON.parse(event.newValue);
+            document.documentElement.style.setProperty('--red', theme.red || '#c0392b');
+            document.documentElement.style.setProperty('--gold', theme.gold || '#d4a017');
+            document.documentElement.style.setProperty('--navy', theme.navy || '#0d1b2a');
+            document.documentElement.style.setProperty('--cyan', theme.cyan || '#00c9d4');
+            console.log('🎨 Theme updated from another tab');
+        } catch(e) {}
+    }
+});
+
+// Khởi tạo
+loadThemeFromLocal();
 </script>
+
 </body>
 </html>
