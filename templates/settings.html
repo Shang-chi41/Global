@@ -37,8 +37,9 @@
             z-index: 0;
         }
 
+        /* ===== HEADER ===== */
         .header {
-            background: linear-gradient(135deg, #0d1b2a 0%, #1e3a5f 100%);
+            background: var(--navy);
             border-bottom: 2px solid var(--gold);
             padding: 0 28px;
             display: flex;
@@ -49,17 +50,29 @@
             position: relative;
             z-index: 10;
         }
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--cyan);
+            opacity: .7;
+        }
+
         .logo-bk { display: flex; align-items: center; gap: 10px; }
         .logo-bk-text { font-size: 11px; font-weight: 600; color: var(--gold); line-height: 1.5; text-transform: uppercase; }
         .header-center { text-align: center; flex: 1; padding: 0 16px; }
-        .header-center .main-title { font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: .7px; line-height: 1.45; }
+        .header-center .main-title { font-weight: 700; font-size: 13px; color: var(--white); text-transform: uppercase; letter-spacing: .7px; line-height: 1.45; }
         .header-center .sub-title { font-size: 11px; color: var(--gold); margin-top: 4px; letter-spacing: .5px; }
 
+        /* ===== USER BADGE ===== */
         .user-badge {
             position: fixed;
             top: 96px;
             right: 16px;
-            background: rgba(30,58,95,.85);
+            background: var(--steel);
             border: 1px solid var(--border);
             border-radius: 20px;
             padding: 5px 14px;
@@ -85,6 +98,7 @@
         }
         .logout-btn:hover { background: var(--red); color: white; }
 
+        /* ===== MAIN LAYOUT ===== */
         .main {
             flex: 1;
             position: relative;
@@ -94,15 +108,15 @@
             margin: 0 auto;
             width: 100%;
         }
-
-        /* Settings Layout */
         .settings-wrapper {
             display: flex;
             gap: 24px;
         }
+
+        /* ===== SETTINGS MENU ===== */
         .settings-menu {
             width: 280px;
-            background: rgba(30,58,95,.35);
+            background: var(--steel);
             border: 1px solid var(--border);
             border-radius: 12px;
             overflow: hidden;
@@ -119,7 +133,7 @@
             letter-spacing: 1.5px;
         }
         .menu-item {
-            border-bottom: 1px solid rgba(0,201,212,.1);
+            border-bottom: 1px solid var(--border);
         }
         .menu-item-header {
             padding: 14px 20px;
@@ -130,6 +144,7 @@
             transition: all 0.3s;
             font-weight: 600;
             font-size: 14px;
+            color: var(--white);
         }
         .menu-item-header:hover {
             background: rgba(0,201,212,.1);
@@ -155,7 +170,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-top: 1px solid rgba(0,201,212,.08);
+            border-top: 1px solid var(--border);
             font-size: 13px;
         }
         .submenu-item:hover { background: rgba(0,201,212,.05); }
@@ -187,6 +202,7 @@
             text-align: right;
         }
 
+        /* ===== SETTINGS ACTIONS ===== */
         .settings-actions {
             flex: 1;
             display: flex;
@@ -197,7 +213,7 @@
             display: flex;
             gap: 16px;
             flex-wrap: wrap;
-            background: rgba(30,58,95,.35);
+            background: var(--steel);
             border: 1px solid var(--border);
             border-radius: 12px;
             padding: 20px;
@@ -215,15 +231,16 @@
             transition: all 0.3s;
             text-transform: uppercase;
         }
-        .btn-primary { background: linear-gradient(135deg, var(--cyan), #0099a8); color: var(--navy); }
+        .btn-primary { background: var(--cyan); color: var(--navy); }
         .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,201,212,.4); }
-        .btn-secondary { background: rgba(30,58,95,.8); border: 1px solid var(--border); color: var(--white); }
+        .btn-secondary { background: var(--steel); border: 1px solid var(--border); color: var(--white); }
         .btn-secondary:hover { border-color: var(--warning); color: var(--warning); }
         .btn-danger { background: rgba(192,57,43,.2); border: 1px solid var(--red); color: var(--red); }
         .btn-danger:hover { background: var(--red); color: white; }
 
+        /* ===== STATUS PANEL ===== */
         .status-panel {
-            background: rgba(30,58,95,.35);
+            background: var(--steel);
             border: 1px solid var(--border);
             border-radius: 12px;
             padding: 20px;
@@ -256,7 +273,7 @@
             white-space: pre-wrap;
         }
 
-        /* ===== COLOR PICKER BUTTON (CỌ VẼ) ===== */
+        /* ===== COLOR PICKER BUTTON ===== */
         .color-palette-btn {
             position: fixed;
             bottom: 100px;
@@ -264,7 +281,7 @@
             width: 56px;
             height: 56px;
             border-radius: 50%;
-            background: linear-gradient(135deg, var(--cyan), #0099a8);
+            background: var(--cyan);
             border: 2px solid var(--gold);
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
             cursor: pointer;
@@ -332,13 +349,14 @@
             align-items: center;
             justify-content: space-between;
             padding: 10px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 1px solid var(--border);
         }
         .color-label {
             display: flex;
             align-items: center;
             gap: 12px;
             font-size: 12px;
+            color: var(--white);
         }
         .color-preview {
             width: 30px;
@@ -352,6 +370,7 @@
             border: 1px solid var(--border);
             border-radius: 6px;
             cursor: pointer;
+            background: var(--navy);
         }
         .btn-reset-small {
             background: rgba(255,255,255,0.1);
@@ -367,7 +386,7 @@
             gap: 12px;
             margin-top: 16px;
             padding-top: 12px;
-            border-top: 1px solid rgba(255,255,255,0.1);
+            border-top: 1px solid var(--border);
         }
         .modal-actions button {
             flex: 1;
@@ -382,8 +401,9 @@
         .btn-save { background: var(--success); color: white; }
         .btn-reset { background: rgba(255,255,255,0.2); color: var(--white); }
 
+        /* ===== NAVBAR ===== */
         .navbar {
-            background: rgba(13,27,42,.97);
+            background: var(--navy);
             border-top: 1px solid var(--border);
             display: flex;
             flex-shrink: 0;
@@ -413,17 +433,14 @@
 
 <header class="header">
     <div class="logo-bk">
-<img src="/static/images/hust_logo.png"
-     alt="ĐHBK Hà Nội"
-     style="width:55px;height:55px;object-fit:contain;"
-     onerror="this.src='https://via.placeholder.com/55x55?text=HUST'">
+        <img src="/static/images/hust_logo.png" alt="ĐHBK Hà Nội" style="width:55px;height:55px;object-fit:contain;" onerror="this.src='https://via.placeholder.com/55x55?text=HUST'">
         <div class="logo-bk-text">ĐH Bách Khoa<br>Hà Nội</div>
     </div>
     <div class="header-center">
         <div class="main-title">TÍNH TOÁN, THIẾT KẾ HỆ THỐNG ĐIỀU KHIỂN<br>MÁY CNC ĐỂ BÀN TỰ CHỦ THÔNG MINH</div>
         <div class="sub-title">GVHD: LÊ GIANG NAM</div>
     </div>
- <img src="/static/images/vimes_logo.png" alt="Vimes Lab" style="height: 55px; width: auto;" onerror="this.src='https://via.placeholder.com/55x55?text=V'">
+    <img src="/static/images/vimes_logo.png" alt="Vimes Lab" style="height: 55px; width: auto;" onerror="this.src='https://via.placeholder.com/55x55?text=V'">
 </header>
 
 <div class="user-badge">
@@ -513,7 +530,7 @@
     </div>
 </main>
 
-<!-- ===== COLOR PICKER BUTTON (CỌ VẼ) ===== -->
+<!-- ===== COLOR PICKER BUTTON ===== -->
 <div class="color-palette-btn" id="colorPaletteBtn" title="Tùy chỉnh giao diện (Theme)">🎨</div>
 
 <!-- ===== COLOR MODAL ===== -->
@@ -537,12 +554,12 @@
 
         <div class="color-group-title">📦 PANEL & CARD</div>
         <div class="color-item">
-            <div class="color-label"><div class="color-preview" id="previewPanelBg" style="background: rgba(30,58,95,.35);"></div><span>Panel Background</span></div>
+            <div class="color-label"><div class="color-preview" id="previewPanelBg" style="background: #1e3a5f;"></div><span>Panel Background</span></div>
             <input type="color" id="panelBg" value="#1e3a5f">
             <button class="btn-reset-small" onclick="resetColor('panelBg')">↺</button>
         </div>
         <div class="color-item">
-            <div class="color-label"><div class="color-preview" id="previewCardBg" style="background: rgba(13,27,42,.6);"></div><span>Card Background</span></div>
+            <div class="color-label"><div class="color-preview" id="previewCardBg" style="background: #0d1b2a;"></div><span>Card Background</span></div>
             <input type="color" id="cardBg" value="#0d1b2a">
             <button class="btn-reset-small" onclick="resetColor('cardBg')">↺</button>
         </div>
@@ -776,7 +793,7 @@ function applyThemeToPage(theme) {
     document.documentElement.style.setProperty('--navy', theme.headerBg);
     document.documentElement.style.setProperty('--steel', theme.sidebarBg);
     document.documentElement.style.setProperty('--cyan', theme.accentColor);
-    document.documentElement.style.setProperty('--border', theme.borderColor);
+    document.documentElement.style.setProperty('--border', `rgba(${parseInt(theme.borderColor.slice(1,3),16)},${parseInt(theme.borderColor.slice(3,5),16)},${parseInt(theme.borderColor.slice(5,7),16)},0.22)`);
     document.documentElement.style.setProperty('--white', theme.textColor);
     
     // Update previews
@@ -825,7 +842,6 @@ function saveTheme() {
     localStorage.setItem('cnc_theme', JSON.stringify(theme));
     applyThemeToPage(theme);
     
-    // Gửi lên server
     fetch('/api/theme', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
