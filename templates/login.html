@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart CNC Digital Twin</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&family=Be+Vietnam+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <title>Đăng Nhập - CNC Smart System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&family=Be+Vietnam+Pro:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/css/isa101.css">
     <style>
         :root {
@@ -22,212 +22,240 @@
 
         body {
             font-family: 'Be Vietnam Pro', sans-serif;
-            background: var(--gray-bg);
+            background: var(--navy);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            color: var(--white-primary);
+            overflow: hidden;
         }
 
-        /* Header */
+        /* ── Grid background ── */
+        body::before {
+            content:'';
+            position:fixed; inset:0;
+            background-image:
+                linear-gradient(rgba(0,201,212,.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,201,212,.04) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events:none;
+        }
+
+        /* ══════════════ HEADER ══════════════ */
         .header {
-            background: var(--gray-card);
-            border-bottom: 2px solid var(--gray-border);
-            padding: 0 28px;
+            background: linear-gradient(135deg, #0d1b2a 0%, #1e3a5f 100%);
+            border-bottom: 2px solid var(--gold);
+            padding: 0 32px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            height: 88px;
-            flex-shrink: 0;
+            height: 90px;
             position: relative;
-            z-index: 10;
+            flex-shrink: 0;
         }
         .header::after {
-            content: '';
-            position: absolute;
-            bottom: -4px;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: var(--status-alarm);
+            content:'';
+            position:absolute; bottom:-4px; left:0; right:0;
+            height:2px; background: var(--cyan); opacity:.4;
         }
 
-        .logo-bk { display: flex; align-items: center; gap: 12px; }
-        .logo-bk img { height: 55px; width: auto; object-fit: contain; }
+        /* Logo Bách Khoa */
+        .logo-bk {
+            display:flex; align-items:center; gap:10px;
+        }
+        .logo-bk svg { flex-shrink:0; }
         .logo-bk-text {
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--white-muted);
-            line-height: 1.4;
-            text-transform: uppercase;
+            font-family:'Be Vietnam Pro'; font-size:11px; font-weight:600;
+            color:var(--gold); line-height:1.4; text-transform:uppercase; letter-spacing:.5px;
         }
 
-        .header-center { text-align: center; flex: 1; padding: 0 16px; }
+        /* Header center text */
+        .header-center {
+            text-align:center; flex:1; padding:0 20px;
+        }
         .header-center .main-title {
-            font-weight: 700;
-            font-size: 13px;
-            color: var(--white-primary);
-            text-transform: uppercase;
-            letter-spacing: .7px;
+            font-family:'Be Vietnam Pro'; font-weight:700;
+            font-size:13px; color:var(--white);
+            text-transform:uppercase; letter-spacing:.8px; line-height:1.4;
         }
         .header-center .sub-title {
-            font-size: 11px;
-            color: var(--white-muted);
-            margin-top: 4px;
+            font-size:11px; color:var(--gold);
+            font-weight:400; margin-top:4px; letter-spacing:.5px;
         }
 
-        /* Navbar */
-        .navbar {
-            background: var(--gray-card);
-            border-top: 1px solid var(--gray-border);
-            display: flex;
-            flex-shrink: 0;
-            margin-top: auto;
-        }
-        .nav-link {
-            flex: 1;
-            text-align: center;
-            padding: 14px 8px;
-            font-family: 'Orbitron', monospace;
-            font-size: 11px;
-            font-weight: 600;
-            letter-spacing: 1.5px;
-            color: var(--white-secondary);
-            text-decoration: none;
-            text-transform: uppercase;
-            border-top: 3px solid transparent;
-            transition: .2s;
-        }
-        .nav-link:hover {
-            color: var(--cyan-portal);
-            background: rgba(30, 95, 168, 0.05);
-        }
-        .nav-link.active {
-            color: var(--status-alarm);
-            border-top-color: var(--status-alarm);
+        /* Logo VR */
+        .logo-vr svg { border-radius:50%; overflow:hidden; }
+
+        /* ══════════════ MAIN ══════════════ */
+        .main {
+            flex:1; display:flex;
+            align-items:center; justify-content:center;
+            padding:40px 20px;
         }
 
-        /* Content */
-        .content {
-            flex: 1;
-            position: relative;
-            z-index: 1;
-            padding: 32px 28px;
+        .login-card {
+            background: rgba(30,58,95,0.55);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 40px 48px;
+            width: 100%; max-width: 420px;
+            backdrop-filter: blur(16px);
+            box-shadow: 0 0 60px rgba(0,201,212,.08), 0 20px 60px rgba(0,0,0,.4);
+            animation: fadeUp .5s ease both;
+        }
+        @keyframes fadeUp {
+            from { opacity:0; transform:translateY(20px); }
+            to   { opacity:1; transform:translateY(0); }
         }
 
-        /* Home Page */
-        .home-wrapper {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: calc(100vh - 88px - 50px);
-            gap: 40px;
-        }
-        .home-title {
-            font-family: 'Orbitron', monospace;
-            font-size: 22px;
-            font-weight: 800;
-            color: var(--cyan-portal);
-            letter-spacing: 4px;
-            text-align: center;
-        }
-        .home-subtitle {
-            font-size: 12px;
-            color: var(--white-muted);
-            letter-spacing: 3px;
-            text-align: center;
-            margin-top: -30px;
+        .login-title {
+            font-family:'Orbitron'; font-size:14px; font-weight:600;
+            color:var(--cyan); text-align:center; letter-spacing:2px;
+            text-transform:uppercase; margin-bottom:32px;
+            padding-bottom:16px;
+            border-bottom: 1px solid var(--border);
         }
 
-        .menu-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 24px;
-            max-width: 680px;
-            width: 100%;
+        .form-row {
+            display:flex; align-items:center; gap:12px; margin-bottom:18px;
         }
-        .menu-card {
-            background: var(--gray-card);
-            border: 1px solid var(--gray-border);
-            border-radius: 8px;
-            padding: 36px 20px;
-            text-align: center;
-            text-decoration: none;
-            color: var(--white-primary);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 16px;
-            transition: .3s;
-            box-shadow: var(--card-shadow);
+        .form-row label {
+            font-size:13px; color:var(--light); width:72px;
+            font-weight:600; letter-spacing:.5px; flex-shrink:0;
         }
-        .menu-card:hover {
-            border-color: var(--cyan-portal);
-            transform: translateY(-4px);
-            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+        .form-row input {
+            flex:1; background:rgba(255,255,255,.06);
+            border:1px solid rgba(0,201,212,.25);
+            border-radius:2px; padding:9px 14px;
+            color:var(--white); font-size:13px;
+            font-family:'Be Vietnam Pro';
+            outline:none; transition:.2s;
         }
-        .card-icon svg { stroke: var(--cyan-portal); }
-        .card-label {
-            font-family: 'Orbitron', monospace;
-            font-size: 12px;
-            font-weight: 600;
-            letter-spacing: 2px;
-            color: var(--white-secondary);
-            text-transform: uppercase;
+        .form-row input:focus {
+            border-color: var(--cyan);
+            background: rgba(0,201,212,.08);
+            box-shadow: 0 0 0 3px rgba(0,201,212,.1);
         }
 
-        /* User Badge */
-        .user-badge {
-            position: fixed;
-            top: 100px;
-            right: 20px;
-            background: var(--gray-card);
-            border: 1px solid var(--gray-border);
-            border-radius: 20px;
-            padding: 6px 14px;
-            font-size: 12px;
-            color: var(--white-muted);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            z-index: 20;
-            box-shadow: var(--card-shadow);
+        .error-msg {
+            color:#ff6b6b; font-size:12px; text-align:center;
+            margin-bottom:12px; min-height:18px;
         }
-        .user-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--status-active);
-            animation: pulse 2s infinite;
-        }
-        @keyframes pulse { 50% { opacity: 0.3; } }
-        .logout-btn {
+
+        .btn-enter {
+            display:block; width:140px; margin:24px auto 0;
             background: transparent;
-            border: 1px solid var(--status-alarm);
-            color: var(--status-alarm);
-            font-size: 11px;
-            padding: 3px 10px;
-            border-radius: 10px;
-            cursor: pointer;
+            border: 2px solid var(--cyan);
+            color: var(--cyan);
+            font-family:'Orbitron'; font-size:13px; font-weight:600;
+            letter-spacing:3px; padding:11px 20px;
+            border-radius:2px; cursor:pointer;
+            transition:.25s; text-transform:uppercase;
+            position:relative; overflow:hidden;
         }
-        .logout-btn:hover {
-            background: var(--status-alarm);
-            color: white;
+        .btn-enter::before {
+            content:''; position:absolute; inset:0;
+            background:var(--cyan); transform:scaleX(0);
+            transform-origin:left; transition:.3s ease;
+            z-index:0;
         }
+        .btn-enter:hover::before { transform:scaleX(1); }
+        .btn-enter:hover { color:var(--navy); }
+        .btn-enter span { position:relative; z-index:1; }
     </style>
 </head>
 <body>
 
-<!-- HEADER -->
+<!-- ══════════ HEADER ══════════ -->
 <header class="header">
-    <!-- Logo Bách Khoa -->
+    <!-- Logo Bách Khoa (SVG) -->
     <div class="logo-bk">
-        <img src="/static/images/logo_hust.png" alt="ĐHBK Hà Nội" onerror="this.src='https://via.placeholder.com/55x55?text=HUST'">
-        <div class="logo-bk-text">ĐH Bách Khoa<br>Hà Nội</div>
+        <svg width="78" height="98" viewBox="0 0 90 113" xmlns="http://www.w3.org/2000/svg">
+  <!-- Outer border gold -->
+  <rect x="0" y="0" width="90" height="113" rx="2" fill="#E8A800"/>
+
+  <!-- Left half: RED -->
+  <rect x="2" y="2" width="43" height="88" fill="#CC1111"/>
+  <!-- Right half: WHITE -->
+  <rect x="45" y="2" width="43" height="88" fill="#FAFAFA"/>
+
+  <!-- Bottom gold band -->
+  <rect x="2" y="90" width="86" height="21" fill="#E8A800"/>
+  <text x="45" y="104" text-anchor="middle"
+        font-family="Arial Black,sans-serif" font-size="12.5" font-weight="900"
+        fill="#CC1111" letter-spacing="2">BÁCH KHOA</text>
+
+  <!-- Star (top-left, on red) -->
+  <polygon points="16,7 17.6,12 22.8,12 18.6,15 20.2,20 16,17 11.8,20 13.4,15 9.2,12 14.4,12"
+           fill="#FFD700"/>
+
+  <!-- ĐẠI HỌC (top-right, on white) -->
+  <text x="67" y="17" text-anchor="middle"
+        font-family="Arial,sans-serif" font-size="10" font-weight="bold"
+        fill="#CC1111" letter-spacing="1">ĐẠI HỌC</text>
+
+  <!-- GEAR centered on dividing line, large -->
+  <!-- Gear body: left=red fill, right=white fill, outline gold -->
+  <clipPath id="leftHalf">
+    <rect x="0" y="0" width="45" height="113"/>
+  </clipPath>
+  <clipPath id="rightHalf">
+    <rect x="45" y="0" width="90" height="113"/>
+  </clipPath>
+
+  <!-- Gear left half (red background shows through) -->
+  <circle cx="45" cy="60" r="24" fill="#CC1111" clip-path="url(#leftHalf)"/>
+  <!-- Gear right half (white background shows through) -->
+  <circle cx="45" cy="60" r="24" fill="#FAFAFA" clip-path="url(#rightHalf)"/>
+
+  <!-- Gear teeth - gold outline all around -->
+  <!-- Top teeth -->
+  <rect x="41.5" y="32" width="7" height="8" rx="1.5" fill="#E8A800"/>
+  <!-- Bottom teeth -->
+  <rect x="41.5" y="72" width="7" height="8" rx="1.5" fill="#E8A800"/>
+  <!-- Left teeth -->
+  <rect x="17" y="56.5" width="8" height="7" rx="1.5" fill="#E8A800"/>
+  <!-- Right teeth -->
+  <rect x="65" y="56.5" width="8" height="7" rx="1.5" fill="#E8A800"/>
+  <!-- Diagonal teeth NW -->
+  <rect x="24" y="37" width="7" height="7" rx="1.5" fill="#E8A800" transform="rotate(45 27.5 40.5)"/>
+  <!-- Diagonal teeth NE -->
+  <rect x="59" y="37" width="7" height="7" rx="1.5" fill="#E8A800" transform="rotate(45 62.5 40.5)"/>
+  <!-- Diagonal teeth SW -->
+  <rect x="24" y="69" width="7" height="7" rx="1.5" fill="#E8A800" transform="rotate(45 27.5 72.5)"/>
+  <!-- Diagonal teeth SE -->
+  <rect x="59" y="69" width="7" height="7" rx="1.5" fill="#E8A800" transform="rotate(45 62.5 72.5)"/>
+
+  <!-- Gear ring gold outline -->
+  <circle cx="45" cy="60" r="24" fill="none" stroke="#E8A800" stroke-width="3"/>
+  <!-- Inner gear hole -->
+  <circle cx="45" cy="60" r="12" fill="none" stroke="#E8A800" stroke-width="2.5"/>
+  <!-- Inner hole fill: left=red, right=white -->
+  <circle cx="45" cy="60" r="11" fill="#CC1111" clip-path="url(#leftHalf)"/>
+  <circle cx="45" cy="60" r="11" fill="#FAFAFA" clip-path="url(#rightHalf)"/>
+
+  <!-- Compass / compa tool -->
+  <!-- Pivot point top-right area -->
+  <!-- Left arm of compass (going down-left) -->
+  <line x1="58" y1="15" x2="28" y2="75" stroke="#E8A800" stroke-width="2.8" stroke-linecap="round"/>
+  <!-- Right arm of compass (going down, slightly right) -->
+  <line x1="58" y1="15" x2="52" y2="75" stroke="#E8A800" stroke-width="2.8" stroke-linecap="round"/>
+  <!-- Pivot circle at top -->
+  <circle cx="58" cy="15" r="3.5" fill="#E8A800"/>
+  <!-- Cross-bar / hinge in middle of compass -->
+  <rect x="37" y="43" width="16" height="4" rx="2" fill="#E8A800" transform="rotate(-72 45 45)"/>
+  <!-- Needle tips at bottom -->
+  <circle cx="28" cy="76" r="2" fill="#E8A800"/>
+  <circle cx="52" cy="76" r="2" fill="#E8A800"/>
+
+  <!-- Dividing line between red/white -->
+  <line x1="45" y1="2" x2="45" y2="90" stroke="#E8A800" stroke-width="1.5"/>
+</svg>
+        <div class="logo-bk-text">
+            ĐH Bách Khoa<br>Hà Nội
+        </div>
     </div>
 
-    <!-- Tiêu đề -->
+    <!-- Tiêu đề trung tâm -->
     <div class="header-center">
         <div class="main-title">
             TÍNH TOÁN, THIẾT KẾ HỆ THỐNG ĐIỀU KHIỂN<br>
@@ -236,116 +264,66 @@
         <div class="sub-title">GVHD: LÊ GIANG NAM</div>
     </div>
 
-    <!-- Logo Vimes Lab -->
-    <img src="/static/images/vimes_logo.png" alt="Vimes Lab" style="height: 55px; width: auto;" onerror="this.src='https://via.placeholder.com/55x55?text=V'">
-</header>
+    <!-- Logo VR -->
+    <div class="logo-vr">
+        <svg width="78" height="78" viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="55" cy="55" r="54" fill="#00B5B8"/>
+  <circle cx="55" cy="55" r="47" fill="white"/>
+  <text x="8" y="84" font-family="Georgia,Times New Roman,serif" font-size="85" font-weight="300" fill="#7DCFCF" opacity="0.9">V</text>
+  <text x="50" y="84" font-family="Georgia,Times New Roman,serif" font-size="85" font-weight="300" fill="#7DCFCF" opacity="0.9">R</text>
+  <line x1="9"  y1="63" x2="22" y2="63" stroke="#CC2222" stroke-width="2.8" stroke-linecap="round"/>
+  <line x1="88" y1="63" x2="101" y2="63" stroke="#CC2222" stroke-width="2.8" stroke-linecap="round"/>
+  <text x="55" y="68" text-anchor="middle" font-family="Brush Script MT,Segoe Script,URW Chancery L,cursive" font-size="21" fill="#CC2222" font-style="italic">Vimes Lab</text>
+  <text x="55" y="88" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="9.5" font-weight="700" fill="#00B5B8" letter-spacing="3.5">DIGITAL TWINS</text>
+</svg>
+    </div>
+    </header>
 
-<!-- User badge -->
-<div class="user-badge">
-    <span class="user-dot"></span>
-    <span id="usernameDisplay">{{ username }}</span>
-    <form action="/logout" method="POST" style="display:inline">
-        <button class="logout-btn" type="submit">LOGOUT</button>
-    </form>
-</div>
+<!-- ══════════ LOGIN FORM ══════════ -->
+<main class="main">
+    <div class="login-card">
+        <div class="login-title">ĐĂNG NHẬP HỆ THỐNG</div>
 
-<!-- MAIN CONTENT -->
-<main class="content">
-    <div class="home-wrapper">
-        <div>
-            <div class="home-title">SMART CNC DIGITAL TWIN</div>
-            <div class="home-subtitle">HỆ THỐNG ĐIỀU KHIỂN THÔNG MINH</div>
-        </div>
-
-        <div class="menu-grid">
-            <a class="menu-card" href="/control">
-                <div class="card-icon">
-                    <svg width="72" height="72" viewBox="0 0 72 72">
-                        <rect x="10" y="18" width="52" height="36" rx="4" fill="none" stroke="var(--cyan-portal)" stroke-width="2"/>
-                        <rect x="14" y="22" width="22" height="28" rx="2" fill="rgba(30,95,168,.1)" stroke="var(--cyan-portal)" stroke-width="1.2"/>
-                        <rect x="40" y="26" width="9" height="6" rx="1.5" fill="rgba(30,95,168,.2)" stroke="var(--cyan-portal)" stroke-width="1"/>
-                        <rect x="52" y="26" width="6" height="6" rx="1.5" fill="rgba(204,0,0,.3)" stroke="var(--status-alarm)" stroke-width="1"/>
-                        <rect x="40" y="35" width="9" height="6" rx="1.5" fill="rgba(30,95,168,.1)" stroke="var(--cyan-portal)" stroke-width="1"/>
-                        <rect x="52" y="35" width="6" height="6" rx="1.5" fill="rgba(30,95,168,.1)" stroke="var(--cyan-portal)" stroke-width="1"/>
-                        <rect x="40" y="44" width="18" height="4" rx="1.5" fill="rgba(255,204,0,.2)" stroke="var(--status-warning)" stroke-width="1"/>
-                        <circle cx="25" cy="36" r="7" fill="none" stroke="var(--cyan-portal)" stroke-width="1.5"/>
-                        <circle cx="25" cy="36" r="2.5" fill="var(--cyan-portal)"/>
-                    </svg>
-                </div>
-                <div class="card-label">ĐIỀU KHIỂN</div>
-            </a>
-
-            <a class="menu-card" href="/monitor">
-                <div class="card-icon">
-                    <svg width="72" height="72" viewBox="0 0 72 72">
-                        <rect x="8" y="12" width="56" height="38" rx="3" fill="none" stroke="var(--cyan-portal)" stroke-width="2"/>
-                        <rect x="12" y="16" width="48" height="30" fill="rgba(30,95,168,.05)"/>
-                        <polyline points="14,38 20,32 26,35 32,24 38,28 44,20 50,26 56,22" fill="none" stroke="var(--cyan-portal)" stroke-width="2"/>
-                        <polyline points="14,42 20,39 26,41 32,35 38,37 44,32 50,36 56,33" fill="none" stroke="var(--status-alarm)" stroke-width="1.5"/>
-                        <line x1="36" y1="50" x2="36" y2="58" stroke="var(--cyan-portal)" stroke-width="2"/>
-                        <line x1="26" y1="58" x2="46" y2="58" stroke="var(--cyan-portal)" stroke-width="2"/>
-                    </svg>
-                </div>
-                <div class="card-label">GIÁM SÁT</div>
-            </a>
-
-            <a class="menu-card" href="/settings">
-                <div class="card-icon">
-                    <svg width="72" height="72" viewBox="0 0 72 72">
-                        <circle cx="36" cy="36" r="10" fill="none" stroke="var(--cyan-portal)" stroke-width="2.2"/>
-                        <circle cx="36" cy="36" r="4" fill="rgba(30,95,168,.3)"/>
-                        <rect x="33" y="18" width="6" height="7" rx="1.5" fill="none" stroke="var(--cyan-portal)" stroke-width="1.8"/>
-                        <rect x="33" y="47" width="6" height="7" rx="1.5" fill="none" stroke="var(--cyan-portal)" stroke-width="1.8"/>
-                        <rect x="18" y="33" width="7" height="6" rx="1.5" fill="none" stroke="var(--cyan-portal)" stroke-width="1.8"/>
-                        <rect x="47" y="33" width="7" height="6" rx="1.5" fill="none" stroke="var(--cyan-portal)" stroke-width="1.8"/>
-                        <rect x="22" y="22" width="5" height="5" rx="1.2" fill="none" stroke="var(--cyan-portal)" stroke-width="1.5" transform="rotate(45 24.5 24.5)"/>
-                        <rect x="45" y="22" width="5" height="5" rx="1.2" fill="none" stroke="var(--cyan-portal)" stroke-width="1.5" transform="rotate(45 47.5 24.5)"/>
-                        <rect x="22" y="45" width="5" height="5" rx="1.2" fill="none" stroke="var(--cyan-portal)" stroke-width="1.5" transform="rotate(45 24.5 47.5)"/>
-                        <rect x="45" y="45" width="5" height="5" rx="1.2" fill="none" stroke="var(--cyan-portal)" stroke-width="1.5" transform="rotate(45 47.5 47.5)"/>
-                    </svg>
-                </div>
-                <div class="card-label">THÔNG SỐ</div>
-            </a>
-        </div>
-
-        <div style="display:flex;gap:24px;align-items:center;margin-top:8px;">
-            <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--white-muted);">
-                <span style="width:8px;height:8px;border-radius:50%;background:var(--status-active);display:inline-block;animation:pulse 2s infinite;"></span>
-                HỆ THỐNG HOẠT ĐỘNG
+        <form method="POST" action="/login" onsubmit="return handleLogin(event)">
+            <div class="form-row">
+                <label for="username">User</label>
+                <input type="text" id="username" name="username"
+                       autocomplete="username" spellcheck="false" required>
             </div>
-            <div style="font-size:12px;color:var(--white-muted);" id="clockDisplay"></div>
-        </div>
+            <div class="form-row">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password"
+                       autocomplete="current-password" required>
+            </div>
+
+            <div class="error-msg" id="errMsg">
+                {% if error %}{{ error }}{% endif %}
+            </div>
+
+            <button type="submit" class="btn-enter"><span>ENTER</span></button>
+        </form>
     </div>
 </main>
 
-<!-- NAVBAR -->
-<nav class="navbar">
-    <a class="nav-link active" href="/">HOME</a>
-    <a class="nav-link" href="/control">ĐIỀU KHIỂN</a>
-    <a class="nav-link" href="/monitor">GIÁM SÁT</a>
-    <a class="nav-link" href="/settings">THÔNG SỐ</a>
-</nav>
-
 <script>
-function updateClock() {
-    const now = new Date();
-    const t = now.toLocaleTimeString('vi-VN', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
-    const d = now.toLocaleDateString('vi-VN');
-    const el = document.getElementById('clockDisplay');
-    if (el) el.textContent = '🕐 ' + t + '  |  ' + d;
-}
-setInterval(updateClock, 1000);
-updateClock();
-
-const path = window.location.pathname;
-document.querySelectorAll('.nav-link').forEach(a => {
-    a.classList.remove('active');
-    const href = a.getAttribute('href');
-    if (href === path || (path.startsWith(href) && href !== '/')) {
-        a.classList.add('active');
-    } else if (href === '/' && path === '/') {
-        a.classList.add('active');
+function handleLogin(e) {
+    const user = document.getElementById('username').value.trim();
+    const pass = document.getElementById('password').value.trim();
+    const err  = document.getElementById('errMsg');
+    if (!user || !pass) {
+        e.preventDefault();
+        err.textContent = '⚠ Vui lòng nhập đầy đủ thông tin.';
+        return false;
     }
+    return true;
+}
+// Xóa lỗi khi gõ lại
+document.querySelectorAll('input').forEach(el =>
+    el.addEventListener('input', () => document.getElementById('errMsg').textContent = '')
+);
+// Enter key focus
+document.getElementById('username').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('password').focus();
 });
 </script>
 </body>
