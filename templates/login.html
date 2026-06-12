@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Đăng Nhập - CNC Smart System</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&family=Be+Vietnam+Pro:wght@300;400;600&display=swap" rel="stylesheet">
-    <!-- TẠM THỜI KHÔNG DÙNG isa101.css - GIỮ MÀU CŨ -->
     <style>
         :root {
             --red:    #c0392b;
@@ -217,6 +216,41 @@ document.querySelectorAll('input').forEach(el =>
 document.getElementById('username').addEventListener('keydown', e => {
     if (e.key === 'Enter') document.getElementById('password').focus();
 });
+
+// ========== LOAD THEME TỪ LOCALSTORAGE ==========
+function loadThemeFromLocal() {
+    const saved = localStorage.getItem('cnc_theme');
+    if (saved) {
+        try {
+            const theme = JSON.parse(saved);
+            document.documentElement.style.setProperty('--red', theme.red || '#c0392b');
+            document.documentElement.style.setProperty('--gold', theme.gold || '#d4a017');
+            document.documentElement.style.setProperty('--navy', theme.navy || '#0d1b2a');
+            document.documentElement.style.setProperty('--cyan', theme.cyan || '#00c9d4');
+            document.documentElement.style.setProperty('--border', theme.border || 'rgba(0,201,212,0.3)');
+            console.log('🎨 Theme loaded from localStorage');
+        } catch(e) { console.error('Theme parse error:', e); }
+    }
+}
+
+// Lắng nghe theme thay đổi từ tab khác
+window.addEventListener('storage', (event) => {
+    if (event.key === 'cnc_theme' && event.newValue) {
+        try {
+            const theme = JSON.parse(event.newValue);
+            document.documentElement.style.setProperty('--red', theme.red || '#c0392b');
+            document.documentElement.style.setProperty('--gold', theme.gold || '#d4a017');
+            document.documentElement.style.setProperty('--navy', theme.navy || '#0d1b2a');
+            document.documentElement.style.setProperty('--cyan', theme.cyan || '#00c9d4');
+            document.documentElement.style.setProperty('--border', theme.border || 'rgba(0,201,212,0.3)');
+            console.log('🎨 Theme updated from another tab');
+        } catch(e) {}
+    }
+});
+
+// Khởi tạo load theme khi trang load
+loadThemeFromLocal();
 </script>
+
 </body>
 </html>
