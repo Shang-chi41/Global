@@ -7,28 +7,67 @@
 <title>Điều Khiển - CNC Smart System</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&family=Be+Vietnam+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
-    :root { --red:#c0392b; --gold:#d4a017; --navy:#0d1b2a; --steel:#1e3a5f; --cyan:#00c9d4; --white:#ffffff; --border:rgba(0,201,212,0.22); --success:#00b894; --warning:#f39c12; }
+    :root {
+    /* ── Brand colors ── */
+    --red:    #c0392b;
+    --gold:   #d4a017;
+    --navy:   #0d1b2a;
+    --steel:  #1e3a5f;
+    --cyan:   #00c9d4;
+    --white:  #ffffff;
+    --success:#00b894;
+    --warning:#f39c12;
+
+    /* ── Borders & overlays ── */
+    --border:         rgba(0,201,212,0.22);
+    --border-strong:  rgba(0,201,212,0.45);
+
+    /* ── Backgrounds (derived from base colors) ── */
+    --bg-body:        var(--navy);           /* body, toolbar … */
+    --bg-header:      var(--navy);           /* header */
+    --bg-navbar:      var(--navy);           /* sticky navbar */
+    --bg-panel:       var(--steel);          /* .panel-container */
+    --bg-card:        var(--steel);          /* .card */
+    --bg-badge:       var(--steel);          /* .user-badge */
+    --bg-mode-btn:    var(--steel);          /* .mode-btn default */
+    --bg-quick-btn:   var(--steel);          /* quick-connect buttons */
+    --bg-chat-ai:     var(--steel);          /* .chat-message.assistant */
+    --bg-gcode:       #0a0f1a;              /* gcode preview */
+    --bg-canvas:      #0a0f14;              /* toolpath canvas */
+    --bg-input:       rgba(0,0,0,.5);
+
+    /* ── Text ── */
+    --text-dim:   #6b8fa8;
+    --text-label: #3a5a70;
+    --text-muted: #2a4a60;
+
+    /* ── Grid overlay ── */
+    --grid-line: rgba(0,201,212,.04);
+
+    /* ── 3D viewer ── */
+    --tp3d-bg: #07111a;
+}
     * { margin:0; padding:0; box-sizing:border-box; }
-    body { font-family:'Be Vietnam Pro',sans-serif; background:var(--navy); color:var(--white); min-height:100vh; display:flex; flex-direction:column; }
-    body::before { content:''; position:fixed; inset:0; background-image:linear-gradient(rgba(0,201,212,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(0,201,212,.04) 1px,transparent 1px); background-size:40px 40px; pointer-events:none; z-index:0; }
-    .header { background:linear-gradient(135deg,#0d1b2a 0%,#1e3a5f 100%); border-bottom:2px solid var(--gold); padding:0 28px; display:flex; align-items:center; justify-content:space-between; height:88px; flex-shrink:0; position:relative; z-index:10; }
+    body { font-family:'Be Vietnam Pro',sans-serif; background:var(--bg-body); color:var(--white); min-height:100vh; display:flex; flex-direction:column; }
+    body::before { content:''; position:fixed; inset:0; background-image:linear-gradient(var(--grid-line) 1px,transparent 1px),linear-gradient(90deg,var(--grid-line) 1px,transparent 1px); background-size:40px 40px; pointer-events:none; z-index:0; }
+    .header { background:linear-gradient(135deg,var(--navy) 0%,var(--steel) 100%); border-bottom:2px solid var(--gold); padding:0 28px; display:flex; align-items:center; justify-content:space-between; height:88px; flex-shrink:0; position:relative; z-index:10; }
     .logo-bk { display:flex; align-items:center; gap:10px; }
     .logo-bk-text { font-size:11px; font-weight:600; color:var(--gold); line-height:1.5; text-transform:uppercase; }
     .header-center { text-align:center; flex:1; padding:0 16px; }
     .header-center .main-title { font-weight:700; font-size:13px; text-transform:uppercase; letter-spacing:.7px; line-height:1.45; }
     .header-center .sub-title { font-size:11px; color:var(--gold); margin-top:4px; letter-spacing:.5px; }
-    .user-badge { position:fixed; top:96px; right:16px; background:rgba(30,58,95,.85); border:1px solid var(--border); border-radius:20px; padding:5px 14px; font-size:12px; color:#6b8fa8; display:flex; align-items:center; gap:8px; z-index:20; backdrop-filter:blur(10px); }
+    .user-badge { position:fixed; top:96px; right:16px; background:var(--bg-badge); border:1px solid var(--border); border-radius:20px; padding:5px 14px; font-size:12px; color:var(--text-dim); display:flex; align-items:center; gap:8px; z-index:20; backdrop-filter:blur(10px); }
     .user-dot { width:8px; height:8px; border-radius:50%; background:#00b894; animation:pulse 2s infinite; }
     @keyframes pulse { 50%{opacity:.3} }
     .logout-btn { background:transparent; border:1px solid rgba(192,57,43,.5); color:var(--red); font-size:11px; padding:3px 10px; border-radius:10px; cursor:pointer; transition:.2s; }
     .logout-btn:hover { background:var(--red); color:white; }
     .main { flex:1; position:relative; z-index:1; padding:20px 24px; }
     .mode-toggle { display:flex; gap:20px; margin-bottom:20px; justify-content:center; }
-    .mode-btn { flex:1; max-width:250px; padding:14px 32px; font-family:'Orbitron'; font-size:16px; font-weight:700; letter-spacing:2px; border:2px solid var(--border); border-radius:12px; cursor:pointer; transition:all 0.3s; text-align:center; background:rgba(30,58,95,.5); color:#6b8fa8; }
+    .mode-btn { flex:1; max-width:250px; padding:14px 32px; font-family:'Orbitron'; font-size:16px; font-weight:700; letter-spacing:2px; border:2px solid var(--border); border-radius:12px; cursor:pointer; transition:all 0.3s; text-align:center; background:var(--bg-mode-btn); color:var(--text-dim); }
     .mode-btn.active { background:var(--cyan); color:var(--navy); border-color:var(--cyan); box-shadow:0 0 20px rgba(0,201,212,.5); }
     .mode-btn.manual.active { background:var(--warning); border-color:var(--warning); box-shadow:0 0 20px rgba(243,156,18,.5); }
     .mode-btn.auto.active { background:var(--success); border-color:var(--success); box-shadow:0 0 20px rgba(0,184,148,.5); }
-    .panel-container { background:rgba(30,58,95,.35); border:1px solid var(--border); border-radius:12px; padding:20px; }
+    .panel-container { background:var(--bg-panel); border:1px solid var(--border); border-radius:12px; padding:20px; }
     .manual-panel { display:none; }
     .manual-panel.active { display:block; }
     .auto-panel { display:none; }
@@ -37,62 +76,131 @@
     .col-left { width:210px; flex-shrink:0; display:flex; flex-direction:column; gap:10px; }
     .col-center { flex:1; min-width:0; display:flex; flex-direction:column; gap:10px; }
     .col-right { width:290px; flex-shrink:0; display:flex; flex-direction:column; gap:10px; }
-    .card { background:rgba(13,27,42,.6); border:1px solid var(--border); border-radius:10px; padding:12px; }
+    .card { background:var(--bg-card); border:1px solid var(--border); border-radius:10px; padding:12px; }
     .card-title { font-family:'Orbitron'; font-size:11px; color:var(--cyan); margin-bottom:10px; letter-spacing:1px; }
     .upload-area { border:2px dashed var(--border); border-radius:8px; padding:10px 8px; text-align:center; cursor:pointer; transition:all 0.3s; font-size:11px; line-height:1.6; }
-    .upload-area:hover { border-color:var(--cyan); background:rgba(0,201,212,.05); }
+    .upload-area:hover { border-color:var(--cyan); background:rgba(0,201,212,.06); }
     .upload-area.dragover { border-color:var(--success); background:rgba(0,184,148,.1); }
     .file-info { margin-top:8px; padding:6px; background:rgba(0,0,0,.3); border-radius:6px; font-size:10px; display:none; }
     .preview-img { max-width:100%; max-height:50px; border-radius:4px; margin-top:6px; }
-    .gcode-preview { background:#0a0f1a; border-radius:6px; padding:7px; font-family:monospace; font-size:10px; max-height:90px; overflow:auto; white-space:pre-wrap; margin:8px 0; color:#6b8fa8; }
+    .gcode-preview { background:var(--bg-gcode); border-radius:6px; padding:7px; font-family:monospace; font-size:10px; max-height:90px; overflow:auto; white-space:pre-wrap; margin:8px 0; color:var(--text-dim); }
     .btn-group { display:flex; gap:6px; }
     .btn { flex:1; padding:7px 4px; font-family:'Orbitron'; font-size:9px; font-weight:600; border:none; border-radius:6px; cursor:pointer; transition:all 0.2s; text-align:center; }
     .btn-primary { background:var(--cyan); color:var(--navy); }
     .btn-success { background:var(--success); color:white; }
     .btn-danger { background:var(--red); color:white; }
-    .toolpath-canvas-wrap { width:100%; height:500px; background:#0a0f14; border-radius:10px; display:block; position:relative; overflow:hidden; }
+    .toolpath-canvas-wrap { width:100%; height:500px; background:var(--bg-canvas); border-radius:10px; display:block; position:relative; overflow:hidden; }
     #toolpath3D { width:100%; height:100%; display:block; }
     .btn-small { padding:5px 10px; font-family:'Orbitron'; font-size:9px; font-weight:600; border:none; border-radius:5px; cursor:pointer; transition:all 0.2s; color:white; }
     .btn-small:hover { transform:translateY(-1px); filter:brightness(1.1); }
     .chat-messages { height:420px; overflow-y:auto; margin-bottom:10px; padding:4px; }
     .chat-message { margin-bottom:8px; padding:6px 10px; border-radius:8px; max-width:95%; font-size:11px; }
-    .chat-message.user { background:rgba(0,201,212,.2); margin-left:auto; text-align:right; }
-    .chat-message.assistant { background:rgba(30,58,95,.8); margin-right:auto; }
+    .chat-message.user { background:rgba(0,201,212,.18); margin-left:auto; text-align:right; }
+    .chat-message.assistant { background:var(--bg-chat-ai); margin-right:auto; }
     .chat-message .role { font-size:9px; color:var(--cyan); margin-bottom:3px; }
     .chat-message .content { font-size:11px; word-break:break-word; }
     .chat-input-group { display:flex; gap:8px; }
-    .chat-input { flex:1; background:rgba(0,0,0,.5); border:1px solid var(--border); border-radius:8px; padding:9px; color:white; font-size:11px; outline:none; }
+    .chat-input { flex:1; background:var(--bg-input); border:1px solid var(--border); border-radius:8px; padding:9px; color:white; font-size:11px; outline:none; }
     .chat-input:focus { border-color:var(--cyan); }
     .send-btn { background:var(--cyan); border:none; border-radius:8px; padding:9px 14px; cursor:pointer; color:var(--navy); font-size:16px; }
     .typing-indicator { color:var(--cyan); font-size:11px; padding:6px; font-style:italic; }
     .loading-spinner { display:inline-block; width:12px; height:12px; border:2px solid var(--cyan); border-top-color:transparent; border-radius:50%; animation:spin .8s linear infinite; margin-right:4px; }
     @keyframes spin { to{transform:rotate(360deg)} }
-    .slider-track { width:100%; height:5px; background:#1a2a34; border-radius:3px; overflow:hidden; margin-top:4px; }
+    .slider-track { width:100%; height:5px; background:color-mix(in srgb,var(--navy) 60%,var(--steel)); border-radius:3px; overflow:hidden; margin-top:4px; }
     .slider-fill { height:100%; background:#00b894; border-radius:3px; transition:width .3s; }
-    .url-input { flex:1; background:rgba(0,0,0,.5); border:1px solid var(--border); border-radius:8px; padding:14px 18px; color:white; font-family:monospace; font-size:14px; outline:none; transition:.2s; }
+    .url-input { flex:1; background:var(--bg-input); border:1px solid var(--border); border-radius:8px; padding:14px 18px; color:white; font-family:monospace; font-size:14px; outline:none; transition:.2s; }
     .url-input:focus { border-color:var(--cyan); }
     .connect-btn { background:var(--cyan); border:none; border-radius:8px; padding:14px 28px; font-family:'Orbitron'; font-weight:600; cursor:pointer; transition:all 0.3s; color:var(--navy); }
     .connect-btn:hover { transform:translateY(-2px); box-shadow:0 4px 12px rgba(0,201,212,.4); }
     .saved-url-item { display:flex; justify-content:space-between; align-items:center; padding:8px; margin:4px 0; background:rgba(0,0,0,.3); border-radius:6px; cursor:pointer; transition:all 0.2s; }
-    .saved-url-item:hover { background:rgba(0,201,212,.2); }
+    .saved-url-item:hover { background:rgba(0,201,212,.18); }
     .delete-url { background:none; border:none; color:var(--red); cursor:pointer; font-size:18px; }
     .status-badge { display:inline-block; padding:4px 12px; border-radius:20px; font-size:11px; margin-left:12px; }
     .connected { background:rgba(0,184,148,.2); color:var(--success); }
     .disconnected { background:rgba(231,76,60,.2); color:var(--red); }
     @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
-    .navbar { background:rgba(13,27,42,.97); border-top:1px solid var(--border); display:flex; flex-shrink:0; position:sticky; bottom:0; z-index:10; }
-    .nav-link { flex:1; text-align:center; padding:13px 8px; font-family:'Orbitron'; font-size:11px; font-weight:600; letter-spacing:1.5px; color:#6b8fa8; text-decoration:none; text-transform:uppercase; border-top:3px solid transparent; transition:.2s; }
+    .navbar { background:var(--bg-navbar); border-top:1px solid var(--border); display:flex; flex-shrink:0; position:sticky; bottom:0; z-index:10; }
+    .nav-link { flex:1; text-align:center; padding:13px 8px; font-family:'Orbitron'; font-size:11px; font-weight:600; letter-spacing:1.5px; color:var(--text-dim); text-decoration:none; text-transform:uppercase; border-top:3px solid transparent; transition:.2s; }
     .nav-link:hover { color:var(--cyan); }
     .nav-link.active { color:var(--red); border-top-color:var(--red); }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.128.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.128.0/examples/jsm/"}}</script>
+
+<script>
+/**
+ * CNC Theme Engine
+ * Usage: CNCTheme.apply({ navy:'#0d1b2a', steel:'#1e3a5f', cyan:'#00c9d4', ... })
+ * Persists to localStorage under 'cnc_theme'.
+ * Fires a CustomEvent 'cnc-theme-change' so WebGL renderers can update.
+ */
+window.CNCTheme = (() => {
+    const ROOT = document.documentElement;
+
+    const DEFAULTS = {
+        '--red':    '#c0392b',
+        '--gold':   '#d4a017',
+        '--navy':   '#0d1b2a',
+        '--steel':  '#1e3a5f',
+        '--cyan':   '#00c9d4',
+        '--white':  '#ffffff',
+        '--success':'#00b894',
+        '--warning':'#f39c12',
+        '--tp3d-bg':'#07111a',
+        '--bg-gcode':'#0a0f1a',
+        '--bg-canvas':'#0a0f14',
+    };
+
+    function apply(vars) {
+        Object.entries(vars).forEach(([k, v]) => {
+            const key = k.startsWith('--') ? k : '--' + k;
+            ROOT.style.setProperty(key, v);
+        });
+        ROOT.dispatchEvent(new CustomEvent('cnc-theme-change', { detail: vars }));
+    }
+
+    function save(vars) {
+        apply(vars);
+        try { localStorage.setItem('cnc_theme', JSON.stringify(vars)); } catch(e) {}
+    }
+
+    function load() {
+        try {
+            const saved = JSON.parse(localStorage.getItem('cnc_theme') || 'null');
+            if (saved) apply(saved);
+        } catch(e) {}
+    }
+
+    function reset() {
+        apply(DEFAULTS);
+        try { localStorage.removeItem('cnc_theme'); } catch(e) {}
+    }
+
+    function get(key) {
+        const k = key.startsWith('--') ? key : '--' + key;
+        return getComputedStyle(ROOT).getPropertyValue(k).trim();
+    }
+
+    return { apply, save, load, reset, get, DEFAULTS };
+})();
+
+// Auto-load saved theme immediately (before first paint)
+CNCTheme.load();
+
+// When theme changes, update WebGL bg color if renderer exists
+document.documentElement.addEventListener('cnc-theme-change', () => {
+    if (window.tp3dRenderer) {
+        const bg = CNCTheme.get('--tp3d-bg') || '#07111a';
+        window.tp3dRenderer.setClearColor(new THREE.Color(bg), 1);
+    }
+});
+</script>
 </head>
 <body>
 
 <header class="header">
     <div class="logo-bk">
-       <img src="/static/images/hust_logo.png"
+      <img src="/static/images/hust_logo.png"
      alt="ĐHBK Hà Nội"
      style="width:55px;height:55px;object-fit:contain;"
      onerror="this.src='https://via.placeholder.com/55x55?text=HUST'">
@@ -102,7 +210,7 @@
         <div class="main-title">TÍNH TOÁN, THIẾT KẾ HỆ THỐNG ĐIỀU KHIỂN<br>MÁY CNC ĐỂ BÀN TỰ CHỦ THÔNG MINH</div>
         <div class="sub-title">GVHD: LÊ GIANG NAM</div>
     </div>
- <img src="/static/images/vimes_logo.png" alt="Vimes Lab" style="height: 55px; width: auto;" onerror="this.src='https://via.placeholder.com/55x55?text=V'">
+   <img src="/static/images/vimes_logo.png" alt="Vimes Lab" style="height: 55px; width: auto;" onerror="this.src='https://via.placeholder.com/55x55?text=V'">
 </header>
 
 <div class="user-badge">
@@ -136,25 +244,25 @@
                 <button onclick="closeConnection()" style="background:rgba(192,57,43,.3);border:1px solid var(--red);border-radius:8px;padding:14px 14px;color:var(--red);cursor:pointer;font-size:13px;">✖</button>
             </div>
             <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center;">
-                <span style="font-size:11px;color:#3a5a70;">Nhanh:</span>
-                <button class="btn-small" onclick="quickConnect('http://localhost:8080')"  style="background:rgba(30,58,95,.6);border:1px solid var(--border);color:#6b8fa8;">localhost:8080</button>
-                <button class="btn-small" onclick="quickConnect('http://192.168.4.1')"    style="background:rgba(30,58,95,.6);border:1px solid var(--border);color:#6b8fa8;">FluidNC</button>
-                <button class="btn-small" onclick="quickConnect('http://localhost:5000')" style="background:rgba(30,58,95,.6);border:1px solid var(--border);color:#6b8fa8;">localhost:5000</button>
+                <span style="font-size:11px;color:var(--text-label);">Nhanh:</span>
+                <button class="btn-small" onclick="quickConnect('http://localhost:8080')"  style="background:var(--bg-quick-btn);border:1px solid var(--border);color:var(--text-dim);">localhost:8080</button>
+                <button class="btn-small" onclick="quickConnect('http://192.168.4.1')"    style="background:var(--bg-quick-btn);border:1px solid var(--border);color:var(--text-dim);">FluidNC</button>
+                <button class="btn-small" onclick="quickConnect('http://localhost:5000')" style="background:var(--bg-quick-btn);border:1px solid var(--border);color:var(--text-dim);">localhost:5000</button>
             </div>
             <div style="margin-bottom:12px;">
                 <div style="font-size:11px;color:var(--cyan);margin-bottom:6px;">📌 ĐÃ LƯU:</div>
                 <div id="savedUrlsList"></div>
             </div>
-            <div style="position:relative;border:1px solid var(--border);border-radius:10px;overflow:hidden;background:#0a1525;height:520px;">
-                <div id="manualEmpty" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:#3a5a70;">
+            <div style="position:relative;border:1px solid var(--border);border-radius:10px;overflow:hidden;background:var(--bg-gcode);height:520px;">
+                <div id="manualEmpty" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:var(--text-label);">
                     <div style="font-size:48px;opacity:.5;">🖥️</div>
                     <div style="font-size:14px;text-align:center;line-height:1.7;">Nhập địa chỉ IP phía trên để tải giao diện điều khiển</div>
                 </div>
-                <div id="manualLoading" style="position:absolute;inset:0;background:rgba(13,27,42,.9);display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px;z-index:5;">
+                <div id="manualLoading" style="position:absolute;inset:0;background:color-mix(in srgb, var(--navy) 90%, transparent);display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px;z-index:5;">
                     <div style="width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--cyan);border-radius:50%;animation:spin .8s linear infinite;"></div>
-                    <div style="font-size:12px;color:#6b8fa8;font-family:Orbitron;letter-spacing:1px;">ĐANG KẾT NỐI...</div>
+                    <div style="font-size:12px;color:var(--text-dim);font-family:Orbitron;letter-spacing:1px;">ĐANG KẾT NỐI...</div>
                 </div>
-                <div id="manualError" style="position:absolute;inset:0;background:rgba(13,27,42,.95);display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px;z-index:5;">
+                <div id="manualError" style="position:absolute;inset:0;background:color-mix(in srgb, var(--navy) 95%, transparent);display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px;z-index:5;">
                     <div style="font-size:40px;">⚠️</div>
                     <div id="manualErrMsg" style="font-size:13px;color:#e74c3c;text-align:center;max-width:400px;line-height:1.6;"></div>
                     <div style="display:flex;gap:10px;margin-top:4px;">
@@ -164,10 +272,10 @@
                 </div>
                 <iframe id="manualFrame" sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-modals" style="width:100%;height:100%;border:none;display:none;" onload="onManualFrameLoad()" onerror="onManualFrameError()"></iframe>
             </div>
-            <div style="display:flex;align-items:center;gap:8px;padding:6px 10px;font-size:11px;color:#3a5a70;margin-top:6px;">
+            <div style="display:flex;align-items:center;gap:8px;padding:6px 10px;font-size:11px;color:var(--text-label);margin-top:6px;">
                 <div id="manualStatusDot" style="width:6px;height:6px;border-radius:50%;background:#3a5a70;flex-shrink:0;"></div>
                 <span id="manualStatusText">Chưa kết nối</span>
-                <span id="manualStatusUrl" style="color:#2a4a60;font-size:10px;font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
+                <span id="manualStatusUrl" style="color:var(--text-muted);font-size:10px;font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
             </div>
         </div>
 
@@ -204,7 +312,7 @@
                         <input type="file" id="gcFileInput" style="display:none;" accept=".nc,.gcode,.txt,.tap,.cnc,.ngc">
                         <div id="gcFileInfo" style="display:none;margin-top:6px;padding:5px;background:rgba(0,184,148,.1);border-radius:5px;font-size:10px;border-left:2px solid #00b894;">
                             <span id="gcFileName" style="color:#00b894;"></span><br>
-                            <span id="gcLineCount" style="color:#6b8fa8;"></span>
+                            <span id="gcLineCount" style="color:var(--text-dim);"></span>
                         </div>
                         <button id="askAiBtn" onclick="askAiAboutGCode()" style="display:none;margin-top:6px;width:100%;background:rgba(0,201,212,.15);border:1px solid var(--cyan);color:var(--cyan);padding:7px;border-radius:6px;cursor:pointer;font-size:10px;font-family:Orbitron;letter-spacing:.5px;">
                             💬 HỎI AI VỀ G-CODE NÀY
@@ -218,7 +326,7 @@
                         <div class="card-title" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">
                             <span>🛤️ ĐƯỜNG CHẠY DAO 3D</span>
                             <div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap;">
-                                <span id="tp3dInfo" style="font-size:10px;color:#4a6a80;">400×300×100 mm</span>
+                                <span id="tp3dInfo" style="font-size:10px;color:var(--text-label);">400×300×100 mm</span>
                                 <button class="btn-small" onclick="tp3dReset()" style="background:#e74c3c;">⟳</button>
                                 <button class="btn-small" id="btnTpGrid"   onclick="tp3dToggleGrid()"   style="background:#00c9d4;">GRID</button>
                                 <button class="btn-small" id="btnTpAxes"   onclick="tp3dToggleAxes()"   style="background:#00c9d4;">AXES</button>
@@ -228,10 +336,10 @@
                         </div>
                         <div class="toolpath-canvas-wrap">
                             <canvas id="toolpath3D"></canvas>
-                            <div id="tp3dOverlay" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:#3a5a70;pointer-events:none;">
+                            <div id="tp3dOverlay" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--text-label);pointer-events:none;">
                                 <div style="font-size:40px;opacity:.4;">🛤️</div>
                                 <div style="font-size:13px;">Chat AI hoặc nạp file G-Code</div>
-                                <div style="font-size:11px;color:#2a4a60;">Không gian làm việc 400×300×100 mm</div>
+                                <div style="font-size:11px;color:var(--text-muted);">Không gian làm việc 400×300×100 mm</div>
                             </div>
                         </div>
                         <div style="display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap;">
@@ -240,7 +348,7 @@
                             <button class="btn" onclick="tp3dResetSim()" style="background:#f39c12;color:white;flex:1;">⟳ RESET</button>
                         </div>
                         <div style="margin-top:8px;">
-                            <div style="display:flex;justify-content:space-between;font-size:10px;color:#6b8fa8;margin-bottom:4px;">
+                            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-dim);margin-bottom:4px;">
                                 <span>Tiến trình: <span id="tp3dProgress">0%</span></span>
                                 <span style="font-family:monospace;">X:<span id="tp3dX" style="color:#ff6b6b;">0</span> Y:<span id="tp3dY" style="color:#00b894;">0</span> Z:<span id="tp3dZ" style="color:#4ecdc4;">0</span> mm</span>
                             </div>
@@ -319,7 +427,7 @@ function renderSavedUrls() {
     if (!c) return;
     c.innerHTML = savedUrls.length
         ? savedUrls.map((item,i) => `<div class="saved-url-item" onclick="useSavedUrl('${item.url}')"><span>🔗 ${item.name} <span style="color:var(--cyan)">${item.url}</span></span><button class="delete-url" onclick="event.stopPropagation();deleteSavedUrl(${i})">🗑</button></div>`).join('')
-        : '<div style="color:#4a6a80;font-size:12px;">Chưa có địa chỉ nào</div>';
+        : '<div style="color:var(--text-label);font-size:12px;">Chưa có địa chỉ nào</div>';
 }
 
 function connectToDevice() {
@@ -550,230 +658,86 @@ function askAiAboutGCode() {
 }
 
 // ============================================================
-// 3D TOOLPATH VIEWER — MATLAB STYLE
-// Bounds: X[-200,200]  Y[-150,150]  Z[-50,50]
-// Three.js world mapping: world.x = gcode.X, world.y = gcode.Z, world.z = -gcode.Y
+// 3D TOOLPATH VIEWER
 // ============================================================
-const WS = {
-    xMin:-200, xMax:200,
-    yMin:-150, yMax:150,
-    zMin:-50,  zMax:50
-};
-const WS_W = WS.xMax - WS.xMin;  // 400
-const WS_D = WS.yMax - WS.yMin;  // 300
-const WS_H = WS.zMax - WS.zMin;  // 100
+const WS = { X: 400, Y: 300, Z: 100 };  // Kích thước máy (mm)
 
 let tp3dRenderer, tp3dScene, tp3dCamera, tp3dOrbit;
-let tp3dLine = null, tp3dHeadMesh = null;
-let tp3dStaticObjs = [];   // all static scene objects (rebuilt on reset)
+let tp3dLine = null, tp3dHeadMesh = null, tp3dGrid = null, tp3dAxes = null;
+let tp3dWorkBox = null, tp3dZPlane = null, tp3dLabels = [];
 let tp3dPoints = [], tp3dSimInterval = null, tp3dSimIdx = 0;
 let tp3dGridVisible = true, tp3dAxesVisible = true, tp3dBoxVisible = true, tp3dZPlaneVisible = true;
 
-// ── Sprite label helper (MATLAB-style white text) ──────────────
-function makeLabel(text, fontSize=18) {
+function makeAxisLabel(text) {
     const cv = document.createElement('canvas');
+    cv.width = 220; cv.height = 48;
     const ctx = cv.getContext('2d');
-    ctx.font = `bold ${fontSize}px 'Courier New', monospace`;
-    const tw = ctx.measureText(text).width;
-    cv.width  = Math.ceil(tw) + 20;
-    cv.height = fontSize + 14;
-    ctx.font = `bold ${fontSize}px 'Courier New', monospace`;
-    ctx.fillStyle = 'rgba(0,0,0,0)';
-    ctx.fillRect(0,0,cv.width,cv.height);
-    ctx.fillStyle = '#ffffff';
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText(text, cv.width/2, cv.height/2);
-    const sp = new THREE.Sprite(new THREE.SpriteMaterial({
-        map: new THREE.CanvasTexture(cv), transparent:true, depthTest:false, sizeAttenuation:false
-    }));
-    sp.scale.set(cv.width/cv.height * 0.06, 0.06, 1);
+    ctx.fillStyle = 'rgba(0,201,212,0.15)';
+    ctx.fillRect(0, 0, 220, 48);
+    ctx.strokeStyle = 'rgba(0,201,212,0.6)';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(1, 1, 218, 46);
+    ctx.font = 'bold 20px monospace';
+    ctx.fillStyle = '#00c9d4';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(text, 110, 24);
+    const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(cv), transparent: true, depthTest: false }));
+    sp.scale.set(26, 6.5, 1);
     return sp;
 }
 
-// ── Tick label on axis ─────────────────────────────────────────
-function makeTick(text) {
-    const cv = document.createElement('canvas');
-    cv.width=96; cv.height=32;
-    const ctx=cv.getContext('2d');
-    ctx.font='bold 16px monospace';
-    ctx.fillStyle='rgba(180,220,240,0.9)';
-    ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillText(text,48,16);
-    const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(cv),transparent:true,depthTest:false,sizeAttenuation:false}));
-    sp.scale.set(0.09,0.03,1);
-    return sp;
-}
-
-function clearStaticObjs() {
-    tp3dStaticObjs.forEach(o => {
-        tp3dScene.remove(o);
-        if (o.geometry) o.geometry.dispose();
-        if (o.material) o.material.dispose();
-    });
-    tp3dStaticObjs = [];
-}
-
-function addS(obj) { tp3dScene.add(obj); tp3dStaticObjs.push(obj); return obj; }
-
-// ── Build MATLAB-style axes box + grid + ticks ─────────────────
-function buildMatlabAxes() {
+function buildWorkspaceBox() {
     if (!tp3dScene) return;
-    clearStaticObjs();
+    if (tp3dWorkBox) { tp3dScene.remove(tp3dWorkBox); tp3dWorkBox.geometry.dispose(); }
+    if (tp3dZPlane)  { tp3dScene.remove(tp3dZPlane);  tp3dZPlane.geometry.dispose(); }
+    tp3dLabels.forEach(lb => tp3dScene.remove(lb));
+    tp3dLabels = [];
 
-    const xMn=WS.xMin, xMx=WS.xMax;
-    const yMn=WS.yMin, yMx=WS.yMax;
-    const zMn=WS.zMin, zMx=WS.zMax;
+    const W = WS.X, D = WS.Y, H = WS.Z;
+    const cx = W/2, cy = H/2, cz = D/2;
 
-    // === BACKGROUND PANELS (MATLAB gray panes) ===
-    const panelMat = new THREE.MeshBasicMaterial({color:0x0d1e2e, transparent:true, opacity:0.55, side:THREE.DoubleSide, depthWrite:false});
-    // XZ bottom panel (Y=yMin in world → z = -yMin → z = 150)
-    const botGeo = new THREE.PlaneGeometry(WS_W, WS_H);
-    const botP = new THREE.Mesh(botGeo, panelMat.clone());
-    botP.rotation.x = -Math.PI/2; // horizontal
-    // In world: x maps to gcode X, z maps to -gcode Y, y maps to gcode Z
-    // Panel at gcode Z=zMin → world.y = zMin
-    botP.position.set((xMn+xMx)/2, zMn, -(yMn+yMx)/2);
-    addS(botP);
+    // Khung wireframe hộp
+    tp3dWorkBox = new THREE.LineSegments(
+        new THREE.EdgesGeometry(new THREE.BoxGeometry(W, H, D)),
+        new THREE.LineBasicMaterial({ color: 0x00c9d4, transparent: true, opacity: 0.5 })
+    );
+    tp3dWorkBox.position.set(cx, cy, cz);
+    tp3dWorkBox.visible = tp3dBoxVisible;
+    tp3dScene.add(tp3dWorkBox);
 
-    // XZ back panel (Y=yMax → world.z = -yMax)
-    const backGeo = new THREE.PlaneGeometry(WS_W, WS_H);
-    const backP = new THREE.Mesh(backGeo, panelMat.clone());
-    backP.position.set((xMn+xMx)/2, (zMn+zMx)/2, -yMx);
-    addS(backP);
+    // Mặt đáy Z=0
+    tp3dZPlane = new THREE.Mesh(
+        new THREE.PlaneGeometry(W, D),
+        new THREE.MeshBasicMaterial({ color: 0x00c9d4, transparent: true, opacity: 0.05, side: THREE.DoubleSide, depthWrite: false })
+    );
+    tp3dZPlane.rotation.x = -Math.PI/2;
+    tp3dZPlane.position.set(cx, 0, cz);
+    tp3dZPlane.visible = tp3dZPlaneVisible;
+    tp3dScene.add(tp3dZPlane);
 
-    // YZ left panel (X=xMin → world.x = xMin)
-    const leftGeo = new THREE.PlaneGeometry(WS_D, WS_H);
-    const leftP = new THREE.Mesh(leftGeo, panelMat.clone());
-    leftP.rotation.y = Math.PI/2;
-    leftP.position.set(xMn, (zMn+zMx)/2, -(yMn+yMx)/2);
-    addS(leftP);
+    // Viền đáy
+    const floor = new THREE.LineLoop(
+        new THREE.BufferGeometry().setFromPoints([
+            new THREE.Vector3(0,0,0), new THREE.Vector3(W,0,0),
+            new THREE.Vector3(W,0,D), new THREE.Vector3(0,0,D)
+        ]),
+        new THREE.LineBasicMaterial({ color: 0x00c9d4, transparent: true, opacity: 0.4 })
+    );
+    floor.visible = tp3dZPlaneVisible;
+    tp3dScene.add(floor);
+    tp3dLabels.push(floor);
 
-    // === AXIS BOX EDGES ===
-    const corners = [
-        [xMn,zMn,-yMn],[xMx,zMn,-yMn],[xMx,zMx,-yMn],[xMn,zMx,-yMn],
-        [xMn,zMn,-yMx],[xMx,zMn,-yMx],[xMx,zMx,-yMx],[xMn,zMx,-yMx],
-    ];
-    const boxEdges = [
-        [0,1],[1,2],[2,3],[3,0], // front face
-        [4,5],[5,6],[6,7],[7,4], // back face
-        [0,4],[1,5],[2,6],[3,7], // connecting
-    ];
-    const boxPts = [];
-    boxEdges.forEach(([a,b]) => {
-        boxPts.push(new THREE.Vector3(...corners[a]), new THREE.Vector3(...corners[b]));
-    });
-    const boxGeo = new THREE.BufferGeometry().setFromPoints(boxPts);
-    const boxMat = new THREE.LineBasicMaterial({color:0x3a6a80, transparent:true, opacity:0.7});
-    const box = new THREE.LineSegments(boxGeo, boxMat);
-    box.visible = tp3dBoxVisible;
-    addS(box);
+    // Nhãn trục
+    const lbX = makeAxisLabel(`X: ${W} mm`); lbX.position.set(cx,   -10, -16); lbX.visible = tp3dBoxVisible; tp3dScene.add(lbX); tp3dLabels.push(lbX);
+    const lbY = makeAxisLabel(`Y: ${D} mm`); lbY.position.set(-22,  -10,  cz); lbY.visible = tp3dBoxVisible; tp3dScene.add(lbY); tp3dLabels.push(lbY);
+    const lbZ = makeAxisLabel(`Z: ${H} mm`); lbZ.position.set(-22,   cy, -16); lbZ.visible = tp3dBoxVisible; tp3dScene.add(lbZ); tp3dLabels.push(lbZ);
 
-    // === GRID LINES on bottom panel (MATLAB-style) ===
-    if (tp3dGridVisible) {
-        const gridMat = new THREE.LineBasicMaterial({color:0x1a4a60, transparent:true, opacity:0.8});
-        const gridPts = [];
-        // X grid lines (along X at various Y)
-        const yStep = WS_D/6; // 6 divisions = 50mm each
-        for (let i=0; i<=6; i++) {
-            const wy = -(yMn + i*yStep);
-            gridPts.push(new THREE.Vector3(xMn, zMn, wy), new THREE.Vector3(xMx, zMn, wy));
-        }
-        // Y grid lines (along Y at various X)
-        const xStep = WS_W/8; // 8 divisions = 50mm each
-        for (let i=0; i<=8; i++) {
-            const wx = xMn + i*xStep;
-            gridPts.push(new THREE.Vector3(wx, zMn, -yMn), new THREE.Vector3(wx, zMn, -yMx));
-        }
-        const gridGeo = new THREE.BufferGeometry().setFromPoints(gridPts);
-        const grid = new THREE.LineSegments(gridGeo, gridMat);
-        addS(grid);
-
-        // Back wall grid (XZ plane at y=yMax)
-        const backGridPts = [];
-        const zStep = WS_H/4; // 4 divisions = 25mm
-        for (let i=0; i<=4; i++) {
-            const wz = zMn+i*zStep;
-            backGridPts.push(new THREE.Vector3(xMn,wz,-yMx), new THREE.Vector3(xMx,wz,-yMx));
-        }
-        for (let i=0; i<=8; i++) {
-            const wx = xMn+i*xStep;
-            backGridPts.push(new THREE.Vector3(wx,zMn,-yMx), new THREE.Vector3(wx,zMx,-yMx));
-        }
-        const bwGeo = new THREE.BufferGeometry().setFromPoints(backGridPts);
-        addS(new THREE.LineSegments(bwGeo, gridMat.clone()));
-
-        // Left wall grid (YZ plane at x=xMin)
-        const lGridPts = [];
-        for (let i=0; i<=4; i++) {
-            const wz=zMn+i*zStep;
-            lGridPts.push(new THREE.Vector3(xMn,wz,-yMn), new THREE.Vector3(xMn,wz,-yMx));
-        }
-        for (let i=0; i<=6; i++) {
-            const wy=-(yMn+i*yStep);
-            lGridPts.push(new THREE.Vector3(xMn,zMn,wy), new THREE.Vector3(xMn,zMx,wy));
-        }
-        const lgGeo = new THREE.BufferGeometry().setFromPoints(lGridPts);
-        addS(new THREE.LineSegments(lgGeo, gridMat.clone()));
-    }
-
-    // === MAIN AXES (colored like MATLAB) ===
-    if (tp3dAxesVisible) {
-        // X axis — red, along world.x
-        const xAx = new THREE.ArrowHelper(new THREE.Vector3(1,0,0), new THREE.Vector3(xMn,zMn,-yMn), WS_W*0.25, 0xff4444, 8, 5);
-        addS(xAx);
-        // Y axis — blue (gcode Y → world -z)
-        const yAx = new THREE.ArrowHelper(new THREE.Vector3(0,0,-1), new THREE.Vector3(xMn,zMn,-yMn), WS_D*0.25, 0x4488ff, 8, 5);
-        addS(yAx);
-        // Z axis — green (gcode Z → world y)
-        const zAx = new THREE.ArrowHelper(new THREE.Vector3(0,1,0), new THREE.Vector3(xMn,zMn,-yMn), WS_H*0.6, 0x44dd88, 8, 5);
-        addS(zAx);
-    }
-
-    // === TICK MARKS + NUMBERS on axes ===
-    // X ticks: every 50mm  → -200,-150,-100,-50,0,50,100,150,200
-    [-200,-100,0,100,200].forEach(v => {
-        const lb = makeTick(String(v));
-        lb.position.set(v, zMn-8, -yMn+20);
-        addS(lb);
-        // tick mark on bottom edge
-        const tg = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(v,zMn,-yMn), new THREE.Vector3(v,zMn-4,-yMn)]);
-        addS(new THREE.Line(tg, new THREE.LineBasicMaterial({color:0x8ab8cc})));
-    });
-    // Y ticks: every 50mm → -150,-100,-50,0,50,100,150
-    [-150,-75,0,75,150].forEach(v => {
-        const lb = makeTick(String(v));
-        lb.position.set(xMn-20, zMn-8, -v);
-        addS(lb);
-        const tg = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(xMn,zMn,-v), new THREE.Vector3(xMn-4,zMn,-v)]);
-        addS(new THREE.Line(tg, new THREE.LineBasicMaterial({color:0x8ab8cc})));
-    });
-    // Z ticks: every 25mm → -50,-25,0,25,50
-    [-50,-25,0,25,50].forEach(v => {
-        const lb = makeTick(String(v));
-        lb.position.set(xMn-20, v, -yMx-10);
-        addS(lb);
-        const tg = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(xMn,v,-yMx), new THREE.Vector3(xMn-4,v,-yMx)]);
-        addS(new THREE.Line(tg, new THREE.LineBasicMaterial({color:0x8ab8cc})));
-    });
-
-    // === AXIS LABELS (bold like MATLAB) ===
-    const lbX = makeLabel('X (mm)', 22); lbX.position.set(xMx+30, zMn-8, -yMn); addS(lbX);
-    const lbY = makeLabel('Y (mm)', 22); lbY.position.set(xMn-10, zMn-8, -yMx-30); addS(lbY);
-    const lbZ = makeLabel('Z (mm)', 22); lbZ.position.set(xMn-30, zMx+20, -yMx-10); addS(lbZ);
-
-    // === TITLE ===
-    const title = makeLabel('CNC Toolpath — MATLAB View', 20);
-    title.position.set((xMn+xMx)/2, zMx+30, -(yMn+yMx)/2);
-    addS(title);
-
-    // Camera isometric-ish like MATLAB default
-    const cx=(xMn+xMx)/2, cy=(zMn+zMx)/2, cz=-(yMn+yMx)/2;
-    tp3dCamera.position.set(cx + WS_W*0.9, cy + WS_H*2.5, cz + WS_D*1.2);
-    tp3dOrbit.target.set(cx, cy, cz);
+    // Camera
+    tp3dCamera.position.set(W*1.1, H*2.2, D*1.9);
+    tp3dOrbit.target.set(cx, 0, cz);
     tp3dOrbit.update();
 }
-
-function buildWorkspaceBox() { buildMatlabAxes(); }
 
 function initToolpath3D() {
     const canvas = document.getElementById('toolpath3D');
@@ -781,24 +745,30 @@ function initToolpath3D() {
     const W = canvas.parentElement.clientWidth  || 600;
     const H = canvas.parentElement.clientHeight || 500;
 
-    tp3dRenderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+    tp3dRenderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
     tp3dRenderer.setSize(W, H);
-    tp3dRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    tp3dRenderer.setClearColor(0x07111a, 1);   // MATLAB dark bg
+    tp3dRenderer.setClearColor(0x0a0f14, 1);
 
     tp3dScene  = new THREE.Scene();
-    tp3dCamera = new THREE.PerspectiveCamera(40, W/H, 1, 8000);
+    tp3dCamera = new THREE.PerspectiveCamera(45, W/H, 0.1, 5000);
+    tp3dOrbit  = new OrbitControls(tp3dCamera, tp3dRenderer.domElement);
+    tp3dOrbit.enableDamping = true; tp3dOrbit.dampingFactor = 0.08;
 
-    tp3dOrbit = new OrbitControls(tp3dCamera, tp3dRenderer.domElement);
-    tp3dOrbit.enableDamping = true; tp3dOrbit.dampingFactor = 0.06;
-    tp3dOrbit.rotateSpeed = 0.7; tp3dOrbit.zoomSpeed = 1.1;
+    tp3dGrid = new THREE.GridHelper(Math.max(WS.X,WS.Y)*1.3, 24, 0x1a4a5a, 0x0f2a34);
+    tp3dGrid.position.set(WS.X/2, 0, WS.Y/2);
+    tp3dScene.add(tp3dGrid);
 
-    tp3dScene.add(new THREE.AmbientLight(0xffffff, 1.0));
-    const dl = new THREE.DirectionalLight(0xffffff, 0.3);
-    dl.position.set(200, 400, 300); tp3dScene.add(dl);
+    tp3dAxes = new THREE.AxesHelper(80);
+    tp3dScene.add(tp3dAxes);
 
-    buildMatlabAxes();
+    tp3dScene.add(new THREE.AmbientLight(0xffffff, 0.8));
+    const dl = new THREE.DirectionalLight(0xffffff, 0.6);
+    dl.position.set(200, 300, 200);
+    tp3dScene.add(dl);
 
+    buildWorkspaceBox();
+
+    window.tp3dRenderer = tp3dRenderer;  // expose for theme engine
     (function animate() {
         requestAnimationFrame(animate);
         tp3dOrbit.update();
@@ -815,24 +785,17 @@ function initToolpath3D() {
 
 function extractToolpath(gcode) {
     const pts = [];
-    let cx=0, cy=0, cz=0, abs=true;
+    let cx=0,cy=0,cz=0,abs=true;
     for (let l of gcode.split('\n')) {
-        l = l.trim().toUpperCase().replace(/\(.*?\)/g,'').split(';')[0];
-        if (!l) continue;
-        if (/G90/.test(l)) abs=true;
-        if (/G91/.test(l)) abs=false;
-        // Only motion commands G0/G1/G2/G3
-        if (!/^G[0123][ \t]|^G0?[0123] /.test(l) && !/[XYZ][-\d.]/.test(l)) continue;
+        l = l.trim().toUpperCase();
+        if (l.includes('G90')) abs=true;
+        if (l.includes('G91')) abs=false;
         const xm=l.match(/X([-\d.]+)/), ym=l.match(/Y([-\d.]+)/), zm=l.match(/Z([-\d.]+)/);
         if (xm||ym||zm) {
             if (xm) cx = abs ? parseFloat(xm[1]) : cx+parseFloat(xm[1]);
             if (ym) cy = abs ? parseFloat(ym[1]) : cy+parseFloat(ym[1]);
             if (zm) cz = abs ? parseFloat(zm[1]) : cz+parseFloat(zm[1]);
-            // Clamp to machine bounds
-            const px = Math.max(WS.xMin, Math.min(WS.xMax, cx));
-            const py = Math.max(WS.yMin, Math.min(WS.yMax, cy));
-            const pz = Math.max(WS.zMin, Math.min(WS.zMax, cz));
-            pts.push({x:px, y:py, z:pz});
+            pts.push({x:cx,y:cy,z:cz});
         }
     }
     return pts;
@@ -843,44 +806,31 @@ function tp3dBuildLine(pts) {
     if (tp3dLine)     { tp3dScene.remove(tp3dLine);     tp3dLine.geometry.dispose(); }
     if (tp3dHeadMesh) { tp3dScene.remove(tp3dHeadMesh); }
 
-    // MATLAB jet colormap: blue → cyan → green → yellow → red
-    function jetColor(t) {
-        // t in [0,1]
-        const r = Math.max(0, Math.min(1, 1.5 - Math.abs(4*t - 3)));
-        const g = Math.max(0, Math.min(1, 1.5 - Math.abs(4*t - 2)));
-        const b = Math.max(0, Math.min(1, 1.5 - Math.abs(4*t - 1)));
-        return [r, g, b];
-    }
-
     const pos=[], col=[];
     pts.forEach((p,i) => {
-        // world: x=gcodeX, y=gcodeZ, z=-gcodeY
-        pos.push(p.x, p.z, -p.y);
+        pos.push(p.x, p.z, p.y);
         const t = pts.length>1 ? i/(pts.length-1) : 0;
-        const [r,g,b] = jetColor(t);
-        col.push(r, g, b);
+        col.push(0.2+t*0.8, 0.8-t*0.6, 1.0-t);
     });
-
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
     geo.setAttribute('color',    new THREE.Float32BufferAttribute(col, 3));
-    tp3dLine = new THREE.Line(geo, new THREE.LineBasicMaterial({vertexColors:true, linewidth:2}));
+    tp3dLine = new THREE.Line(geo, new THREE.LineBasicMaterial({ vertexColors: true, linewidth: 2 }));
     tp3dScene.add(tp3dLine);
 
-    // Tool head — orange sphere
     tp3dHeadMesh = new THREE.Mesh(
-        new THREE.SphereGeometry(4, 16, 16),
-        new THREE.MeshStandardMaterial({color:0xff6600, emissive:0xff3300, emissiveIntensity:0.8, roughness:0.3})
+        new THREE.SphereGeometry(3, 16, 16),
+        new THREE.MeshStandardMaterial({ color: 0xff6600, emissive: 0xff3300, emissiveIntensity: 0.6 })
     );
-    tp3dHeadMesh.position.set(pts[0].x, pts[0].z, -pts[0].y);
+    tp3dHeadMesh.position.set(pts[0].x, pts[0].z, pts[0].y);
     tp3dScene.add(tp3dHeadMesh);
 
     const overlay = document.getElementById('tp3dOverlay');
     if (overlay) overlay.style.display = 'none';
 
     const xs=pts.map(p=>p.x), ys=pts.map(p=>p.y), zs=pts.map(p=>p.z);
-    const info = `${pts.length} điểm | ΔX:${(Math.max(...xs)-Math.min(...xs)).toFixed(0)} ΔY:${(Math.max(...ys)-Math.min(...ys)).toFixed(0)} ΔZ:${(Math.max(...zs)-Math.min(...zs)).toFixed(0)} mm`;
-    document.getElementById('tp3dInfo').textContent = info;
+    document.getElementById('tp3dInfo').textContent =
+        `${pts.length} điểm | X:${(Math.max(...xs)-Math.min(...xs)).toFixed(0)} Y:${(Math.max(...ys)-Math.min(...ys)).toFixed(0)} Z:${(Math.max(...zs)-Math.min(...zs)).toFixed(0)} mm`;
 }
 
 function updateToolpathDisplay(gcode) {
@@ -891,33 +841,27 @@ function updateToolpathDisplay(gcode) {
 }
 
 // Toggle functions
-function tp3dReset() { buildMatlabAxes(); }
+function tp3dReset()      { buildWorkspaceBox(); }
 function tp3dToggleGrid() {
     tp3dGridVisible = !tp3dGridVisible;
-    buildMatlabAxes();
-    if (tp3dLine) tp3dScene.add(tp3dLine);
-    if (tp3dHeadMesh) tp3dScene.add(tp3dHeadMesh);
+    if (tp3dGrid) tp3dGrid.visible = tp3dGridVisible;
     document.getElementById('btnTpGrid').style.background = tp3dGridVisible ? '#00c9d4' : '#2a3a44';
 }
 function tp3dToggleAxes() {
     tp3dAxesVisible = !tp3dAxesVisible;
-    buildMatlabAxes();
-    if (tp3dLine) tp3dScene.add(tp3dLine);
-    if (tp3dHeadMesh) tp3dScene.add(tp3dHeadMesh);
+    if (tp3dAxes) tp3dAxes.visible = tp3dAxesVisible;
     document.getElementById('btnTpAxes').style.background = tp3dAxesVisible ? '#00c9d4' : '#2a3a44';
 }
 function tp3dToggleBox() {
     tp3dBoxVisible = !tp3dBoxVisible;
-    buildMatlabAxes();
-    if (tp3dLine) tp3dScene.add(tp3dLine);
-    if (tp3dHeadMesh) tp3dScene.add(tp3dHeadMesh);
+    if (tp3dWorkBox) tp3dWorkBox.visible = tp3dBoxVisible;
+    tp3dLabels.forEach(lb => { if (lb.isSprite) lb.visible = tp3dBoxVisible; });
     document.getElementById('btnTpBox').style.background = tp3dBoxVisible ? '#00c9d4' : '#2a3a44';
 }
 function tp3dToggleZPlane() {
     tp3dZPlaneVisible = !tp3dZPlaneVisible;
-    buildMatlabAxes();
-    if (tp3dLine) tp3dScene.add(tp3dLine);
-    if (tp3dHeadMesh) tp3dScene.add(tp3dHeadMesh);
+    if (tp3dZPlane) tp3dZPlane.visible = tp3dZPlaneVisible;
+    tp3dLabels.forEach(lb => { if (!lb.isSprite) lb.visible = tp3dZPlaneVisible; });
     document.getElementById('btnTpZPlane').style.background = tp3dZPlaneVisible ? '#00c9d4' : '#2a3a44';
 }
 function tp3dSimulate() {
@@ -928,7 +872,7 @@ function tp3dSimulate() {
     tp3dSimInterval = setInterval(() => {
         if (tp3dSimIdx >= total) { clearInterval(tp3dSimInterval); tp3dSimInterval=null; addChatMessage('assistant','✅ Mô phỏng xong!'); return; }
         const p = tp3dPoints[tp3dSimIdx];
-        if (tp3dHeadMesh) tp3dHeadMesh.position.set(p.x, p.z, -p.y);
+        if (tp3dHeadMesh) tp3dHeadMesh.position.set(p.x, p.z, p.y);
         document.getElementById('tp3dX').textContent = p.x.toFixed(1);
         document.getElementById('tp3dY').textContent = p.y.toFixed(1);
         document.getElementById('tp3dZ').textContent = p.z.toFixed(1);
@@ -944,10 +888,7 @@ function tp3dResetSim() {
     ['tp3dX','tp3dY','tp3dZ'].forEach(id => document.getElementById(id).textContent = '0');
     document.getElementById('tp3dProgress').textContent = '0%';
     document.getElementById('tp3dFill').style.width = '0%';
-    if (tp3dHeadMesh && tp3dPoints.length) {
-        const p = tp3dPoints[0];
-        tp3dHeadMesh.position.set(p.x, p.z, -p.y);
-    }
+    if (tp3dHeadMesh && tp3dPoints.length) tp3dHeadMesh.position.set(tp3dPoints[0].x, tp3dPoints[0].z, tp3dPoints[0].y);
 }
 
 // ============================================================
