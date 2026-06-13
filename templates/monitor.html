@@ -76,13 +76,11 @@
             content: '';
             position: absolute;
             bottom: -4px;
-            left: 0;
-            right: 0;
+            left: 0; right: 0;
             height: 2px;
             background: var(--cyan);
             opacity: .7;
         }
-
         .logo-bk { display: flex; align-items: center; gap: 10px; }
         .logo-bk-text { font-size: 11px; font-weight: 600; color: var(--gold); line-height: 1.5; text-transform: uppercase; }
         .header-center { text-align: center; flex: 1; padding: 0 16px; }
@@ -92,17 +90,14 @@
         /* ===== USER BADGE ===== */
         .user-badge {
             position: fixed;
-            top: 96px;
-            right: 16px;
+            top: 96px; right: 16px;
             background: var(--steel);
             border: 1px solid var(--border);
             border-radius: 20px;
             padding: 5px 14px;
             font-size: 12px;
             color: var(--text-muted);
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            display: flex; align-items: center; gap: 8px;
             z-index: 20;
             backdrop-filter: blur(10px);
         }
@@ -112,75 +107,51 @@
             background: transparent;
             border: 1px solid rgba(192, 57, 43, .5);
             color: var(--red);
-            font-size: 11px;
-            padding: 3px 10px;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: .2s;
+            font-size: 11px; padding: 3px 10px;
+            border-radius: 10px; cursor: pointer; transition: .2s;
         }
         .logout-btn:hover { background: var(--red); color: var(--white); }
 
         /* ===== MAIN ===== */
         .main {
-            flex: 1;
-            position: relative;
-            z-index: 1;
+            flex: 1; position: relative; z-index: 1;
             padding: 16px 20px 10px;
-            display: flex;
-            gap: 14px;
+            display: flex; gap: 14px;
         }
-
         .panel-left { flex: 1.2; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
         .panel-right { flex: 0.9; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
 
         .panel-title {
             font-family: 'Orbitron';
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--cyan);
-            letter-spacing: 2px;
-            text-align: center;
-            padding: 10px;
-            background: var(--steel);
+            font-size: 12px; font-weight: 600;
+            color: var(--cyan); letter-spacing: 2px;
+            text-align: center; padding: 10px;
+            background: var(--steel);           /* ← var thay #1e3a5f */
             border: 1px solid var(--border);
             border-radius: 6px;
         }
 
         .time-btns { display: flex; gap: 8px; }
         .tbtn {
-            flex: 1;
-            padding: 8px 4px;
-            font-family: 'Orbitron';
-            font-size: 10px;
-            font-weight: 600;
-            letter-spacing: 1px;
-            background: var(--steel);
+            flex: 1; padding: 8px 4px;
+            font-family: 'Orbitron'; font-size: 10px; font-weight: 600; letter-spacing: 1px;
+            background: var(--steel);           /* ← var thay rgba(30,58,95,.5) */
             border: 1px solid var(--border);
             color: var(--text-muted);
-            border-radius: 4px;
-            cursor: pointer;
-            transition: .2s;
-            text-align: center;
+            border-radius: 4px; cursor: pointer; transition: .2s; text-align: center;
         }
         .tbtn:hover { border-color: var(--cyan); color: var(--cyan); }
         .tbtn.active { background: var(--cyan); color: var(--navy); border-color: var(--cyan); }
 
         .chart-wrap {
-            background: var(--steel);
+            background: var(--steel);           /* ← var thay rgba(30,58,95,.35) */
             border: 1px solid var(--border);
-            border-radius: 6px;
-            padding: 10px 12px;
-            min-height: 200px;
+            border-radius: 6px; padding: 10px 12px; min-height: 200px;
         }
         .chart-label {
-            font-size: 11px;
-            color: var(--text-muted);
-            margin-bottom: 6px;
-            font-weight: 600;
-            letter-spacing: 1px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            font-size: 11px; color: var(--text-muted);
+            margin-bottom: 6px; font-weight: 600; letter-spacing: 1px;
+            display: flex; justify-content: space-between; align-items: center;
         }
         .legend { display: flex; gap: 16px; font-size: 10px; }
         .legend-item { display: flex; align-items: center; gap: 6px; }
@@ -194,15 +165,12 @@
 
         .custom-tooltip {
             position: fixed;
-            background: var(--navy-rgba);
+            background: var(--navy-rgba);       /* ← đã là var */
             border: 1px solid var(--cyan);
-            border-radius: 8px;
-            padding: 12px 16px;
-            font-size: 12px;
-            z-index: 1000;
-            pointer-events: none;
+            border-radius: 8px; padding: 12px 16px;
+            font-size: 12px; z-index: 1000; pointer-events: none;
             backdrop-filter: blur(8px);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, .5);
+            box-shadow: 0 4px 20px rgba(0,0,0,.5);
             max-width: 350px;
         }
         .custom-tooltip .title { color: var(--cyan); font-family: 'Orbitron'; font-size: 11px; margin-bottom: 8px; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
@@ -215,26 +183,19 @@
 
         /* ===== ALARM TABLE ===== */
         .alarm-table-wrap {
-            flex: 1;
-            overflow-y: auto;
+            flex: 1; overflow-y: auto;
             border: 1px solid var(--border);
             border-radius: 6px;
-            background: var(--steel);
+            background: var(--steel);           /* ← var thay rgba(13,27,42,.6) */
             max-height: 350px;
         }
         table { width: 100%; border-collapse: collapse; font-size: 12px; }
         thead th {
-            position: sticky;
-            top: 0;
-            z-index: 5;
-            background: var(--navy);
+            position: sticky; top: 0; z-index: 5;
+            background: var(--navy);            /* ← var thay #0d1b2a */
             color: var(--cyan);
-            font-family: 'Orbitron';
-            font-size: 10px;
-            font-weight: 600;
-            letter-spacing: .8px;
-            padding: 10px 8px;
-            text-align: left;
+            font-family: 'Orbitron'; font-size: 10px; font-weight: 600; letter-spacing: .8px;
+            padding: 10px 8px; text-align: left;
             border-bottom: 1px solid var(--border);
         }
         tbody tr { border-bottom: 1px solid var(--border-light); transition: .15s; }
@@ -247,73 +208,38 @@
         .badge-ok { background: var(--ok-rgba); color: var(--ok); border: 1px solid var(--ok-border-rgba); }
         .dtype { font-size: 10px; color: var(--text-muted); background: var(--steel-rgba); border-radius: 3px; padding: 2px 6px; font-family: 'Orbitron'; }
         .empty-state { text-align: center; padding: 48px 20px; color: #3a5a70; font-size: 13px; }
-        .refresh-btn {
-            background: transparent;
-            border: 1px solid var(--border);
-            color: var(--text-muted);
-            font-size: 11px;
-            padding: 5px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: .2s;
-        }
+        .refresh-btn { background: transparent; border: 1px solid var(--border); color: var(--text-muted); font-size: 11px; padding: 5px 12px; border-radius: 4px; cursor: pointer; transition: .2s; }
         .refresh-btn:hover { border-color: var(--cyan); color: var(--cyan); }
 
         /* ===== 3D VIEWER CARD ===== */
         .viewer-card {
-            background: var(--steel);
+            background: var(--steel);           /* ← var thay rgba(13,27,42,.6) */
             border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 12px;
-            margin-top: 16px;
+            border-radius: 12px; padding: 12px; margin-top: 16px;
         }
         .viewer-title {
-            font-family: 'Orbitron';
-            font-size: 11px;
-            color: var(--cyan);
-            margin-bottom: 10px;
-            letter-spacing: 1px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            font-family: 'Orbitron'; font-size: 11px; color: var(--cyan);
+            margin-bottom: 10px; letter-spacing: 1px;
+            display: flex; justify-content: space-between; align-items: center;
         }
-        .load-status {
-            font-size: 10px;
-            background: rgba(0,0,0,0.4);
-            padding: 4px 10px;
-            border-radius: 20px;
-        }
+        .load-status { font-size: 10px; background: rgba(0,0,0,0.4); padding: 4px 10px; border-radius: 20px; }
         .cnc-viewer-frame {
-            width: 100%;
-            height: 450px;
-            border: none;
-            border-radius: 10px;
+            width: 100%; height: 450px; border: none; border-radius: 10px;
             background: var(--bg-dark);
         }
 
         /* ===== NAVBAR ===== */
         .navbar {
-            background: var(--navy);
+            background: var(--navy);            /* ← var thay rgba(13,27,42,.97) */
             border-top: 1px solid var(--border);
-            display: flex;
-            flex-shrink: 0;
-            position: sticky;
-            bottom: 0;
-            z-index: 10;
+            display: flex; flex-shrink: 0;
+            position: sticky; bottom: 0; z-index: 10;
         }
         .nav-link {
-            flex: 1;
-            text-align: center;
-            padding: 13px 8px;
-            font-family: 'Orbitron';
-            font-size: 11px;
-            font-weight: 600;
-            letter-spacing: 1.5px;
-            color: var(--text-muted);
-            text-decoration: none;
-            text-transform: uppercase;
-            border-top: 3px solid transparent;
-            transition: .2s;
+            flex: 1; text-align: center; padding: 13px 8px;
+            font-family: 'Orbitron'; font-size: 11px; font-weight: 600; letter-spacing: 1.5px;
+            color: var(--text-muted); text-decoration: none; text-transform: uppercase;
+            border-top: 3px solid transparent; transition: .2s;
         }
         .nav-link:hover { color: var(--cyan); }
         .nav-link.active { color: var(--red); border-top-color: var(--red); }
@@ -323,16 +249,17 @@
 <body>
     <header class="header">
         <div class="logo-bk">
-        <img src="/static/images/hust_logo.png"
-     alt="ĐHBK Hà Nội"
-     style="width:55px;height:55px;object-fit:contain;"
-     onerror="this.src='https://via.placeholder.com/55x55?text=HUST'">
+            <img src="/static/images/hust_logo.png" alt="ĐHBK Hà Nội"
+                 style="width:55px;height:55px;object-fit:contain;"
+                 onerror="this.src='https://via.placeholder.com/55x55?text=HUST'">
         </div>
         <div class="header-center">
             <div class="main-title">TÍNH TOÁN, THIẾT KẾ HỆ THỐNG ĐIỀU KHIỂN<br>MÁY CNC ĐỂ BÀN TỰ CHỦ THÔNG MINH</div>
             <div class="sub-title">GVHD: LÊ GIANG NAM</div>
         </div>
- <img src="/static/images/vimes_logo.png" alt="Vimes Lab" style="height: 55px; width: auto;" onerror="this.src='https://via.placeholder.com/55x55?text=V'">
+        <img src="/static/images/vimes_logo.png" alt="Vimes Lab"
+             style="height:55px;width:auto;"
+             onerror="this.src='https://via.placeholder.com/55x55?text=V'">
     </header>
 
     <div class="user-badge">
@@ -399,54 +326,38 @@
             <div style="display:flex;gap:6px;">
                 <button class="tbtn active" style="font-family:'Be Vietnam Pro';font-size:11px;letter-spacing:.3px;"
                     onclick="filterAlarm('all',this)">Tất cả</button>
-                <button class="tbtn"
-                    style="font-family:'Be Vietnam Pro';font-size:11px;letter-spacing:.3px;color:#f39c12;"
+                <button class="tbtn" style="font-family:'Be Vietnam Pro';font-size:11px;letter-spacing:.3px;color:#f39c12;"
                     onclick="filterAlarm('Cảnh báo',this)">⚠ Cảnh báo</button>
-                <button class="tbtn"
-                    style="font-family:'Be Vietnam Pro';font-size:11px;letter-spacing:.3px;color:#e74c3c;"
+                <button class="tbtn" style="font-family:'Be Vietnam Pro';font-size:11px;letter-spacing:.3px;color:#e74c3c;"
                     onclick="filterAlarm('Dừng khẩn cấp',this)">🛑 Dừng khẩn cấp</button>
             </div>
             <div class="alarm-table-wrap" id="alarmTableWrap">
                 <table style="width:100%">
                     <thead>
                         <tr>
-                            <th>LOẠI</th>
-                            <th>DỮ LIỆU</th>
-                            <th>THỜI GIAN</th>
-                            <th>NỘI DUNG</th>
+                            <th>LOẠI</th><th>DỮ LIỆU</th><th>THỜI GIAN</th><th>NỘI DUNG</th>
                         </tr>
                     </thead>
                     <tbody id="alarmBody">
-                        <tr>
-                            <td colspan="4">
-                                <div class="empty-state">
-                                    <div class="icon">🔍</div>
-                                    Đang tải dữ liệu alarm...
-                                </div>
-                            <tr>
-                        </tr>
+                        <tr><td colspan="4"><div class="empty-state"><div>🔍</div>Đang tải dữ liệu alarm...</div></td></tr>
                     </tbody>
                 </table>
             </div>
 
-            <!-- 3D VIEWER CARD -->
+            <!-- 3D VIEWER -->
             <div class="viewer-card">
                 <div class="viewer-title">
                     <span>🎮 MÔ PHỎNG 3D CNC</span>
                     <span class="load-status" id="loadStatusDisplay">🟢 Đang kết nối...</span>
                 </div>
-                <iframe 
-                    id="cncViewerFrame"
-                    src="/static/cnc_viewer.html" 
-                    class="cnc-viewer-frame"
-                    allow="autoplay; fullscreen"
-                ></iframe>
-                <div style="margin-top: 8px; font-size: 10px; color: #6b8fa8; text-align: center;">
+                <iframe id="cncViewerFrame" src="/static/cnc_viewer.html"
+                    class="cnc-viewer-frame" allow="autoplay; fullscreen"></iframe>
+                <div style="margin-top:8px;font-size:10px;color:var(--text-muted);text-align:center;">
                     💡 Màu sắc mô hình thay đổi theo tải trọng động cơ
                 </div>
             </div>
 
-            <div style="display:flex;gap:14px;font-size:11px;color:#4a6a80;padding:4px 2px;margin-top:4px;">
+            <div style="display:flex;gap:14px;font-size:11px;color:var(--text-dim);padding:4px 2px;margin-top:4px;">
                 <span><span style="color:var(--warn)">■</span> Cảnh báo</span>
                 <span><span style="color:var(--danger)">■</span> Dừng khẩn cấp</span>
                 <span><span style="color:var(--ok)">■</span> Đã xử lý</span>
@@ -464,24 +375,55 @@
         <a class="nav-link" href="/settings">THÔNG SỐ</a>
     </nav>
 
-    <div id="customTooltip" class="custom-tooltip" style="display: none;"></div>
+    <div id="customTooltip" class="custom-tooltip" style="display:none;"></div>
 
     <script>
-        // ========== BIẾN TOÀN CỤC ==========
+        // =============================================
+        // THEME SYNC — phải chạy TRƯỚC mọi thứ khác
+        // để tránh flash màu cũ khi trang load
+        // =============================================
+        (function applyTheme() {
+            const saved = localStorage.getItem('cnc_theme');
+            if (!saved) return;
+            try {
+                const t = JSON.parse(saved);
+                const r = document.documentElement;
+                // Map key settings → CSS var monitor
+                // settings lưu: headerBg, sidebarBg, accentColor, borderColor, textColor
+                if (t.headerBg)   r.style.setProperty('--navy',   t.headerBg);
+                if (t.sidebarBg)  r.style.setProperty('--steel',  t.sidebarBg);
+                if (t.accentColor) r.style.setProperty('--cyan',  t.accentColor);
+                if (t.borderColor) r.style.setProperty('--border', t.borderColor);
+                if (t.textColor)  r.style.setProperty('--white',  t.textColor);
+            } catch(e) {}
+        })();
+
+        // Lắng nghe thay đổi real-time từ tab settings
+        window.addEventListener('storage', (e) => {
+            if (e.key !== 'cnc_theme' || !e.newValue) return;
+            try {
+                const t = JSON.parse(e.newValue);
+                const r = document.documentElement;
+                if (t.headerBg)   r.style.setProperty('--navy',   t.headerBg);
+                if (t.sidebarBg)  r.style.setProperty('--steel',  t.sidebarBg);
+                if (t.accentColor) r.style.setProperty('--cyan',  t.accentColor);
+                if (t.borderColor) r.style.setProperty('--border', t.borderColor);
+                if (t.textColor)  r.style.setProperty('--white',  t.textColor);
+                console.log('🎨 Theme synced from settings tab');
+            } catch(e) {}
+        });
+
+        // =============================================
+        // CHART & DATA
+        // =============================================
         let currentMinutes = 60;
         let alarmFilter = 'all';
         let allAlarms = [];
         let currentData = [];
         let lastLoad = 0;
 
-        // Màu sắc cho 3 trục
-        const colors = {
-            x: '#e74c3c',
-            y: '#00b894',
-            z: '#3498db'
-        };
+        const colors = { x: '#e74c3c', y: '#00b894', z: '#3498db' };
 
-        // ========== TẠO CHART ==========
         function createMultiChart(ctx) {
             return new Chart(ctx, {
                 type: 'line',
@@ -497,71 +439,55 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     interaction: { mode: 'index', intersect: false },
-                    plugins: {
-                        tooltip: { enabled: false },
-                        legend: { display: false }
-                    },
+                    plugins: { tooltip: { enabled: false }, legend: { display: false } },
                     scales: {
                         x: { ticks: { color: '#4a6a80', maxTicksLimit: 6, font: { size: 9 } }, grid: { color: '#1a2a3a' } },
                         y: { ticks: { color: '#4a6a80', font: { size: 9 }, callback: v => v.toFixed(1) }, grid: { color: '#1a2a3a' } }
                     },
                     onClick: (event, activeElements) => {
-                        if (activeElements.length > 0) {
-                            const index = activeElements[0].index;
-                            showTooltipAtPoint(index, event);
-                        }
+                        if (activeElements.length > 0) showTooltipAtPoint(activeElements[0].index, event);
                     }
                 }
             });
         }
 
-        // ========== TOOLTIP CHI TIẾT ==========
         function showTooltipAtPoint(index, event) {
             const point = currentData[index];
             if (!point) return;
-
             const tooltip = document.getElementById('customTooltip');
             let timeStr = point.time || '';
             try {
                 const dt = new Date(point.time);
-                timeStr = dt.toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
-            } catch (e) { }
-
+                timeStr = dt.toLocaleString('vi-VN', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit', second:'2-digit' });
+            } catch(e) {}
             tooltip.innerHTML = `
                 <div class="title">🕒 ${timeStr}</div>
-                <div class="data-row"><span class="data-label">📍 Vị trí X:</span><span class="data-value x">${(point.pos_x || 0).toFixed(2)} mm</span></div>
-                <div class="data-row"><span class="data-label">📍 Vị trí Y:</span><span class="data-value y">${(point.pos_y || 0).toFixed(2)} mm</span></div>
-                <div class="data-row"><span class="data-label">📍 Vị trí Z:</span><span class="data-value z">${(point.pos_z || 0).toFixed(2)} mm</span></div>
-                <div class="data-row"><span class="data-label">⚡ Vận tốc X:</span><span class="data-value x">${(point.vel_x || 0).toFixed(2)} mm/s</span></div>
-                <div class="data-row"><span class="data-label">⚡ Vận tốc Y:</span><span class="data-value y">${(point.vel_y || 0).toFixed(2)} mm/s</span></div>
-                <div class="data-row"><span class="data-label">⚡ Vận tốc Z:</span><span class="data-value z">${(point.vel_z || 0).toFixed(2)} mm/s</span></div>
-                <div class="data-row"><span class="data-label">🔩 Moment X:</span><span class="data-value x">${(point.mom_x || 0).toFixed(2)} N·m</span></div>
-                <div class="data-row"><span class="data-label">🔩 Moment Y:</span><span class="data-value y">${(point.mom_y || 0).toFixed(2)} N·m</span></div>
-                <div class="data-row"><span class="data-label">🔩 Moment Z:</span><span class="data-value z">${(point.mom_z || 0).toFixed(2)} N·m</span></div>
-                <div class="data-row"><span class="data-label">🌡️ Nhiệt độ:</span><span class="data-value">${(point.temp || 0).toFixed(1)} °C</span></div>
-                <div class="data-row"><span class="data-label">📊 Tải trọng:</span><span class="data-value">${(point.load || 0).toFixed(1)} %</span></div>
+                <div class="data-row"><span class="data-label">📍 Vị trí X:</span><span class="data-value x">${(point.pos_x||0).toFixed(2)} mm</span></div>
+                <div class="data-row"><span class="data-label">📍 Vị trí Y:</span><span class="data-value y">${(point.pos_y||0).toFixed(2)} mm</span></div>
+                <div class="data-row"><span class="data-label">📍 Vị trí Z:</span><span class="data-value z">${(point.pos_z||0).toFixed(2)} mm</span></div>
+                <div class="data-row"><span class="data-label">⚡ Vận tốc X:</span><span class="data-value x">${(point.vel_x||0).toFixed(2)} mm/s</span></div>
+                <div class="data-row"><span class="data-label">⚡ Vận tốc Y:</span><span class="data-value y">${(point.vel_y||0).toFixed(2)} mm/s</span></div>
+                <div class="data-row"><span class="data-label">⚡ Vận tốc Z:</span><span class="data-value z">${(point.vel_z||0).toFixed(2)} mm/s</span></div>
+                <div class="data-row"><span class="data-label">🔩 Moment X:</span><span class="data-value x">${(point.mom_x||0).toFixed(2)} N·m</span></div>
+                <div class="data-row"><span class="data-label">🔩 Moment Y:</span><span class="data-value y">${(point.mom_y||0).toFixed(2)} N·m</span></div>
+                <div class="data-row"><span class="data-label">🔩 Moment Z:</span><span class="data-value z">${(point.mom_z||0).toFixed(2)} N·m</span></div>
+                <div class="data-row"><span class="data-label">🌡️ Nhiệt độ:</span><span class="data-value">${(point.temp||0).toFixed(1)} °C</span></div>
+                <div class="data-row"><span class="data-label">📊 Tải trọng:</span><span class="data-value">${(point.load||0).toFixed(1)} %</span></div>
             `;
-
             tooltip.style.display = 'block';
             tooltip.style.left = (event.clientX + 15) + 'px';
-            tooltip.style.top = (event.clientY - 20) + 'px';
-
+            tooltip.style.top  = (event.clientY - 20) + 'px';
             setTimeout(() => { tooltip.style.display = 'none'; }, 5000);
         }
 
-        // Ẩn tooltip khi click ra ngoài
         document.addEventListener('click', (e) => {
-            if (!e.target.closest('canvas')) {
-                document.getElementById('customTooltip').style.display = 'none';
-            }
+            if (!e.target.closest('canvas')) document.getElementById('customTooltip').style.display = 'none';
         });
 
-        // Khởi tạo 3 biểu đồ
         const chartPosition = createMultiChart(document.getElementById('chartPosition').getContext('2d'));
         const chartVelocity = createMultiChart(document.getElementById('chartVelocity').getContext('2d'));
-        const chartMoment = createMultiChart(document.getElementById('chartMoment').getContext('2d'));
+        const chartMoment   = createMultiChart(document.getElementById('chartMoment').getContext('2d'));
 
-        // ========== THAY ĐỔI KHOẢNG THỜI GIAN ==========
         function changeTime(min, btn) {
             currentMinutes = min;
             document.querySelectorAll('.time-btns .tbtn').forEach(b => b.classList.remove('active'));
@@ -569,7 +495,6 @@
             fetchChart();
         }
 
-        // Xóa dữ liệu cũ
         function clearCharts() {
             [chartPosition, chartVelocity, chartMoment].forEach(chart => {
                 chart.data.labels = [];
@@ -577,7 +502,6 @@
             });
         }
 
-        // ========== LẤY DỮ LIỆU BIỂU ĐỒ ==========
         function fetchChart() {
             document.getElementById('chartInfo').innerHTML = '<span style="color:var(--cyan)">🔄 Đang tải...</span>';
             fetch('/api/history?minutes=' + currentMinutes + '&_t=' + Date.now())
@@ -585,114 +509,77 @@
                 .then(data => {
                     clearCharts();
                     currentData = [];
-
                     data.forEach(d => {
                         let t = '';
                         try {
                             const dt = new Date(d.time);
                             t = currentMinutes <= 60
-                                ? dt.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
-                                : dt.toLocaleDateString('vi-VN', { month: '2-digit', day: '2-digit' }) + ' ' + dt.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
-                        } catch (e) { t = d.time || ''; }
+                                ? dt.toLocaleTimeString('vi-VN', { hour:'2-digit', minute:'2-digit' })
+                                : dt.toLocaleDateString('vi-VN', { month:'2-digit', day:'2-digit' }) + ' ' + dt.toLocaleTimeString('vi-VN', { hour:'2-digit', minute:'2-digit' });
+                        } catch(e) { t = d.time || ''; }
 
                         currentData.push({
                             time: d.time,
-                            pos_x: d.vi_tri_x || d.vi_tri || 0,
-                            pos_y: d.vi_tri_y || 0,
-                            pos_z: d.vi_tri_z || 0,
-                            vel_x: d.van_toc_x || d.van_toc || 0,
-                            vel_y: d.van_toc_y || 0,
-                            vel_z: d.van_toc_z || 0,
-                            mom_x: d.moment_x || d.moment || 0,
-                            mom_y: d.moment_y || 0,
-                            mom_z: d.moment_z || 0,
-                            temp: d.temp || 0,
-                            load: d.load || 0
+                            pos_x: d.vi_tri_x || d.vi_tri || 0, pos_y: d.vi_tri_y || 0, pos_z: d.vi_tri_z || 0,
+                            vel_x: d.van_toc_x || d.van_toc || 0, vel_y: d.van_toc_y || 0, vel_z: d.van_toc_z || 0,
+                            mom_x: d.moment_x || d.moment || 0, mom_y: d.moment_y || 0, mom_z: d.moment_z || 0,
+                            temp: d.temp || 0, load: d.load || 0
                         });
 
+                        const p = currentData[currentData.length - 1];
                         chartPosition.data.labels.push(t);
                         chartVelocity.data.labels.push(t);
                         chartMoment.data.labels.push(t);
-
-                        chartPosition.data.datasets[0].data.push(currentData[currentData.length - 1].pos_x);
-                        chartPosition.data.datasets[1].data.push(currentData[currentData.length - 1].pos_y);
-                        chartPosition.data.datasets[2].data.push(currentData[currentData.length - 1].pos_z);
-
-                        chartVelocity.data.datasets[0].data.push(currentData[currentData.length - 1].vel_x);
-                        chartVelocity.data.datasets[1].data.push(currentData[currentData.length - 1].vel_y);
-                        chartVelocity.data.datasets[2].data.push(currentData[currentData.length - 1].vel_z);
-
-                        chartMoment.data.datasets[0].data.push(currentData[currentData.length - 1].mom_x);
-                        chartMoment.data.datasets[1].data.push(currentData[currentData.length - 1].mom_y);
-                        chartMoment.data.datasets[2].data.push(currentData[currentData.length - 1].mom_z);
+                        chartPosition.data.datasets[0].data.push(p.pos_x);
+                        chartPosition.data.datasets[1].data.push(p.pos_y);
+                        chartPosition.data.datasets[2].data.push(p.pos_z);
+                        chartVelocity.data.datasets[0].data.push(p.vel_x);
+                        chartVelocity.data.datasets[1].data.push(p.vel_y);
+                        chartVelocity.data.datasets[2].data.push(p.vel_z);
+                        chartMoment.data.datasets[0].data.push(p.mom_x);
+                        chartMoment.data.datasets[1].data.push(p.mom_y);
+                        chartMoment.data.datasets[2].data.push(p.mom_z);
                     });
-
-                    chartPosition.update();
-                    chartVelocity.update();
-                    chartMoment.update();
-
+                    chartPosition.update(); chartVelocity.update(); chartMoment.update();
                     const now = new Date().toLocaleTimeString('vi-VN');
                     document.getElementById('chartInfo').innerHTML = `🕒 ${now} | 📊 ${data.length} điểm dữ liệu | Click vào điểm bất kỳ để xem chi tiết X/Y/Z`;
                 })
-                .catch(() => {
-                    document.getElementById('chartInfo').innerHTML = '❌ Lỗi tải dữ liệu';
-                });
+                .catch(() => { document.getElementById('chartInfo').innerHTML = '❌ Lỗi tải dữ liệu'; });
         }
 
-        // ========== GỬI DỮ LIỆU LOAD SANG 3D VIEWER ==========
         const viewerFrame = document.getElementById('cncViewerFrame');
 
         function sendLoadToViewer(loadPercent) {
             if (viewerFrame && viewerFrame.contentWindow) {
-                viewerFrame.contentWindow.postMessage({
-                    type: 'update_load',
-                    load: loadPercent
-                }, '*');
+                viewerFrame.contentWindow.postMessage({ type: 'update_load', load: loadPercent }, '*');
             }
         }
 
         function updateLoadStatus(loadPercent) {
-            const statusEl = document.getElementById('loadStatusDisplay');
-            if (loadPercent < 30) {
-                statusEl.innerHTML = '🟢 Tải nhẹ (' + loadPercent.toFixed(1) + '%)';
-                statusEl.style.color = '#00b894';
-            } else if (loadPercent < 70) {
-                statusEl.innerHTML = '🟡 Tải trung bình (' + loadPercent.toFixed(1) + '%)';
-                statusEl.style.color = '#f39c12';
-            } else if (loadPercent < 100) {
-                statusEl.innerHTML = '🟠 Tải nặng (' + loadPercent.toFixed(1) + '%)';
-                statusEl.style.color = '#e67e22';
-            } else {
-                statusEl.innerHTML = '🔴 QUÁ TẢI (' + loadPercent.toFixed(1) + '%)';
-                statusEl.style.color = '#e74c3c';
-            }
+            const el = document.getElementById('loadStatusDisplay');
+            if (loadPercent < 30)       { el.innerHTML = '🟢 Tải nhẹ (' + loadPercent.toFixed(1) + '%)';         el.style.color = '#00b894'; }
+            else if (loadPercent < 70)  { el.innerHTML = '🟡 Tải trung bình (' + loadPercent.toFixed(1) + '%)';  el.style.color = '#f39c12'; }
+            else if (loadPercent < 100) { el.innerHTML = '🟠 Tải nặng (' + loadPercent.toFixed(1) + '%)';        el.style.color = '#e67e22'; }
+            else                        { el.innerHTML = '🔴 QUÁ TẢI (' + loadPercent.toFixed(1) + '%)';         el.style.color = '#e74c3c'; }
         }
 
-        // Lấy dữ liệu cảm biến mới nhất và gửi load
         async function fetchAndSendLoad() {
             try {
                 const res = await fetch('/api/latest?_t=' + Date.now());
                 const data = await res.json();
                 const loadPercent = data.load || 0;
-                
                 if (Math.abs(loadPercent - lastLoad) > 0.5) {
                     lastLoad = loadPercent;
                     sendLoadToViewer(loadPercent);
                     updateLoadStatus(loadPercent);
                 }
-            } catch (e) {
-                console.log('Load fetch error:', e);
-            }
+            } catch(e) {}
         }
 
-        // ========== ALARM ==========
         function fetchAlarms() {
             fetch('/api/alarms?_t=' + Date.now())
                 .then(r => r.json())
-                .then(data => {
-                    allAlarms = data;
-                    renderAlarmTable(data);
-                })
+                .then(data => { allAlarms = data; renderAlarmTable(data); })
                 .catch(() => renderAlarmTable([]));
         }
 
@@ -707,27 +594,21 @@
         function renderAlarmTable(data) {
             const tbody = document.getElementById('alarmBody');
             const countEl = document.getElementById('alarmCount');
-
             const nDanger = data.filter(a => a.alarm_class === 'Dừng khẩn cấp').length;
-            const nWarn = data.filter(a => a.alarm_class === 'Cảnh báo').length;
+            const nWarn   = data.filter(a => a.alarm_class === 'Cảnh báo').length;
             countEl.textContent = `${nWarn} cảnh báo · ${nDanger} khẩn cấp`;
-
             if (!data.length) {
-                tbody.innerHTML = `<tr><td colspan="4"><div class="empty-state"><div class="icon">✅</div>Không có cảnh báo nào</div></td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="4"><div class="empty-state"><div>✅</div>Không có cảnh báo nào</div></td></tr>`;
                 return;
             }
-
             tbody.innerHTML = data.map(a => {
-                let badge = '';
-                if (a.resolved) {
-                    badge = '<span class="badge badge-ok">Đã xử lý</span>';
-                } else if (a.alarm_class === 'Dừng khẩn cấp') {
-                    badge = '<span class="badge badge-danger">🛑 Dừng khẩn cấp</span>';
-                } else {
-                    badge = '<span class="badge badge-warn">⚠ Cảnh báo</span>';
-                }
+                let badge = a.resolved
+                    ? '<span class="badge badge-ok">Đã xử lý</span>'
+                    : a.alarm_class === 'Dừng khẩn cấp'
+                        ? '<span class="badge badge-danger">🛑 Dừng khẩn cấp</span>'
+                        : '<span class="badge badge-warn">⚠ Cảnh báo</span>';
                 let time = '';
-                try { time = new Date(a.timestamp).toLocaleString('vi-VN'); } catch (e) { time = a.timestamp; }
+                try { time = new Date(a.timestamp).toLocaleString('vi-VN'); } catch(e) { time = a.timestamp; }
                 return `<tr>
                     <td>${badge}</td>
                     <td><span class="dtype">${a.data_type || '—'}</span></td>
@@ -737,60 +618,13 @@
             }).join('');
         }
 
-        // ========== KHỞI TẠO ==========
         fetchChart();
         fetchAlarms();
         fetchAndSendLoad();
-
         setInterval(fetchChart, 30000);
         setInterval(fetchAlarms, 15000);
-        setInterval(fetchAndSendLoad, 2000);  // Gửi load mỗi 2 giây
-
-        // Đợi iframe load xong mới bắt đầu gửi
-        viewerFrame.addEventListener('load', () => {
-            console.log('3D Viewer loaded, starting load updates');
-            fetchAndSendLoad();
-        });
-
-        // ========== LOAD THEME TỪ LOCALSTORAGE ==========
-        function loadThemeFromLocal() {
-            const saved = localStorage.getItem('cnc_theme');
-            if (saved) {
-                try {
-                    const theme = JSON.parse(saved);
-                    document.documentElement.style.setProperty('--red', theme.red || '#c0392b');
-                    document.documentElement.style.setProperty('--gold', theme.gold || '#d4a017');
-                    document.documentElement.style.setProperty('--navy', theme.navy || '#0d1b2a');
-                    document.documentElement.style.setProperty('--cyan', theme.cyan || '#00c9d4');
-                    document.documentElement.style.setProperty('--border', theme.border || 'rgba(0,201,212,0.22)');
-                    document.documentElement.style.setProperty('--color-x', theme.color_x || '#e74c3c');
-                    document.documentElement.style.setProperty('--color-y', theme.color_y || '#00b894');
-                    document.documentElement.style.setProperty('--color-z', theme.color_z || '#3498db');
-                    console.log('🎨 Theme loaded from localStorage');
-                } catch(e) { console.error('Theme parse error:', e); }
-            }
-        }
-
-        // Lắng nghe theme thay đổi từ tab khác
-        window.addEventListener('storage', (event) => {
-            if (event.key === 'cnc_theme' && event.newValue) {
-                try {
-                    const theme = JSON.parse(event.newValue);
-                    document.documentElement.style.setProperty('--red', theme.red || '#c0392b');
-                    document.documentElement.style.setProperty('--gold', theme.gold || '#d4a017');
-                    document.documentElement.style.setProperty('--navy', theme.navy || '#0d1b2a');
-                    document.documentElement.style.setProperty('--cyan', theme.cyan || '#00c9d4');
-                    document.documentElement.style.setProperty('--border', theme.border || 'rgba(0,201,212,0.22)');
-                    document.documentElement.style.setProperty('--color-x', theme.color_x || '#e74c3c');
-                    document.documentElement.style.setProperty('--color-y', theme.color_y || '#00b894');
-                    document.documentElement.style.setProperty('--color-z', theme.color_z || '#3498db');
-                    console.log('🎨 Theme updated from another tab');
-                } catch(e) {}
-            }
-        });
-
-        // Khởi tạo load theme khi trang load
-        loadThemeFromLocal();
+        setInterval(fetchAndSendLoad, 2000);
+        viewerFrame.addEventListener('load', () => fetchAndSendLoad());
     </script>
 </body>
 </html>
