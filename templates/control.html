@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -23,17 +22,17 @@
     --border-strong:  rgba(0,201,212,0.45);
 
     /* ── Backgrounds (derived from base colors) ── */
-    --bg-body:        var(--navy);           /* body, toolbar … */
-    --bg-header:      var(--navy);           /* header */
-    --bg-navbar:      var(--navy);           /* sticky navbar */
-    --bg-panel:       var(--steel);          /* .panel-container */
-    --bg-card:        var(--steel);          /* .card */
-    --bg-badge:       var(--steel);          /* .user-badge */
-    --bg-mode-btn:    var(--steel);          /* .mode-btn default */
-    --bg-quick-btn:   var(--steel);          /* quick-connect buttons */
-    --bg-chat-ai:     var(--steel);          /* .chat-message.assistant */
-    --bg-gcode:       #0a0f1a;              /* gcode preview */
-    --bg-canvas:      #0a0f14;              /* toolpath canvas */
+    --bg-body:        var(--navy);
+    --bg-header:      var(--navy);
+    --bg-navbar:      var(--navy);
+    --bg-panel:       var(--steel);
+    --bg-card:        var(--steel);
+    --bg-badge:       var(--steel);
+    --bg-mode-btn:    var(--steel);
+    --bg-quick-btn:   var(--steel);
+    --bg-chat-ai:     var(--steel);
+    --bg-gcode:       #0a0f1a;
+    --bg-canvas:      #0a0f14;
     --bg-input:       rgba(0,0,0,.5);
 
     /* ── Text ── */
@@ -660,7 +659,7 @@ function askAiAboutGCode() {
 // ============================================================
 // 3D TOOLPATH VIEWER
 // ============================================================
-const WS = { X: 400, Y: 300, Z: 100 };  // Kích thước máy (mm)
+const WS = { X: 400, Y: 300, Z: 100 };
 
 let tp3dRenderer, tp3dScene, tp3dCamera, tp3dOrbit;
 let tp3dLine = null, tp3dHeadMesh = null, tp3dGrid = null, tp3dAxes = null;
@@ -697,7 +696,6 @@ function buildWorkspaceBox() {
     const W = WS.X, D = WS.Y, H = WS.Z;
     const cx = W/2, cy = H/2, cz = D/2;
 
-    // Khung wireframe hộp
     tp3dWorkBox = new THREE.LineSegments(
         new THREE.EdgesGeometry(new THREE.BoxGeometry(W, H, D)),
         new THREE.LineBasicMaterial({ color: 0x00c9d4, transparent: true, opacity: 0.5 })
@@ -706,7 +704,6 @@ function buildWorkspaceBox() {
     tp3dWorkBox.visible = tp3dBoxVisible;
     tp3dScene.add(tp3dWorkBox);
 
-    // Mặt đáy Z=0
     tp3dZPlane = new THREE.Mesh(
         new THREE.PlaneGeometry(W, D),
         new THREE.MeshBasicMaterial({ color: 0x00c9d4, transparent: true, opacity: 0.05, side: THREE.DoubleSide, depthWrite: false })
@@ -716,7 +713,6 @@ function buildWorkspaceBox() {
     tp3dZPlane.visible = tp3dZPlaneVisible;
     tp3dScene.add(tp3dZPlane);
 
-    // Viền đáy
     const floor = new THREE.LineLoop(
         new THREE.BufferGeometry().setFromPoints([
             new THREE.Vector3(0,0,0), new THREE.Vector3(W,0,0),
@@ -728,12 +724,10 @@ function buildWorkspaceBox() {
     tp3dScene.add(floor);
     tp3dLabels.push(floor);
 
-    // Nhãn trục
     const lbX = makeAxisLabel(`X: ${W} mm`); lbX.position.set(cx,   -10, -16); lbX.visible = tp3dBoxVisible; tp3dScene.add(lbX); tp3dLabels.push(lbX);
     const lbY = makeAxisLabel(`Y: ${D} mm`); lbY.position.set(-22,  -10,  cz); lbY.visible = tp3dBoxVisible; tp3dScene.add(lbY); tp3dLabels.push(lbY);
     const lbZ = makeAxisLabel(`Z: ${H} mm`); lbZ.position.set(-22,   cy, -16); lbZ.visible = tp3dBoxVisible; tp3dScene.add(lbZ); tp3dLabels.push(lbZ);
 
-    // Camera
     tp3dCamera.position.set(W*1.1, H*2.2, D*1.9);
     tp3dOrbit.target.set(cx, 0, cz);
     tp3dOrbit.update();
@@ -768,7 +762,7 @@ function initToolpath3D() {
 
     buildWorkspaceBox();
 
-    window.tp3dRenderer = tp3dRenderer;  // expose for theme engine
+    window.tp3dRenderer = tp3dRenderer;
     (function animate() {
         requestAnimationFrame(animate);
         tp3dOrbit.update();
@@ -840,7 +834,6 @@ function updateToolpathDisplay(gcode) {
     else addChatMessage('assistant', '⚠️ Không tìm thấy tọa độ XYZ trong G-Code.');
 }
 
-// Toggle functions
 function tp3dReset()      { buildWorkspaceBox(); }
 function tp3dToggleGrid() {
     tp3dGridVisible = !tp3dGridVisible;
@@ -900,7 +893,6 @@ document.addEventListener('DOMContentLoaded', () => {
     initToolpath3D();
 });
 
-// Export all functions called from inline HTML onclick
 Object.assign(window, {
     setMode, connectToDevice, quickConnect, openConnectionInNewTab, closeConnection,
     retryManual, onManualFrameLoad, onManualFrameError, useSavedUrl, deleteSavedUrl,
@@ -909,5 +901,62 @@ Object.assign(window, {
     tp3dSimulate, tp3dStop, tp3dResetSim
 });
 </script>
+
+<!-- ========== ĐỒNG BỘ THEME VỚI SETTINGS.HTML ========== -->
+<script>
+(function syncThemeWithSettings() {
+    function applyThemeFromSettings(theme) {
+        if (!theme) return;
+        if (theme.headerBg) document.documentElement.style.setProperty('--navy', theme.headerBg);
+        if (theme.sidebarBg) document.documentElement.style.setProperty('--steel', theme.sidebarBg);
+        if (theme.accentColor) document.documentElement.style.setProperty('--cyan', theme.accentColor);
+        if (theme.borderColor) document.documentElement.style.setProperty('--border', theme.borderColor);
+        if (theme.textColor) document.documentElement.style.setProperty('--white', theme.textColor);
+        
+        document.documentElement.style.setProperty('--bg-body', theme.headerBg || '#0d1b2a');
+        document.documentElement.style.setProperty('--bg-header', theme.headerBg || '#0d1b2a');
+        document.documentElement.style.setProperty('--bg-navbar', theme.headerBg || '#0d1b2a');
+        document.documentElement.style.setProperty('--bg-panel', theme.sidebarBg || '#1e3a5f');
+        document.documentElement.style.setProperty('--bg-card', theme.sidebarBg || '#1e3a5f');
+        document.documentElement.style.setProperty('--bg-badge', theme.sidebarBg || '#1e3a5f');
+        document.documentElement.style.setProperty('--bg-mode-btn', theme.sidebarBg || '#1e3a5f');
+        document.documentElement.style.setProperty('--bg-quick-btn', theme.sidebarBg || '#1e3a5f');
+        document.documentElement.style.setProperty('--bg-chat-ai', theme.sidebarBg || '#1e3a5f');
+        
+        if (window.tp3dRenderer) {
+            const bg = theme.canvasBg || '#0a0f14';
+            window.tp3dRenderer.setClearColor(new THREE.Color(bg), 1);
+        }
+        console.log('🎨 Theme synced from settings:', theme);
+    }
+    
+    function loadThemeFromSettings() {
+        const saved = localStorage.getItem('cnc_theme');
+        if (saved) {
+            try {
+                const theme = JSON.parse(saved);
+                applyThemeFromSettings(theme);
+            } catch(e) { console.error('Theme parse error:', e); }
+        }
+    }
+    
+    window.addEventListener('storage', (event) => {
+        if (event.key === 'cnc_theme' && event.newValue) {
+            try {
+                const theme = JSON.parse(event.newValue);
+                applyThemeFromSettings(theme);
+                console.log('🎨 Theme updated from settings tab');
+            } catch(e) {}
+        }
+    });
+    
+    document.documentElement.addEventListener('cnc-theme-change', (event) => {
+        if (event.detail) applyThemeFromSettings(event.detail);
+    });
+    
+    loadThemeFromSettings();
+})();
+</script>
+
 </body>
 </html>
