@@ -8,143 +8,7 @@
     <link rel="stylesheet" href="/static/css/isa101.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --red: #c0392b;
-            --gold: #d4a017;
-            --navy: #0d1b2a;
-            --steel: #1e3a5f;
-            --cyan: #00c9d4;
-            --white: #ffffff;
-            --border: rgba(0, 201, 212, 0.22);
-            --warn: #f39c12;
-            --danger: #e74c3c;
-            --ok: #00b894;
-            --color-x: #e74c3c;
-            --color-y: #00b894;
-            --color-z: #3498db;
-        }
-
-        body {
-            font-family: 'Be Vietnam Pro', sans-serif;
-            background: var(--navy);
-            color: var(--white);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        body::before {
-            content: '';
-            position: fixed;
-            inset: 0;
-            background-image: linear-gradient(rgba(0, 201, 212, .04) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 201, 212, .04) 1px, transparent 1px);
-            background-size: 40px 40px;
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        .header {
-            background: linear-gradient(135deg, #0d1b2a 0%, #1e3a5f 100%);
-            border-bottom: 2px solid var(--gold);
-            padding: 0 28px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            height: 88px;
-            flex-shrink: 0;
-            position: relative;
-            z-index: 10;
-        }
-
-        .logo-bk {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .logo-bk-text {
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--gold);
-            line-height: 1.5;
-            text-transform: uppercase;
-        }
-
-        .header-center {
-            text-align: center;
-            flex: 1;
-            padding: 0 16px;
-        }
-
-        .header-center .main-title {
-            font-weight: 700;
-            font-size: 13px;
-            text-transform: uppercase;
-            letter-spacing: .7px;
-            line-height: 1.45;
-        }
-
-        .header-center .sub-title {
-            font-size: 11px;
-            color: var(--gold);
-            margin-top: 4px;
-            letter-spacing: .5px;
-        }
-
-        .user-badge {
-            position: fixed;
-            top: 96px;
-            right: 16px;
-            background: rgba(30, 58, 95, .85);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 5px 14px;
-            font-size: 12px;
-            color: #6b8fa8;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            z-index: 20;
-            backdrop-filter: blur(10px);
-        }
-
-        .user-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #00b894;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            50% {
-                opacity: .3
-            }
-        }
-
-        .logout-btn {
-            background: transparent;
-            border: 1px solid rgba(192, 57, 43, .5);
-            color: var(--red);
-            font-size: 11px;
-            padding: 3px 10px;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: .2s;
-        }
-
-        .logout-btn:hover {
-            background: var(--red);
-            color: white;
-        }
-
+        /* Monitor specific styles */
         .main {
             flex: 1;
             position: relative;
@@ -170,17 +34,16 @@
             min-width: 0;
         }
 
-        /* ===== SỬA CHỖ 1: THAY MÀU CỨNG BẰNG VAR ===== */
         .panel-title {
-            font-family: 'Orbitron';
+            font-family: 'Orbitron', monospace;
             font-size: 12px;
             font-weight: 600;
-            color: var(--cyan);
+            color: var(--cyan-portal);
             letter-spacing: 2px;
             text-align: center;
             padding: 10px;
-            background: var(--steel);
-            border: 1px solid var(--border);
+            background: var(--gray-card);
+            border: 1px solid var(--gray-border);
             border-radius: 6px;
         }
 
@@ -192,33 +55,33 @@
         .tbtn {
             flex: 1;
             padding: 8px 4px;
-            font-family: 'Orbitron';
+            font-family: 'Orbitron', monospace;
             font-size: 10px;
             font-weight: 600;
             letter-spacing: 1px;
-            background: var(--steel);
-            border: 1px solid var(--border);
-            color: #6b8fa8;
+            background: var(--gray-sidebar);
+            border: 1px solid var(--gray-border);
+            color: var(--text-secondary);
             border-radius: 4px;
             cursor: pointer;
-            transition: .2s;
+            transition: var(--transition);
             text-align: center;
         }
 
         .tbtn:hover {
-            border-color: var(--cyan);
-            color: var(--cyan);
+            border-color: var(--cyan-portal);
+            color: var(--cyan-portal);
         }
 
         .tbtn.active {
-            background: var(--cyan);
-            color: var(--navy);
-            border-color: var(--cyan);
+            background: var(--cyan-portal);
+            color: white;
+            border-color: var(--cyan-portal);
         }
 
         .chart-wrap {
-            background: var(--steel);
-            border: 1px solid var(--border);
+            background: var(--gray-card);
+            border: 1px solid var(--gray-border);
             border-radius: 6px;
             padding: 10px 12px;
             min-height: 200px;
@@ -226,7 +89,7 @@
 
         .chart-label {
             font-size: 11px;
-            color: #6b8fa8;
+            color: var(--text-muted);
             margin-bottom: 6px;
             font-weight: 600;
             letter-spacing: 1px;
@@ -253,17 +116,9 @@
             border-radius: 2px;
         }
 
-        .legend-color.x {
-            background: var(--color-x);
-        }
-
-        .legend-color.y {
-            background: var(--color-y);
-        }
-
-        .legend-color.z {
-            background: var(--color-z);
-        }
+        .legend-color.x { background: #e74c3c; }
+        .legend-color.y { background: #00b894; }
+        .legend-color.z { background: #3498db; }
 
         canvas {
             width: 100% !important;
@@ -272,7 +127,7 @@
 
         .info-bar {
             font-size: 11px;
-            color: #4a6a80;
+            color: var(--text-muted);
             text-align: right;
             padding-top: 4px;
             font-family: monospace;
@@ -280,24 +135,24 @@
 
         .custom-tooltip {
             position: fixed;
-            background: rgba(13, 27, 42, .95);
-            border: 1px solid var(--cyan);
+            background: var(--gray-card);
+            border: 1px solid var(--cyan-portal);
             border-radius: 8px;
             padding: 12px 16px;
             font-size: 12px;
             z-index: 1000;
             pointer-events: none;
             backdrop-filter: blur(8px);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, .5);
+            box-shadow: var(--card-shadow);
             max-width: 350px;
         }
 
         .custom-tooltip .title {
-            color: var(--cyan);
-            font-family: 'Orbitron';
+            color: var(--cyan-portal);
+            font-family: 'Orbitron', monospace;
             font-size: 11px;
             margin-bottom: 8px;
-            border-bottom: 1px solid var(--border);
+            border-bottom: 1px solid var(--gray-border);
             padding-bottom: 4px;
         }
 
@@ -309,32 +164,24 @@
         }
 
         .custom-tooltip .data-label {
-            color: #6b8fa8;
+            color: var(--text-muted);
         }
 
         .custom-tooltip .data-value {
-            color: var(--white);
+            color: var(--text-primary);
             font-family: monospace;
         }
 
-        .custom-tooltip .x {
-            color: var(--color-x);
-        }
-
-        .custom-tooltip .y {
-            color: var(--color-y);
-        }
-
-        .custom-tooltip .z {
-            color: var(--color-z);
-        }
+        .custom-tooltip .x { color: #e74c3c; }
+        .custom-tooltip .y { color: #00b894; }
+        .custom-tooltip .z { color: #3498db; }
 
         .alarm-table-wrap {
             flex: 1;
             overflow-y: auto;
-            border: 1px solid var(--border);
+            border: 1px solid var(--gray-border);
             border-radius: 6px;
-            background: var(--steel);
+            background: var(--gray-card);
             max-height: 350px;
         }
 
@@ -348,29 +195,29 @@
             position: sticky;
             top: 0;
             z-index: 5;
-            background: var(--navy);
-            color: var(--cyan);
-            font-family: 'Orbitron';
+            background: var(--gray-sidebar);
+            color: var(--cyan-portal);
+            font-family: 'Orbitron', monospace;
             font-size: 10px;
             font-weight: 600;
-            letter-spacing: .8px;
+            letter-spacing: 0.8px;
             padding: 10px 8px;
             text-align: left;
-            border-bottom: 1px solid var(--border);
+            border-bottom: 1px solid var(--gray-border);
         }
 
         tbody tr {
-            border-bottom: 1px solid rgba(0, 201, 212, .08);
-            transition: .15s;
+            border-bottom: 1px solid rgba(30, 95, 168, 0.08);
+            transition: var(--transition);
         }
 
         tbody tr:hover {
-            background: rgba(0, 201, 212, .05);
+            background: var(--cyan-glow);
         }
 
         tbody td {
             padding: 9px 8px;
-            color: #b0c8d8;
+            color: var(--text-secondary);
             vertical-align: middle;
         }
 
@@ -380,589 +227,600 @@
             border-radius: 4px;
             font-size: 10px;
             font-weight: 700;
-            letter-spacing: .5px;
+            letter-spacing: 0.5px;
             white-space: nowrap;
         }
 
         .badge-warn {
-            background: rgba(243, 156, 18, .2);
-            color: var(--warn);
-            border: 1px solid rgba(243, 156, 18, .4);
+            background: rgba(255, 204, 0, 0.15);
+            color: #886600;
+            border: 1px solid rgba(255, 204, 0, 0.4);
         }
 
         .badge-danger {
-            background: rgba(231, 76, 60, .2);
-            color: var(--danger);
-            border: 1px solid rgba(231, 76, 60, .4);
+            background: rgba(204, 0, 0, 0.12);
+            color: #880000;
+            border: 1px solid rgba(204, 0, 0, 0.4);
         }
 
         .badge-ok {
-            background: rgba(0, 184, 148, .15);
-            color: var(--ok);
-            border: 1px solid rgba(0, 184, 148, .3);
+            background: rgba(0, 170, 0, 0.1);
+            color: #004400;
+            border: 1px solid rgba(0, 170, 0, 0.3);
         }
 
         .dtype {
             font-size: 10px;
-            color: #6b8fa8;
-            background: rgba(30, 58, 95, .6);
+            color: var(--text-muted);
+            background: var(--gray-bg);
             border-radius: 3px;
             padding: 2px 6px;
-            font-family: 'Orbitron';
+            font-family: 'Orbitron', monospace;
         }
 
         .empty-state {
             text-align: center;
             padding: 48px 20px;
-            color: #3a5a70;
+            color: var(--text-muted);
             font-size: 13px;
         }
 
         .refresh-btn {
             background: transparent;
-            border: 1px solid var(--border);
-            color: #6b8fa8;
+            border: 1px solid var(--gray-border);
+            color: var(--text-muted);
             font-size: 11px;
             padding: 5px 12px;
             border-radius: 4px;
             cursor: pointer;
-            transition: .2s;
+            transition: var(--transition);
         }
 
         .refresh-btn:hover {
-            border-color: var(--cyan);
-            color: var(--cyan);
+            border-color: var(--cyan-portal);
+            color: var(--cyan-portal);
         }
 
         /* 3D Viewer Card */
         .viewer-card {
-            background: var(--steel);
-            border: 1px solid var(--border);
-            border-radius: 12px;
+            background: var(--gray-card);
+            border: 1px solid var(--gray-border);
+            border-radius: 8px;
             padding: 12px;
             margin-top: 16px;
         }
+
         .viewer-title {
-            font-family: 'Orbitron';
+            font-family: 'Orbitron', monospace;
             font-size: 11px;
-            color: var(--cyan);
+            color: var(--cyan-portal);
             margin-bottom: 10px;
             letter-spacing: 1px;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
+
         .load-status {
             font-size: 10px;
-            background: rgba(0,0,0,0.4);
+            background: var(--gray-bg);
             padding: 4px 10px;
             border-radius: 20px;
         }
+
         .cnc-viewer-frame {
             width: 100%;
             height: 450px;
             border: none;
-            border-radius: 10px;
-            background: #0a0f14;
+            border-radius: 8px;
+            background: var(--gray-bg);
         }
 
-        .navbar {
-            background: var(--navy);
-            border-top: 1px solid var(--border);
-            display: flex;
-            flex-shrink: 0;
-            position: sticky;
-            bottom: 0;
-            z-index: 10;
-        }
-
-        .nav-link {
-            flex: 1;
-            text-align: center;
-            padding: 13px 8px;
-            font-family: 'Orbitron';
+        .alarm-count {
             font-size: 11px;
-            font-weight: 600;
-            letter-spacing: 1.5px;
-            color: #6b8fa8;
-            text-decoration: none;
-            text-transform: uppercase;
-            border-top: 3px solid transparent;
-            transition: .2s;
-        }
-
-        .nav-link:hover {
-            color: var(--cyan);
-        }
-
-        .nav-link.active {
-            color: var(--red);
-            border-top-color: var(--red);
+            color: var(--text-muted);
         }
     </style>
 </head>
-
 <body>
-    <header class="header">
-        <div class="logo-bk">
-            <img src="/static/images/hust_logo.png"
-     alt="ĐHBK Hà Nội"
-     style="width:55px;height:55px;object-fit:contain;"
-     onerror="this.src='https://via.placeholder.com/55x55?text=HUST'">
-            <div class="logo-bk-text">ĐH Bách Khoa<br>Hà Nội</div>
-        </div>
-        <div class="header-center">
-            <div class="main-title">TÍNH TOÁN, THIẾT KẾ HỆ THỐNG ĐIỀU KHIỂN<br>MÁY CNC ĐỂ BÀN TỰ CHỦ THÔNG MINH</div>
-            <div class="sub-title">GVHD: LÊ GIANG NAM</div>
-        </div>
-        <img src="/static/images/vimes_logo.png" alt="Vimes Lab" style="height: 55px; width: auto;" onerror="this.src='https://via.placeholder.com/55x55?text=V'">
-    </header>
 
-    <div class="user-badge">
-        <span class="user-dot"></span>
-        <span>{{ username }}</span>
-        <form action="/logout" method="POST" style="display:inline">
-            <button class="logout-btn" type="submit">LOGOUT</button>
-        </form>
+<header class="header">
+    <div class="logo-bk">
+        <img src="/static/images/hust_logo.png" alt="ĐHBK Hà Nội" style="width:55px;height:55px;object-fit:contain;" onerror="this.src='https://via.placeholder.com/55x55?text=HUST'">
+        <div class="logo-bk-text">ĐH Bách Khoa<br>Hà Nội</div>
+    </div>
+    <div class="header-center">
+        <div class="main-title">TÍNH TOÁN, THIẾT KẾ HỆ THỐNG ĐIỀU KHIỂN<br>MÁY CNC ĐỂ BÀN TỰ CHỦ THÔNG MINH</div>
+        <div class="sub-title">GVHD: LÊ GIANG NAM</div>
+    </div>
+    <img src="/static/images/vimes_logo.png" alt="Vimes Lab" style="height:55px; width:auto;" onerror="this.src='https://via.placeholder.com/55x55?text=V'">
+</header>
+
+<div class="user-badge">
+    <span class="user-dot"></span>
+    <span>{{ username }}</span>
+    <form action="/logout" method="POST" style="display:inline">
+        <button class="logout-btn" type="submit">LOGOUT</button>
+    </form>
+</div>
+
+<main class="main">
+    <div class="panel-left">
+        <div class="panel-title">ĐỒ THỊ GIÁM SÁT</div>
+        <div class="time-btns">
+            <button class="tbtn active" onclick="changeTime(60,this)">1 GIỜ</button>
+            <button class="tbtn" onclick="changeTime(720,this)">12 GIỜ</button>
+            <button class="tbtn" onclick="changeTime(1440,this)">1 NGÀY</button>
+            <button class="tbtn" onclick="changeTime(10080,this)">1 TUẦN</button>
+        </div>
+        
+        <div class="chart-wrap">
+            <div class="chart-label">
+                📍 VỊ TRÍ (mm)
+                <div class="legend">
+                    <div class="legend-item"><div class="legend-color x"></div><span>X</span></div>
+                    <div class="legend-item"><div class="legend-color y"></div><span>Y</span></div>
+                    <div class="legend-item"><div class="legend-color z"></div><span>Z</span></div>
+                </div>
+            </div>
+            <canvas id="chartPosition" height="90"></canvas>
+        </div>
+        
+        <div class="chart-wrap">
+            <div class="chart-label">
+                ⚡ VẬN TỐC (mm/s)
+                <div class="legend">
+                    <div class="legend-item"><div class="legend-color x"></div><span>X</span></div>
+                    <div class="legend-item"><div class="legend-color y"></div><span>Y</span></div>
+                    <div class="legend-item"><div class="legend-color z"></div><span>Z</span></div>
+                </div>
+            </div>
+            <canvas id="chartVelocity" height="90"></canvas>
+        </div>
+        
+        <div class="chart-wrap">
+            <div class="chart-label">
+                🔩 MOMENT (N·m)
+                <div class="legend">
+                    <div class="legend-item"><div class="legend-color x"></div><span>X</span></div>
+                    <div class="legend-item"><div class="legend-color y"></div><span>Y</span></div>
+                    <div class="legend-item"><div class="legend-color z"></div><span>Z</span></div>
+                </div>
+            </div>
+            <canvas id="chartMoment" height="90"></canvas>
+        </div>
+        
+        <div class="info-bar" id="chartInfo">🔄 Đang tải dữ liệu...</div>
     </div>
 
-    <main class="main">
-        <div class="panel-left">
-            <div class="panel-title">ĐỒ THỊ</div>
-            <div class="time-btns">
-                <button class="tbtn active" onclick="changeTime(60,this)">1 GIỜ</button>
-                <button class="tbtn" onclick="changeTime(720,this)">12 GIỜ</button>
-                <button class="tbtn" onclick="changeTime(1440,this)">1 NGÀY</button>
-                <button class="tbtn" onclick="changeTime(10080,this)">1 TUẦN</button>
-            </div>
-            <div class="chart-wrap">
-                <div class="chart-label">
-                    📍 VỊ TRÍ (mm)
-                    <div class="legend">
-                        <div class="legend-item"><div class="legend-color x"></div><span>X</span></div>
-                        <div class="legend-item"><div class="legend-color y"></div><span>Y</span></div>
-                        <div class="legend-item"><div class="legend-color z"></div><span>Z</span></div>
-                    </div>
-                </div>
-                <canvas id="chartPosition" height="90"></canvas>
-            </div>
-            <div class="chart-wrap">
-                <div class="chart-label">
-                    ⚡ VẬN TỐC (mm/s)
-                    <div class="legend">
-                        <div class="legend-item"><div class="legend-color x"></div><span>X</span></div>
-                        <div class="legend-item"><div class="legend-color y"></div><span>Y</span></div>
-                        <div class="legend-item"><div class="legend-color z"></div><span>Z</span></div>
-                    </div>
-                </div>
-                <canvas id="chartVelocity" height="90"></canvas>
-            </div>
-            <div class="chart-wrap">
-                <div class="chart-label">
-                    🔩 MOMENT (N·m)
-                    <div class="legend">
-                        <div class="legend-item"><div class="legend-color x"></div><span>X</span></div>
-                        <div class="legend-item"><div class="legend-color y"></div><span>Y</span></div>
-                        <div class="legend-item"><div class="legend-color z"></div><span>Z</span></div>
-                    </div>
-                </div>
-                <canvas id="chartMoment" height="90"></canvas>
-            </div>
-            <div class="info-bar" id="chartInfo">🔄 Đang tải...</div>
-        </div>
-
-        <div class="panel-right">
-            <div class="panel-title" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;">
-                <span style="font-family:Orbitron;font-size:12px;letter-spacing:2px;color:var(--cyan)">KHẨN CẤP</span>
-                <div style="display:flex;gap:8px;align-items:center;">
-                    <span class="alarm-count" id="alarmCount">0 cảnh báo</span>
-                    <button class="refresh-btn" onclick="fetchAlarms()">↺ Làm mới</button>
-                </div>
-            </div>
-            <div style="display:flex;gap:6px;">
-                <button class="tbtn active" style="font-family:'Be Vietnam Pro';font-size:11px;letter-spacing:.3px;"
-                    onclick="filterAlarm('all',this)">Tất cả</button>
-                <button class="tbtn"
-                    style="font-family:'Be Vietnam Pro';font-size:11px;letter-spacing:.3px;color:#f39c12;"
-                    onclick="filterAlarm('Cảnh báo',this)">⚠ Cảnh báo</button>
-                <button class="tbtn"
-                    style="font-family:'Be Vietnam Pro';font-size:11px;letter-spacing:.3px;color:#e74c3c;"
-                    onclick="filterAlarm('Dừng khẩn cấp',this)">🛑 Dừng khẩn cấp</button>
-            </div>
-            <div class="alarm-table-wrap" id="alarmTableWrap">
-                <table style="width:100%">
-                    <thead>
-                        <tr>
-                            <th>LOẠI</th>
-                            <th>DỮ LIỆU</th>
-                            <th>THỜI GIAN</th>
-                            <th>NỘI DUNG</th>
-                        </tr>
-                    </thead>
-                    <tbody id="alarmBody">
-                        <tr>
-                            <td colspan="4">
-                                <div class="empty-state">
-                                    <div class="icon">🔍</div>
-                                    Đang tải dữ liệu alarm...
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- 3D VIEWER CARD -->
-            <div class="viewer-card">
-                <div class="viewer-title">
-                    <span>🎮 MÔ PHỎNG 3D CNC</span>
-                    <span class="load-status" id="loadStatusDisplay">🟢 Đang kết nối...</span>
-                </div>
-                <iframe 
-                    id="cncViewerFrame"
-                    src="/static/cnc_viewer.html" 
-                    class="cnc-viewer-frame"
-                    allow="autoplay; fullscreen"
-                ></iframe>
-                <div style="margin-top: 8px; font-size: 10px; color: #6b8fa8; text-align: center;">
-                    💡 Màu sắc mô hình thay đổi theo tải trọng động cơ
-                </div>
-            </div>
-
-            <div style="display:flex;gap:14px;font-size:11px;color:#4a6a80;padding:4px 2px;margin-top:4px;">
-                <span><span style="color:var(--warn)">■</span> Cảnh báo</span>
-                <span><span style="color:var(--danger)">■</span> Dừng khẩn cấp</span>
-                <span><span style="color:var(--ok)">■</span> Đã xử lý</span>
-                <span><span style="color:#00b894">●</span> Tải nhẹ &lt;30%</span>
-                <span><span style="color:#f39c12">●</span> Tải TB 30-70%</span>
-                <span><span style="color:#e74c3c">●</span> Tải nặng &gt;70%</span>
+    <div class="panel-right">
+        <div class="panel-title" style="display:flex; align-items:center; justify-content:space-between; padding:10px 14px;">
+            <span>🚨 CẢNH BÁO & SỰ CỐ</span>
+            <div style="display:flex; gap:8px; align-items:center;">
+                <span class="alarm-count" id="alarmCount">0 cảnh báo</span>
+                <button class="refresh-btn" onclick="fetchAlarms()">↺ Làm mới</button>
             </div>
         </div>
-    </main>
+        
+        <div style="display:flex; gap:6px;">
+            <button class="tbtn active" style="font-family:'Be Vietnam Pro'; font-size:11px;" onclick="filterAlarm('all',this)">Tất cả</button>
+            <button class="tbtn" style="font-family:'Be Vietnam Pro'; font-size:11px; color:#886600;" onclick="filterAlarm('Cảnh báo',this)">⚠ Cảnh báo</button>
+            <button class="tbtn" style="font-family:'Be Vietnam Pro'; font-size:11px; color:#880000;" onclick="filterAlarm('Dừng khẩn cấp',this)">🛑 Dừng khẩn cấp</button>
+        </div>
+        
+        <div class="alarm-table-wrap" id="alarmTableWrap">
+            <table style="width:100%">
+                <thead>
+                    <tr>
+                        <th>LOẠI</th>
+                        <th>DỮ LIỆU</th>
+                        <th>THỜI GIAN</th>
+                        <th>NỘI DUNG</th>
+                    </tr>
+                </thead>
+                <tbody id="alarmBody">
+                    <tr>
+                        <td colspan="4">
+                            <div class="empty-state">
+                                <div style="font-size:32px; margin-bottom:8px;">✅</div>
+                                Đang tải dữ liệu cảnh báo...
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
 
-    <nav class="navbar">
-        <a class="nav-link" href="/">HOME</a>
-        <a class="nav-link" href="/control">ĐIỀU KHIỂN</a>
-        <a class="nav-link active" href="/monitor">GIÁM SÁT</a>
-        <a class="nav-link" href="/settings">THÔNG SỐ</a>
-    </nav>
+        <!-- 3D VIEWER CARD -->
+        <div class="viewer-card">
+            <div class="viewer-title">
+                <span>🎮 MÔ PHỎNG 3D CNC</span>
+                <span class="load-status" id="loadStatusDisplay">🟢 Đang kết nối...</span>
+            </div>
+            <iframe 
+                id="cncViewerFrame"
+                src="/static/cnc_viewer.html" 
+                class="cnc-viewer-frame"
+                allow="autoplay; fullscreen"
+            ></iframe>
+            <div style="margin-top: 8px; font-size: 10px; color: var(--text-muted); text-align: center;">
+                💡 Màu sắc mô hình thay đổi theo tải trọng động cơ
+            </div>
+        </div>
 
-    <div id="customTooltip" class="custom-tooltip" style="display: none;"></div>
+        <div style="display:flex; gap:14px; font-size:11px; color:var(--text-muted); padding:4px 2px; margin-top:4px;">
+            <span><span style="color:#886600;">■</span> Cảnh báo</span>
+            <span><span style="color:#880000;">■</span> Dừng khẩn cấp</span>
+            <span><span style="color:#004400;">■</span> Đã xử lý</span>
+            <span><span style="color:#00b894;">●</span> Tải nhẹ &lt;30%</span>
+            <span><span style="color:#886600;">●</span> Tải TB 30-70%</span>
+            <span><span style="color:#880000;">●</span> Tải nặng &gt;70%</span>
+        </div>
+    </div>
+</main>
 
-    <script>
-        // ===== CHỖ 2: THEME SYNC — chạy trước mọi thứ =====
-        (function applyTheme() {
-            const saved = localStorage.getItem('cnc_theme');
-            if (!saved) return;
-            try {
-                const t = JSON.parse(saved);
-                const r = document.documentElement;
-                if (t.headerBg)    r.style.setProperty('--navy',   t.headerBg);
-                if (t.sidebarBg)   r.style.setProperty('--steel',  t.sidebarBg);
-                if (t.accentColor) r.style.setProperty('--cyan',   t.accentColor);
-                if (t.borderColor) r.style.setProperty('--border', t.borderColor);
-                if (t.textColor)   r.style.setProperty('--white',  t.textColor);
-            } catch(e) {}
-        })();
+<nav class="navbar">
+    <a class="nav-link" href="/">HOME</a>
+    <a class="nav-link" href="/control">ĐIỀU KHIỂN</a>
+    <a class="nav-link active" href="/monitor">GIÁM SÁT</a>
+    <a class="nav-link" href="/settings">THÔNG SỐ</a>
+</nav>
 
-        // ========== BIẾN TOÀN CỤC ==========
-        let currentMinutes = 60;
-        let alarmFilter = 'all';
-        let allAlarms = [];
-        let currentData = [];
-        let lastLoad = 0;
+<div id="customTooltip" class="custom-tooltip" style="display: none;"></div>
 
-        // Màu sắc cho 3 trục
-        const colors = {
-            x: '#e74c3c',
-            y: '#00b894',
-            z: '#3498db'
-        };
-
-        // ========== TẠO CHART ==========
-        function createMultiChart(ctx) {
-            return new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: [],
-                    datasets: [
-                        { label: 'X', data: [], borderColor: colors.x, borderWidth: 2, pointRadius: 2, pointHoverRadius: 6, tension: 0.3, fill: false },
-                        { label: 'Y', data: [], borderColor: colors.y, borderWidth: 2, pointRadius: 2, pointHoverRadius: 6, tension: 0.3, fill: false },
-                        { label: 'Z', data: [], borderColor: colors.z, borderWidth: 2, pointRadius: 2, pointHoverRadius: 6, tension: 0.3, fill: false }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    interaction: { mode: 'index', intersect: false },
-                    plugins: {
-                        tooltip: { enabled: false },
-                        legend: { display: false }
-                    },
-                    scales: {
-                        x: { ticks: { color: '#4a6a80', maxTicksLimit: 6, font: { size: 9 } }, grid: { color: '#1a2a3a' } },
-                        y: { ticks: { color: '#4a6a80', font: { size: 9 }, callback: v => v.toFixed(1) }, grid: { color: '#1a2a3a' } }
-                    },
-                    onClick: (event, activeElements) => {
-                        if (activeElements.length > 0) {
-                            const index = activeElements[0].index;
-                            showTooltipAtPoint(index, event);
-                        }
-                    }
-                }
-            });
-        }
-
-        // ========== TOOLTIP CHI TIẾT ==========
-        function showTooltipAtPoint(index, event) {
-            const point = currentData[index];
-            if (!point) return;
-
-            const tooltip = document.getElementById('customTooltip');
-            let timeStr = point.time || '';
-            try {
-                const dt = new Date(point.time);
-                timeStr = dt.toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
-            } catch (e) { }
-
-            tooltip.innerHTML = `
-                <div class="title">🕒 ${timeStr}</div>
-                <div class="data-row"><span class="data-label">📍 Vị trí X:</span><span class="data-value x">${(point.pos_x || 0).toFixed(2)} mm</span></div>
-                <div class="data-row"><span class="data-label">📍 Vị trí Y:</span><span class="data-value y">${(point.pos_y || 0).toFixed(2)} mm</span></div>
-                <div class="data-row"><span class="data-label">📍 Vị trí Z:</span><span class="data-value z">${(point.pos_z || 0).toFixed(2)} mm</span></div>
-                <div class="data-row"><span class="data-label">⚡ Vận tốc X:</span><span class="data-value x">${(point.vel_x || 0).toFixed(2)} mm/s</span></div>
-                <div class="data-row"><span class="data-label">⚡ Vận tốc Y:</span><span class="data-value y">${(point.vel_y || 0).toFixed(2)} mm/s</span></div>
-                <div class="data-row"><span class="data-label">⚡ Vận tốc Z:</span><span class="data-value z">${(point.vel_z || 0).toFixed(2)} mm/s</span></div>
-                <div class="data-row"><span class="data-label">🔩 Moment X:</span><span class="data-value x">${(point.mom_x || 0).toFixed(2)} N·m</span></div>
-                <div class="data-row"><span class="data-label">🔩 Moment Y:</span><span class="data-value y">${(point.mom_y || 0).toFixed(2)} N·m</span></div>
-                <div class="data-row"><span class="data-label">🔩 Moment Z:</span><span class="data-value z">${(point.mom_z || 0).toFixed(2)} N·m</span></div>
-                <div class="data-row"><span class="data-label">🌡️ Nhiệt độ:</span><span class="data-value">${(point.temp || 0).toFixed(1)} °C</span></div>
-                <div class="data-row"><span class="data-label">📊 Tải trọng:</span><span class="data-value">${(point.load || 0).toFixed(1)} %</span></div>
-            `;
-
-            tooltip.style.display = 'block';
-            tooltip.style.left = (event.clientX + 15) + 'px';
-            tooltip.style.top = (event.clientY - 20) + 'px';
-
-            setTimeout(() => { tooltip.style.display = 'none'; }, 5000);
-        }
-
-        // Ẩn tooltip khi click ra ngoài
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('canvas')) {
-                document.getElementById('customTooltip').style.display = 'none';
+<script>
+// ========== LOAD THEME TỪ LOCALSTORAGE (ĐỒNG BỘ) ==========
+(function loadTheme() {
+    const saved = localStorage.getItem('cnc_theme');
+    if (saved) {
+        try {
+            const theme = JSON.parse(saved);
+            const root = document.documentElement;
+            if (theme.headerBg) root.style.setProperty('--gray-card', theme.headerBg);
+            if (theme.sidebarBg) root.style.setProperty('--gray-sidebar', theme.sidebarBg);
+            if (theme.accentColor) {
+                root.style.setProperty('--cyan-portal', theme.accentColor);
+                root.style.setProperty('--cyan', theme.accentColor);
             }
-        });
+            if (theme.borderColor) root.style.setProperty('--gray-border', theme.borderColor);
+            if (theme.textColor) {
+                root.style.setProperty('--text-primary', theme.textColor);
+                root.style.setProperty('--white', theme.textColor);
+            }
+            console.log('🎨 Theme loaded on monitor.html');
+        } catch(e) { console.error('Theme load error:', e); }
+    }
+})();
 
-        // Khởi tạo 3 biểu đồ
-        const chartPosition = createMultiChart(document.getElementById('chartPosition').getContext('2d'));
-        const chartVelocity = createMultiChart(document.getElementById('chartVelocity').getContext('2d'));
-        const chartMoment = createMultiChart(document.getElementById('chartMoment').getContext('2d'));
+// Lắng nghe theme thay đổi từ settings tab
+window.addEventListener('storage', (event) => {
+    if (event.key === 'cnc_theme' && event.newValue) {
+        try {
+            const theme = JSON.parse(event.newValue);
+            const root = document.documentElement;
+            if (theme.headerBg) root.style.setProperty('--gray-card', theme.headerBg);
+            if (theme.sidebarBg) root.style.setProperty('--gray-sidebar', theme.sidebarBg);
+            if (theme.accentColor) {
+                root.style.setProperty('--cyan-portal', theme.accentColor);
+                root.style.setProperty('--cyan', theme.accentColor);
+            }
+            if (theme.borderColor) root.style.setProperty('--gray-border', theme.borderColor);
+            if (theme.textColor) {
+                root.style.setProperty('--text-primary', theme.textColor);
+                root.style.setProperty('--white', theme.textColor);
+            }
+            console.log('🎨 Theme synced on monitor.html');
+        } catch(e) {}
+    }
+});
 
-        // ========== THAY ĐỔI KHOẢNG THỜI GIAN ==========
-        function changeTime(min, btn) {
-            currentMinutes = min;
-            document.querySelectorAll('.time-btns .tbtn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            fetchChart();
+// ========== BIẾN TOÀN CỤC ==========
+let currentMinutes = 60;
+let alarmFilter = 'all';
+let allAlarms = [];
+let currentData = [];
+let lastLoad = 0;
+
+const colors = {
+    x: '#e74c3c',
+    y: '#00b894',
+    z: '#3498db'
+};
+
+// ========== TẠO CHART ==========
+function createMultiChart(ctx) {
+    return new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [
+                { label: 'X', data: [], borderColor: colors.x, borderWidth: 2, pointRadius: 2, pointHoverRadius: 6, tension: 0.3, fill: false },
+                { label: 'Y', data: [], borderColor: colors.y, borderWidth: 2, pointRadius: 2, pointHoverRadius: 6, tension: 0.3, fill: false },
+                { label: 'Z', data: [], borderColor: colors.z, borderWidth: 2, pointRadius: 2, pointHoverRadius: 6, tension: 0.3, fill: false }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                tooltip: { enabled: false },
+                legend: { display: false }
+            },
+            scales: {
+                x: { ticks: { color: 'var(--text-muted)', maxTicksLimit: 6, font: { size: 9 } }, grid: { color: 'var(--gray-border)' } },
+                y: { ticks: { color: 'var(--text-muted)', font: { size: 9 }, callback: v => v.toFixed(1) }, grid: { color: 'var(--gray-border)' } }
+            },
+            onClick: (event, activeElements) => {
+                if (activeElements.length > 0) {
+                    const index = activeElements[0].index;
+                    showTooltipAtPoint(index, event);
+                }
+            }
         }
+    });
+}
 
-        // Xóa dữ liệu cũ
-        function clearCharts() {
-            [chartPosition, chartVelocity, chartMoment].forEach(chart => {
-                chart.data.labels = [];
-                chart.data.datasets.forEach(ds => ds.data = []);
-            });
-        }
+// ========== TOOLTIP CHI TIẾT ==========
+function showTooltipAtPoint(index, event) {
+    const point = currentData[index];
+    if (!point) return;
 
-        // ========== LẤY DỮ LIỆU BIỂU ĐỒ ==========
-        function fetchChart() {
-            document.getElementById('chartInfo').innerHTML = '<span style="color:var(--cyan)">🔄 Đang tải...</span>';
-            fetch('/api/history?minutes=' + currentMinutes + '&_t=' + Date.now())
-                .then(r => r.json())
-                .then(data => {
-                    clearCharts();
-                    currentData = [];
+    const tooltip = document.getElementById('customTooltip');
+    let timeStr = point.time || '';
+    try {
+        const dt = new Date(point.time);
+        timeStr = dt.toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    } catch (e) { }
 
-                    data.forEach(d => {
-                        let t = '';
-                        try {
-                            const dt = new Date(d.time);
-                            t = currentMinutes <= 60
-                                ? dt.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
-                                : dt.toLocaleDateString('vi-VN', { month: '2-digit', day: '2-digit' }) + ' ' + dt.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
-                        } catch (e) { t = d.time || ''; }
+    tooltip.innerHTML = `
+        <div class="title">🕒 ${timeStr}</div>
+        <div class="data-row"><span class="data-label">📍 Vị trí X:</span><span class="data-value x">${(point.pos_x || 0).toFixed(2)} mm</span></div>
+        <div class="data-row"><span class="data-label">📍 Vị trí Y:</span><span class="data-value y">${(point.pos_y || 0).toFixed(2)} mm</span></div>
+        <div class="data-row"><span class="data-label">📍 Vị trí Z:</span><span class="data-value z">${(point.pos_z || 0).toFixed(2)} mm</span></div>
+        <div class="data-row"><span class="data-label">⚡ Vận tốc X:</span><span class="data-value x">${(point.vel_x || 0).toFixed(2)} mm/s</span></div>
+        <div class="data-row"><span class="data-label">⚡ Vận tốc Y:</span><span class="data-value y">${(point.vel_y || 0).toFixed(2)} mm/s</span></div>
+        <div class="data-row"><span class="data-label">⚡ Vận tốc Z:</span><span class="data-value z">${(point.vel_z || 0).toFixed(2)} mm/s</span></div>
+        <div class="data-row"><span class="data-label">🔩 Moment X:</span><span class="data-value x">${(point.mom_x || 0).toFixed(2)} N·m</span></div>
+        <div class="data-row"><span class="data-label">🔩 Moment Y:</span><span class="data-value y">${(point.mom_y || 0).toFixed(2)} N·m</span></div>
+        <div class="data-row"><span class="data-label">🔩 Moment Z:</span><span class="data-value z">${(point.mom_z || 0).toFixed(2)} N·m</span></div>
+        <div class="data-row"><span class="data-label">🌡️ Nhiệt độ:</span><span class="data-value">${(point.temp || 0).toFixed(1)} °C</span></div>
+        <div class="data-row"><span class="data-label">📊 Tải trọng:</span><span class="data-value">${(point.load || 0).toFixed(1)} %</span></div>
+    `;
 
-                        currentData.push({
-                            time: d.time,
-                            pos_x: d.vi_tri_x || d.vi_tri || 0,
-                            pos_y: d.vi_tri_y || 0,
-                            pos_z: d.vi_tri_z || 0,
-                            vel_x: d.van_toc_x || d.van_toc || 0,
-                            vel_y: d.van_toc_y || 0,
-                            vel_z: d.van_toc_z || 0,
-                            mom_x: d.moment_x || d.moment || 0,
-                            mom_y: d.moment_y || 0,
-                            mom_z: d.moment_z || 0,
-                            temp: d.temp || 0,
-                            load: d.load || 0
-                        });
+    tooltip.style.display = 'block';
+    tooltip.style.left = (event.clientX + 15) + 'px';
+    tooltip.style.top = (event.clientY - 20) + 'px';
 
-                        chartPosition.data.labels.push(t);
-                        chartVelocity.data.labels.push(t);
-                        chartMoment.data.labels.push(t);
+    setTimeout(() => { tooltip.style.display = 'none'; }, 5000);
+}
 
-                        chartPosition.data.datasets[0].data.push(currentData[currentData.length - 1].pos_x);
-                        chartPosition.data.datasets[1].data.push(currentData[currentData.length - 1].pos_y);
-                        chartPosition.data.datasets[2].data.push(currentData[currentData.length - 1].pos_z);
+// Ẩn tooltip khi click ra ngoài
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('canvas')) {
+        document.getElementById('customTooltip').style.display = 'none';
+    }
+});
 
-                        chartVelocity.data.datasets[0].data.push(currentData[currentData.length - 1].vel_x);
-                        chartVelocity.data.datasets[1].data.push(currentData[currentData.length - 1].vel_y);
-                        chartVelocity.data.datasets[2].data.push(currentData[currentData.length - 1].vel_z);
+// Khởi tạo 3 biểu đồ
+const chartPosition = createMultiChart(document.getElementById('chartPosition').getContext('2d'));
+const chartVelocity = createMultiChart(document.getElementById('chartVelocity').getContext('2d'));
+const chartMoment = createMultiChart(document.getElementById('chartMoment').getContext('2d'));
 
-                        chartMoment.data.datasets[0].data.push(currentData[currentData.length - 1].mom_x);
-                        chartMoment.data.datasets[1].data.push(currentData[currentData.length - 1].mom_y);
-                        chartMoment.data.datasets[2].data.push(currentData[currentData.length - 1].mom_z);
-                    });
+// ========== THAY ĐỔI KHOẢNG THỜI GIAN ==========
+function changeTime(min, btn) {
+    currentMinutes = min;
+    document.querySelectorAll('.time-btns .tbtn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    fetchChart();
+}
 
-                    chartPosition.update();
-                    chartVelocity.update();
-                    chartMoment.update();
+// Xóa dữ liệu cũ
+function clearCharts() {
+    [chartPosition, chartVelocity, chartMoment].forEach(chart => {
+        chart.data.labels = [];
+        chart.data.datasets.forEach(ds => ds.data = []);
+    });
+}
 
-                    const now = new Date().toLocaleTimeString('vi-VN');
-                    document.getElementById('chartInfo').innerHTML = `🕒 ${now} | 📊 ${data.length} điểm dữ liệu | Click vào điểm bất kỳ để xem chi tiết X/Y/Z`;
-                })
-                .catch(() => {
-                    document.getElementById('chartInfo').innerHTML = '❌ Lỗi tải dữ liệu';
+// ========== LẤY DỮ LIỆU BIỂU ĐỒ ==========
+function fetchChart() {
+    const infoEl = document.getElementById('chartInfo');
+    if (infoEl) infoEl.innerHTML = '<span style="color:var(--cyan-portal)">🔄 Đang tải dữ liệu...</span>';
+    
+    fetch('/api/history?minutes=' + currentMinutes + '&_t=' + Date.now())
+        .then(r => r.json())
+        .then(data => {
+            clearCharts();
+            currentData = [];
+
+            data.forEach(d => {
+                let t = '';
+                try {
+                    const dt = new Date(d.time);
+                    t = currentMinutes <= 60
+                        ? dt.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
+                        : dt.toLocaleDateString('vi-VN', { month: '2-digit', day: '2-digit' }) + ' ' + dt.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+                } catch (e) { t = d.time || ''; }
+
+                currentData.push({
+                    time: d.time,
+                    pos_x: d.vi_tri_x || d.vi_tri || 0,
+                    pos_y: d.vi_tri_y || 0,
+                    pos_z: d.vi_tri_z || 0,
+                    vel_x: d.van_toc_x || d.van_toc || 0,
+                    vel_y: d.van_toc_y || 0,
+                    vel_z: d.van_toc_z || 0,
+                    mom_x: d.moment_x || d.moment || 0,
+                    mom_y: d.moment_y || 0,
+                    mom_z: d.moment_z || 0,
+                    temp: d.temp || 0,
+                    load: d.load || 0
                 });
+
+                chartPosition.data.labels.push(t);
+                chartVelocity.data.labels.push(t);
+                chartMoment.data.labels.push(t);
+
+                chartPosition.data.datasets[0].data.push(currentData[currentData.length - 1].pos_x);
+                chartPosition.data.datasets[1].data.push(currentData[currentData.length - 1].pos_y);
+                chartPosition.data.datasets[2].data.push(currentData[currentData.length - 1].pos_z);
+
+                chartVelocity.data.datasets[0].data.push(currentData[currentData.length - 1].vel_x);
+                chartVelocity.data.datasets[1].data.push(currentData[currentData.length - 1].vel_y);
+                chartVelocity.data.datasets[2].data.push(currentData[currentData.length - 1].vel_z);
+
+                chartMoment.data.datasets[0].data.push(currentData[currentData.length - 1].mom_x);
+                chartMoment.data.datasets[1].data.push(currentData[currentData.length - 1].mom_y);
+                chartMoment.data.datasets[2].data.push(currentData[currentData.length - 1].mom_z);
+            });
+
+            chartPosition.update();
+            chartVelocity.update();
+            chartMoment.update();
+
+            const now = new Date().toLocaleTimeString('vi-VN');
+            if (infoEl) infoEl.innerHTML = `🕒 ${now} | 📊 ${data.length} điểm dữ liệu | Click vào điểm bất kỳ để xem chi tiết X/Y/Z`;
+        })
+        .catch(() => {
+            if (infoEl) infoEl.innerHTML = '❌ Lỗi tải dữ liệu từ server';
+        });
+}
+
+// ========== GỬI DỮ LIỆU LOAD SANG 3D VIEWER ==========
+const viewerFrame = document.getElementById('cncViewerFrame');
+
+function sendLoadToViewer(loadPercent) {
+    if (viewerFrame && viewerFrame.contentWindow) {
+        viewerFrame.contentWindow.postMessage({
+            type: 'update_load',
+            load: loadPercent
+        }, '*');
+    }
+}
+
+function updateLoadStatus(loadPercent) {
+    const statusEl = document.getElementById('loadStatusDisplay');
+    if (loadPercent < 30) {
+        statusEl.innerHTML = '🟢 Tải nhẹ (' + loadPercent.toFixed(1) + '%)';
+        statusEl.style.color = '#00b894';
+    } else if (loadPercent < 70) {
+        statusEl.innerHTML = '🟡 Tải trung bình (' + loadPercent.toFixed(1) + '%)';
+        statusEl.style.color = '#886600';
+    } else if (loadPercent < 100) {
+        statusEl.innerHTML = '🟠 Tải nặng (' + loadPercent.toFixed(1) + '%)';
+        statusEl.style.color = '#e67e22';
+    } else {
+        statusEl.innerHTML = '🔴 QUÁ TẢI (' + loadPercent.toFixed(1) + '%)';
+        statusEl.style.color = '#880000';
+    }
+}
+
+// Lấy dữ liệu cảm biến mới nhất và gửi load
+async function fetchAndSendLoad() {
+    try {
+        const res = await fetch('/api/latest?_t=' + Date.now());
+        const data = await res.json();
+        const loadPercent = data.load || 0;
+        
+        if (Math.abs(loadPercent - lastLoad) > 0.5) {
+            lastLoad = loadPercent;
+            sendLoadToViewer(loadPercent);
+            updateLoadStatus(loadPercent);
         }
+    } catch (e) {
+        console.log('Load fetch error:', e);
+    }
+}
 
-        // ========== GỬI DỮ LIỆU LOAD SANG 3D VIEWER ==========
-        const viewerFrame = document.getElementById('cncViewerFrame');
+// ========== ALARM FUNCTIONS ==========
+function fetchAlarms() {
+    fetch('/api/alarms?_t=' + Date.now())
+        .then(r => r.json())
+        .then(data => {
+            allAlarms = data;
+            renderAlarmTable(filterAlarmData(data));
+        })
+        .catch(() => renderAlarmTable([]));
+}
 
-        function sendLoadToViewer(loadPercent) {
-            if (viewerFrame && viewerFrame.contentWindow) {
-                viewerFrame.contentWindow.postMessage({
-                    type: 'update_load',
-                    load: loadPercent
-                }, '*');
-            }
+function filterAlarmData(data) {
+    if (alarmFilter === 'all') return data;
+    return data.filter(a => a.alarm_class === alarmFilter);
+}
+
+function filterAlarm(type, btn) {
+    alarmFilter = type;
+    document.querySelectorAll('.panel-right .tbtn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderAlarmTable(filterAlarmData(allAlarms));
+}
+
+function renderAlarmTable(data) {
+    const tbody = document.getElementById('alarmBody');
+    const countEl = document.getElementById('alarmCount');
+
+    const nDanger = allAlarms.filter(a => a.alarm_class === 'Dừng khẩn cấp' && !a.resolved).length;
+    const nWarn = allAlarms.filter(a => a.alarm_class === 'Cảnh báo' && !a.resolved).length;
+    if (countEl) countEl.textContent = `${nWarn} cảnh báo · ${nDanger} khẩn cấp`;
+
+    if (!data.length) {
+        tbody.innerHTML = `<tr><td colspan="4"><div class="empty-state"><div style="font-size:32px;">✅</div>Không có cảnh báo nào</div></td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = data.map(a => {
+        let badge = '';
+        if (a.resolved) {
+            badge = '<span class="badge badge-ok">✅ Đã xử lý</span>';
+        } else if (a.alarm_class === 'Dừng khẩn cấp') {
+            badge = '<span class="badge badge-danger">🛑 Dừng khẩn cấp</span>';
+        } else {
+            badge = '<span class="badge badge-warn">⚠ Cảnh báo</span>';
         }
+        let time = '';
+        try { time = new Date(a.timestamp).toLocaleString('vi-VN'); } catch (e) { time = a.timestamp; }
+        return `<tr>
+            <td>${badge}</td>
+            <td><span class="dtype">${a.data_type || '—'}</span></td>
+            <td style="font-size:11px">${time}</td>
+            <td>${a.status_text || ''}</td>
+        </tr>`;
+    }).join('');
+}
 
-        function updateLoadStatus(loadPercent) {
-            const statusEl = document.getElementById('loadStatusDisplay');
-            if (loadPercent < 30) {
-                statusEl.innerHTML = '🟢 Tải nhẹ (' + loadPercent.toFixed(1) + '%)';
-                statusEl.style.color = '#00b894';
-            } else if (loadPercent < 70) {
-                statusEl.innerHTML = '🟡 Tải trung bình (' + loadPercent.toFixed(1) + '%)';
-                statusEl.style.color = '#f39c12';
-            } else if (loadPercent < 100) {
-                statusEl.innerHTML = '🟠 Tải nặng (' + loadPercent.toFixed(1) + '%)';
-                statusEl.style.color = '#e67e22';
-            } else {
-                statusEl.innerHTML = '🔴 QUÁ TẢI (' + loadPercent.toFixed(1) + '%)';
-                statusEl.style.color = '#e74c3c';
-            }
-        }
+// ========== KHỞI TẠO ==========
+fetchChart();
+fetchAlarms();
+fetchAndSendLoad();
 
-        // Lấy dữ liệu cảm biến mới nhất và gửi load
-        async function fetchAndSendLoad() {
-            try {
-                const res = await fetch('/api/latest?_t=' + Date.now());
-                const data = await res.json();
-                const loadPercent = data.load || 0;
-                
-                if (Math.abs(loadPercent - lastLoad) > 0.5) {
-                    lastLoad = loadPercent;
-                    sendLoadToViewer(loadPercent);
-                    updateLoadStatus(loadPercent);
-                }
-            } catch (e) {
-                console.log('Load fetch error:', e);
-            }
-        }
+setInterval(fetchChart, 30000);
+setInterval(fetchAlarms, 15000);
+setInterval(fetchAndSendLoad, 2000);
 
-        // ========== ALARM ==========
-        function fetchAlarms() {
-            fetch('/api/alarms?_t=' + Date.now())
-                .then(r => r.json())
-                .then(data => {
-                    allAlarms = data;
-                    renderAlarmTable(data);
-                })
-                .catch(() => renderAlarmTable([]));
-        }
-
-        function filterAlarm(type, btn) {
-            alarmFilter = type;
-            document.querySelectorAll('.panel-right .tbtn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            const filtered = type === 'all' ? allAlarms : allAlarms.filter(a => a.alarm_class === type);
-            renderAlarmTable(filtered);
-        }
-
-        function renderAlarmTable(data) {
-            const tbody = document.getElementById('alarmBody');
-            const countEl = document.getElementById('alarmCount');
-
-            const nDanger = data.filter(a => a.alarm_class === 'Dừng khẩn cấp').length;
-            const nWarn = data.filter(a => a.alarm_class === 'Cảnh báo').length;
-            countEl.textContent = `${nWarn} cảnh báo · ${nDanger} khẩn cấp`;
-
-            if (!data.length) {
-                tbody.innerHTML = `<td><td colspan="4"><div class="empty-state"><div class="icon">✅</div>Không có cảnh báo nào</div></td></td>`;
-                return;
-            }
-
-            tbody.innerHTML = data.map(a => {
-                let badge = '';
-                if (a.resolved) {
-                    badge = '<span class="badge badge-ok">Đã xử lý</span>';
-                } else if (a.alarm_class === 'Dừng khẩn cấp') {
-                    badge = '<span class="badge badge-danger">🛑 Dừng khẩn cấp</span>';
-                } else {
-                    badge = '<span class="badge badge-warn">⚠ Cảnh báo</span>';
-                }
-                let time = '';
-                try { time = new Date(a.timestamp).toLocaleString('vi-VN'); } catch (e) { time = a.timestamp; }
-                return `<tr>
-                    <td>${badge}</td>
-                    <td><span class="dtype">${a.data_type || '—'}</span></td>
-                    <td style="font-size:11px">${time}</td>
-                    <td>${a.status_text || ''}</td>
-                </table>`;
-            }).join('');
-        }
-
-        // ========== KHỞI TẠO ==========
-        fetchChart();
-        fetchAlarms();
+if (viewerFrame) {
+    viewerFrame.addEventListener('load', () => {
+        console.log('3D Viewer loaded, starting load updates');
         fetchAndSendLoad();
+    });
+}
 
-        setInterval(fetchChart, 30000);
-        setInterval(fetchAlarms, 15000);
-        setInterval(fetchAndSendLoad, 2000);
+// Active nav highlight
+const path = window.location.pathname;
+document.querySelectorAll('.nav-link').forEach(a => {
+    a.classList.remove('active');
+    const href = a.getAttribute('href');
+    if (href === path || (path.startsWith(href) && href !== '/')) {
+        a.classList.add('active');
+    } else if (href === '/' && path === '/') {
+        a.classList.add('active');
+    }
+});
 
-        viewerFrame.addEventListener('load', () => {
-            console.log('3D Viewer loaded, starting load updates');
-            fetchAndSendLoad();
-        });
-
-        // ===== CHỖ 3: STORAGE LISTENER - ĐÚNG KEY =====
-        window.addEventListener('storage', (e) => {
-            if (e.key !== 'cnc_theme' || !e.newValue) return;
-            try {
-                const t = JSON.parse(e.newValue);
-                const r = document.documentElement;
-                if (t.headerBg)    r.style.setProperty('--navy',   t.headerBg);
-                if (t.sidebarBg)   r.style.setProperty('--steel',  t.sidebarBg);
-                if (t.accentColor) r.style.setProperty('--cyan',   t.accentColor);
-                if (t.borderColor) r.style.setProperty('--border', t.borderColor);
-                if (t.textColor)   r.style.setProperty('--white',  t.textColor);
-                console.log('🎨 Theme updated from settings');
-            } catch(e) {}
-        });
-    </script>
+// Xuất hàm ra global
+window.changeTime = changeTime;
+window.fetchAlarms = fetchAlarms;
+window.filterAlarm = filterAlarm;
+</script>
 </body>
 </html>
