@@ -13,9 +13,10 @@
     }
 
     body {
-        background: #0a0e14;
+        background: #C8CACF;
         font-family: 'SF Pro Display', -apple-system, 'Segoe UI', system-ui, sans-serif;
         overflow: hidden;
+        transition: background 0.3s ease;
     }
 
     canvas {
@@ -31,20 +32,22 @@
         position: fixed;
         top: 16px;
         right: 16px;
-        background: rgba(10, 14, 20, 0.82);
+        background: rgba(208, 210, 214, 0.92);
         backdrop-filter: blur(20px) saturate(180%);
         -webkit-backdrop-filter: blur(20px) saturate(180%);
         border-radius: 18px;
-        border: 1px solid rgba(0, 229, 255, 0.12);
-        box-shadow: 0 4px 6px rgba(0,0,0,0.3), 0 20px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
+        border: 1px solid rgba(30, 95, 168, 0.25);
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1), 0 20px 40px rgba(0,0,0,0.15);
         z-index: 100;
         transition: opacity 0.25s ease, transform 0.25s ease, box-shadow 0.2s ease;
         width: 228px;
         overflow: hidden;
+        color: #1A1A1A;
     }
 
     .viewer-panel:hover {
-        box-shadow: 0 4px 6px rgba(0,0,0,0.3), 0 24px 48px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,229,255,0.18), inset 0 1px 0 rgba(255,255,255,0.07);
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1), 0 24px 48px rgba(0,0,0,0.2);
+        border-color: rgba(30, 95, 168, 0.4);
     }
 
     .viewer-panel.collapsed {
@@ -59,10 +62,10 @@
         right: 16px;
         width: 40px;
         height: 40px;
-        background: rgba(10, 14, 20, 0.88);
+        background: rgba(208, 210, 214, 0.92);
         backdrop-filter: blur(16px);
         -webkit-backdrop-filter: blur(16px);
-        border: 1px solid rgba(0, 229, 255, 0.25);
+        border: 1px solid rgba(30, 95, 168, 0.35);
         border-radius: 12px;
         display: flex;
         align-items: center;
@@ -73,8 +76,8 @@
         opacity: 0;
         pointer-events: none;
         transform: scale(0.8);
-        transition: opacity 0.25s ease, transform 0.25s ease, box-shadow 0.2s ease, background 0.2s ease;
-        color: #00e5ff;
+        transition: opacity 0.25s ease, transform 0.25s ease;
+        color: #1E5FA8;
     }
 
     .panel-reopen.visible {
@@ -84,9 +87,8 @@
     }
 
     .panel-reopen:hover {
-        background: rgba(0, 229, 255, 0.12);
-        border-color: rgba(0, 229, 255, 0.5);
-        box-shadow: 0 0 16px rgba(0, 229, 255, 0.2);
+        background: rgba(30, 95, 168, 0.15);
+        border-color: #1E5FA8;
         transform: scale(1.08);
     }
 
@@ -96,19 +98,19 @@
         align-items: center;
         padding: 12px 14px;
         cursor: pointer;
-        background: linear-gradient(135deg, rgba(0,229,255,0.06), rgba(0,229,255,0.02));
-        border-bottom: 1px solid rgba(0, 229, 255, 0.08);
+        background: linear-gradient(135deg, rgba(30, 95, 168, 0.08), rgba(30, 95, 168, 0.02));
+        border-bottom: 1px solid rgba(30, 95, 168, 0.12);
         transition: background 0.2s;
     }
 
     .panel-header:hover {
-        background: linear-gradient(135deg, rgba(0,229,255,0.1), rgba(0,229,255,0.04));
+        background: linear-gradient(135deg, rgba(30, 95, 168, 0.12), rgba(30, 95, 168, 0.05));
     }
 
     .panel-title {
         font-size: 11px;
         font-weight: 700;
-        color: #00e5ff;
+        color: #1E5FA8;
         letter-spacing: 1.5px;
         text-transform: uppercase;
         white-space: nowrap;
@@ -117,7 +119,7 @@
     .panel-toggle {
         background: none;
         border: none;
-        color: rgba(0,229,255,0.5);
+        color: rgba(30, 95, 168, 0.6);
         cursor: pointer;
         font-size: 16px;
         width: 24px;
@@ -126,13 +128,13 @@
         align-items: center;
         justify-content: center;
         border-radius: 6px;
-        transition: background 0.15s, color 0.15s, transform 0.2s;
+        transition: all 0.15s;
         flex-shrink: 0;
     }
 
     .panel-toggle:hover {
-        background: rgba(0,229,255,0.15);
-        color: #00e5ff;
+        background: rgba(30, 95, 168, 0.15);
+        color: #1E5FA8;
     }
 
     .panel-content {
@@ -153,80 +155,74 @@
     .btn-group:last-child { margin-bottom: 0; }
 
     .btn-icon {
-        background: rgba(255,255,255,0.04);
-        border: 1px solid rgba(255,255,255,0.06);
-        color: #9ab8cc;
+        background: rgba(0,0,0,0.05);
+        border: 1px solid rgba(0,0,0,0.08);
+        color: #3A3A3A;
         padding: 6px 10px;
         cursor: pointer;
         border-radius: 9px;
         font-size: 10.5px;
         font-weight: 600;
         letter-spacing: 0.3px;
-        transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.12s ease, box-shadow 0.15s ease;
+        transition: all 0.15s ease;
         display: inline-flex;
         align-items: center;
         gap: 4px;
-        -webkit-tap-highlight-color: transparent;
-        position: relative;
-        overflow: hidden;
     }
 
     .btn-icon:hover {
-        background: rgba(0,229,255,0.12);
-        border-color: rgba(0,229,255,0.3);
-        color: #00e5ff;
+        background: rgba(30, 95, 168, 0.12);
+        border-color: rgba(30, 95, 168, 0.3);
+        color: #1E5FA8;
         transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(0,229,255,0.15);
     }
 
-    .btn-icon:active { transform: translateY(0px) scale(0.97); box-shadow: none; }
+    .btn-icon:active { transform: translateY(0px) scale(0.97); }
 
     .btn-icon.active {
-        background: rgba(0,229,255,0.15);
-        border-color: rgba(0,229,255,0.4);
-        color: #00e5ff;
-        box-shadow: 0 0 12px rgba(0,229,255,0.2), inset 0 0 8px rgba(0,229,255,0.1);
+        background: rgba(30, 95, 168, 0.15);
+        border-color: #1E5FA8;
+        color: #1E5FA8;
     }
 
-    .btn-mode-drag { background: rgba(255, 107, 0, 0.15); border-color: rgba(255, 107, 0, 0.3); color: #ff8c40; }
-    .btn-mode-drag.active { background: rgba(255, 107, 0, 0.25); border-color: rgba(255, 107, 0, 0.6); color: #ff6b00; box-shadow: 0 0 12px rgba(255,107,0,0.2); }
-    .btn-mode-rotate.active { background: rgba(0,229,255,0.15); border-color: rgba(0,229,255,0.4); color: #00e5ff; box-shadow: 0 0 12px rgba(0,229,255,0.2); }
+    .btn-mode-drag { background: rgba(255, 107, 0, 0.08); border-color: rgba(255, 107, 0, 0.15); color: #e67e22; }
+    .btn-mode-drag.active { background: rgba(255, 107, 0, 0.15); border-color: #e67e22; color: #e67e22; }
+    .btn-mode-rotate.active { background: rgba(30, 95, 168, 0.15); border-color: #1E5FA8; color: #1E5FA8; }
 
-    .btn-axis-x { color: #ff7777; border-color: rgba(255,119,119,0.15); }
-    .btn-axis-x:hover { background: rgba(255,119,119,0.12); border-color: rgba(255,119,119,0.4); color: #ff9999; }
-    .btn-axis-y { color: #7799ff; border-color: rgba(119,153,255,0.15); }
-    .btn-axis-y:hover { background: rgba(119,153,255,0.12); border-color: rgba(119,153,255,0.4); color: #aabbff; }
-    .btn-axis-z { color: #77ee88; border-color: rgba(119,238,136,0.15); }
-    .btn-axis-z:hover { background: rgba(119,238,136,0.12); border-color: rgba(119,238,136,0.4); color: #aaffbb; }
+    .btn-axis-x { color: #e74c3c; }
+    .btn-axis-x:hover { background: rgba(231, 76, 60, 0.1); border-color: rgba(231, 76, 60, 0.3); color: #e74c3c; }
+    .btn-axis-y { color: #2ecc71; }
+    .btn-axis-y:hover { background: rgba(46, 204, 113, 0.1); border-color: rgba(46, 204, 113, 0.3); color: #2ecc71; }
+    .btn-axis-z { color: #3498db; }
+    .btn-axis-z:hover { background: rgba(52, 152, 219, 0.1); border-color: rgba(52, 152, 219, 0.3); color: #3498db; }
 
-    .btn-danger { background: rgba(231, 76, 60, 0.1); border-color: rgba(231,76,60,0.2); color: #ff8877; }
-    .btn-danger:hover { background: rgba(231,76,60,0.2); border-color: rgba(231,76,60,0.5); color: #ff6655; box-shadow: 0 4px 12px rgba(231,76,60,0.2); }
+    .btn-danger { background: rgba(204, 0, 0, 0.08); border-color: rgba(204, 0, 0, 0.15); color: #CC0000; }
+    .btn-danger:hover { background: rgba(204, 0, 0, 0.15); border-color: #CC0000; color: #CC0000; }
 
-    .btn-warning { background: rgba(243, 156, 18, 0.1); border-color: rgba(243,156,18,0.2); color: #ffcc66; }
-    .btn-warning:hover { background: rgba(243,156,18,0.2); border-color: rgba(243,156,18,0.5); color: #ffbb33; box-shadow: 0 4px 12px rgba(243,156,18,0.2); }
+    .btn-warning { background: rgba(255, 204, 0, 0.1); border-color: rgba(255, 204, 0, 0.2); color: #996600; }
+    .btn-warning:hover { background: rgba(255, 204, 0, 0.2); border-color: #FFCC00; color: #664400; }
 
-    .separator { height: 1px; background: linear-gradient(90deg, transparent, rgba(0,229,255,0.15), transparent); margin: 10px 0; }
+    .separator { height: 1px; background: linear-gradient(90deg, transparent, rgba(30, 95, 168, 0.15), transparent); margin: 10px 0; }
 
-    .section-label { font-size: 8.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; color: rgba(255, 170, 102, 0.7); margin: 6px 0 5px 0; }
+    .section-label { font-size: 8.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; color: #1E5FA8; margin: 6px 0 5px 0; opacity: 0.8; }
 
     .slider-item { margin: 8px 0; }
-    .slider-label { display: flex; justify-content: space-between; font-size: 10px; color: rgba(138, 174, 192, 0.8); margin-bottom: 5px; letter-spacing: 0.2px; }
-    .slider-label span:last-child { color: #00e5ff; font-weight: 600; }
-    .slider-track { position: relative; height: 4px; background: rgba(255,255,255,0.06); border-radius: 10px; overflow: visible; }
-    .slider-fill { position: absolute; left: 0; top: 0; height: 100%; background: linear-gradient(90deg, #0099bb, #00e5ff); border-radius: 10px; pointer-events: none; transition: width 0.05s; }
+    .slider-label { display: flex; justify-content: space-between; font-size: 10px; color: #5A5A5A; margin-bottom: 5px; letter-spacing: 0.2px; }
+    .slider-label span:last-child { color: #1E5FA8; font-weight: 600; }
+    .slider-track { position: relative; height: 4px; background: rgba(0,0,0,0.1); border-radius: 10px; overflow: visible; }
+    .slider-fill { position: absolute; left: 0; top: 0; height: 100%; background: linear-gradient(90deg, #154A8A, #1E5FA8); border-radius: 10px; pointer-events: none; transition: width 0.05s; }
     input[type="range"] { position: absolute; inset: -6px 0; width: 100%; height: calc(100% + 12px); opacity: 0; cursor: pointer; margin: 0; }
 
-    .info-badge { background: rgba(0,0,0,0.3); border: 1px solid rgba(0,229,255,0.08); border-radius: 10px; padding: 6px 10px; display: flex; align-items: center; justify-content: space-between; font-size: 10px; color: rgba(107, 143, 168, 0.8); margin-top: 6px; }
-    .info-badge .badge-val { color: #00e5ff; font-weight: 700; font-size: 12px; }
+    .info-badge { background: rgba(0,0,0,0.06); border: 1px solid rgba(30, 95, 168, 0.12); border-radius: 10px; padding: 6px 10px; display: flex; align-items: center; justify-content: space-between; font-size: 10px; color: #5A5A5A; margin-top: 6px; }
+    .info-badge .badge-val { color: #1E5FA8; font-weight: 700; font-size: 12px; }
 
-    /* ── Auto-load badge ── */
     .autoload-badge {
-        background: rgba(0,229,255,0.07);
-        border: 1px solid rgba(0,229,255,0.15);
+        background: rgba(30, 95, 168, 0.07);
+        border: 1px solid rgba(30, 95, 168, 0.15);
         border-radius: 10px;
         padding: 7px 10px;
         font-size: 10px;
-        color: rgba(138,174,192,0.85);
+        color: #5A5A5A;
         margin-bottom: 8px;
         display: flex;
         align-items: center;
@@ -236,125 +232,91 @@
     .autoload-badge .al-dot {
         width: 7px; height: 7px;
         border-radius: 50%;
-        background: #00e5ff;
+        background: #1E5FA8;
         flex-shrink: 0;
-        box-shadow: 0 0 6px #00e5ff;
         animation: pulse 1.8s ease-in-out infinite;
     }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
-    .upload-area { position: fixed; bottom: 20px; right: 20px; background: rgba(10, 14, 20, 0.88); backdrop-filter: blur(16px) saturate(180%); -webkit-backdrop-filter: blur(16px) saturate(180%); border: 1px solid rgba(0, 229, 255, 0.25); border-radius: 40px; padding: 10px 22px; cursor: pointer; z-index: 100; font-size: 12px; font-weight: 600; color: #00e5ff; transition: border-color 0.2s ease, background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease; display: flex; align-items: center; gap: 8px; letter-spacing: 0.5px; }
-    .upload-area:hover { border-color: rgba(0,229,255,0.6); background: rgba(0,229,255,0.08); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,229,255,0.2); }
+    .upload-area { position: fixed; bottom: 20px; right: 20px; background: rgba(208, 210, 214, 0.92); backdrop-filter: blur(16px); border: 1px solid rgba(30, 95, 168, 0.35); border-radius: 40px; padding: 10px 22px; cursor: pointer; z-index: 100; font-size: 12px; font-weight: 600; color: #1E5FA8; transition: all 0.2s ease; display: flex; align-items: center; gap: 8px; letter-spacing: 0.5px; }
+    .upload-area:hover { border-color: #1E5FA8; background: rgba(30, 95, 168, 0.08); transform: translateY(-2px); }
 
-    .file-info { position: fixed; bottom: 20px; left: 20px; background: rgba(0,0,0,0.55); backdrop-filter: blur(10px); padding: 7px 16px; border-radius: 30px; font-size: 10.5px; z-index: 100; border-left: 2px solid #00e5ff; color: rgba(184, 212, 232, 0.9); letter-spacing: 0.2px; }
-    .status { position: fixed; bottom: 64px; left: 20px; background: rgba(0,0,0,0.4); backdrop-filter: blur(6px); padding: 4px 12px; border-radius: 20px; font-size: 9.5px; color: rgba(107, 143, 168, 0.8); font-family: 'SF Mono', 'Fira Code', monospace; pointer-events: none; letter-spacing: 0.3px; }
+    .file-info { position: fixed; bottom: 20px; left: 20px; background: rgba(0,0,0,0.55); backdrop-filter: blur(10px); padding: 7px 16px; border-radius: 30px; font-size: 10.5px; z-index: 100; border-left: 2px solid #1E5FA8; color: #DDD; letter-spacing: 0.2px; }
+    .status { position: fixed; bottom: 64px; left: 20px; background: rgba(0,0,0,0.4); backdrop-filter: blur(6px); padding: 4px 12px; border-radius: 20px; font-size: 9.5px; color: #AAA; pointer-events: none; letter-spacing: 0.3px; }
 
-    #overlay { position: fixed; inset: 0; background: #0a0e14; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; z-index: 200; transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+    #overlay { position: fixed; inset: 0; background: #C8CACF; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; z-index: 200; transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
     #overlay.hidden { opacity: 0; pointer-events: none; }
 
     .spinner-ring { position: relative; width: 48px; height: 48px; }
     .spinner-ring::before, .spinner-ring::after { content: ''; position: absolute; inset: 0; border-radius: 50%; border: 2px solid transparent; }
-    .spinner-ring::before { border-top-color: #00e5ff; border-right-color: rgba(0,229,255,0.3); animation: spinA 0.9s cubic-bezier(0.5, 0, 0.5, 1) infinite; }
-    .spinner-ring::after { border-bottom-color: rgba(255, 107, 0, 0.7); border-left-color: rgba(255,107,0,0.2); animation: spinB 1.4s cubic-bezier(0.5, 0, 0.5, 1) infinite reverse; inset: 6px; }
+    .spinner-ring::before { border-top-color: #1E5FA8; border-right-color: rgba(30, 95, 168, 0.3); animation: spinA 0.9s cubic-bezier(0.5, 0, 0.5, 1) infinite; }
+    .spinner-ring::after { border-bottom-color: #e67e22; border-left-color: rgba(230, 126, 34, 0.2); animation: spinB 1.4s cubic-bezier(0.5, 0, 0.5, 1) infinite reverse; inset: 6px; }
     @keyframes spinA { to { transform: rotate(360deg); } }
     @keyframes spinB { to { transform: rotate(360deg); } }
 
-    .progress-bar { width: 220px; height: 2px; background: rgba(255,255,255,0.06); border-radius: 10px; overflow: hidden; }
-    .progress-fill { width: 0%; height: 100%; background: linear-gradient(90deg, #00e5ff, #ff6b00); border-radius: 10px; transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 0 8px rgba(0,229,255,0.6); }
-    #load-msg { color: rgba(138, 174, 192, 0.8); font-size: 11px; letter-spacing: 0.3px; }
+    .progress-bar { width: 220px; height: 2px; background: rgba(0,0,0,0.1); border-radius: 10px; overflow: hidden; }
+    .progress-fill { width: 0%; height: 100%; background: linear-gradient(90deg, #1E5FA8, #e67e22); border-radius: 10px; transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
 
-    .panel-content::-webkit-scrollbar { width: 2px; }
-    .panel-content::-webkit-scrollbar-track { background: transparent; }
-    .panel-content::-webkit-scrollbar-thumb { background: rgba(0,229,255,0.3); border-radius: 4px; }
-
-    .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(6px); z-index: 500; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.25s ease; }
-    .modal-backdrop.open { opacity: 1; pointer-events: all; }
-    .modal { background: rgba(10,14,20,0.97); border: 1px solid rgba(0,229,255,0.2); border-radius: 20px; box-shadow: 0 32px 64px rgba(0,0,0,0.6), 0 0 0 1px rgba(0,229,255,0.08); width: 340px; max-width: calc(100vw - 32px); overflow: hidden; transform: translateY(12px) scale(0.97); transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1); }
-    .modal-backdrop.open .modal { transform: translateY(0) scale(1); }
-    .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px 14px; border-bottom: 1px solid rgba(0,229,255,0.08); background: linear-gradient(135deg, rgba(0,229,255,0.06), transparent); }
-    .modal-title { font-size: 13px; font-weight: 700; color: #00e5ff; letter-spacing: 0.8px; }
-    .modal-close { background: none; border: none; color: rgba(0,229,255,0.4); font-size: 20px; cursor: pointer; width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; transition: background 0.15s, color 0.15s; }
-    .modal-close:hover { background: rgba(0,229,255,0.12); color: #00e5ff; }
-    .modal-body { padding: 14px 16px; }
-    .save-input-row { display: flex; gap: 8px; margin-bottom: 14px; }
-    .save-name-input { flex: 1; background: rgba(255,255,255,0.04); border: 1px solid rgba(0,229,255,0.18); border-radius: 10px; padding: 8px 12px; font-size: 12px; color: #c8dde8; font-family: inherit; outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
-    .save-name-input:focus { border-color: rgba(0,229,255,0.45); box-shadow: 0 0 0 3px rgba(0,229,255,0.08); }
-    .save-name-input::placeholder { color: rgba(138,174,192,0.4); }
-    .btn-save-new { background: rgba(0,229,255,0.12); border: 1px solid rgba(0,229,255,0.3); border-radius: 10px; color: #00e5ff; font-size: 11px; font-weight: 700; padding: 8px 14px; cursor: pointer; transition: background 0.15s, transform 0.12s, box-shadow 0.15s; white-space: nowrap; font-family: inherit; letter-spacing: 0.3px; }
-    .btn-save-new:hover { background: rgba(0,229,255,0.22); box-shadow: 0 0 12px rgba(0,229,255,0.2); transform: translateY(-1px); }
-    .btn-save-new:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
-    .slots-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; color: rgba(255,170,102,0.7); margin-bottom: 8px; }
-    .slots-list { display: flex; flex-direction: column; gap: 6px; max-height: 260px; overflow-y: auto; padding-right: 2px; }
-    .slots-list::-webkit-scrollbar { width: 2px; }
-    .slots-list::-webkit-scrollbar-thumb { background: rgba(0,229,255,0.2); border-radius: 4px; }
-    .slot-item { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 10px 12px; display: flex; align-items: center; gap: 10px; transition: border-color 0.2s, background 0.2s; animation: slotIn 0.25s ease; }
-    @keyframes slotIn { from{opacity:0;transform:translateY(-6px)} to{opacity:1;transform:translateY(0)} }
-    .slot-item:hover { border-color: rgba(0,229,255,0.2); background: rgba(0,229,255,0.04); }
-    .slot-icon { font-size: 20px; flex-shrink: 0; width: 32px; height: 32px; background: rgba(0,229,255,0.07); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
-    .slot-info { flex: 1; min-width: 0; }
-    .slot-name { font-size: 12px; font-weight: 600; color: #c8dde8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .slot-meta { font-size: 9.5px; color: rgba(107,143,168,0.7); margin-top: 2px; display: flex; gap: 8px; }
-    .slot-actions { display: flex; gap: 5px; flex-shrink: 0; }
-    .btn-slot { background: none; border: 1px solid rgba(255,255,255,0.08); border-radius: 7px; color: #7a9ab0; font-size: 13px; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.15s; }
-    .btn-slot-load:hover { background: rgba(0,229,255,0.15); border-color: rgba(0,229,255,0.4); color: #00e5ff; }
-    .btn-slot-del:hover { background: rgba(231,76,60,0.15); border-color: rgba(231,76,60,0.4); color: #ff6655; }
-    .slots-empty { text-align: center; padding: 24px 0; color: rgba(107,143,168,0.4); font-size: 11px; }
-    .slots-empty-icon { font-size: 28px; margin-bottom: 8px; opacity: 0.4; }
-    .slots-limit { font-size: 9.5px; color: rgba(107,143,168,0.5); text-align: right; margin-top: 10px; }
-    .slots-limit span { color: #00e5ff; }
-
-    .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-8px); background: rgba(0,229,255,0.12); border: 1px solid rgba(0,229,255,0.3); backdrop-filter: blur(12px); color: #00e5ff; padding: 8px 20px; border-radius: 20px; font-size: 11px; font-weight: 600; pointer-events: none; z-index: 300; opacity: 0; transition: opacity 0.25s ease, transform 0.25s ease; letter-spacing: 0.5px; }
-    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-    /* ===== LOAD STATUS ===== */
     .load-badge {
         margin-top: 8px;
-        background: rgba(0,0,0,0.35);
-        border: 1px solid rgba(255,255,255,0.06);
+        background: rgba(0,0,0,0.05);
+        border: 1px solid rgba(0,0,0,0.08);
         border-radius: 10px;
         padding: 8px 10px;
         display: flex;
         flex-direction: column;
         gap: 6px;
-        transition: border-color 1.2s ease, box-shadow 1.2s ease;
+        transition: border-color 1.2s ease;
     }
-    .load-badge.state-light  { border-color: rgba(0,184,148,0.4); }
-    .load-badge.state-medium { border-color: rgba(243,156,18,0.4); }
-    .load-badge.state-heavy  { border-color: rgba(230,126,34,0.4); }
-    .load-badge.state-over   { border-color: rgba(231,76,60,0.6); box-shadow: 0 0 12px rgba(231,76,60,0.2); }
+    .load-badge.state-light  { border-color: rgba(0, 170, 0, 0.4); }
+    .load-badge.state-medium { border-color: rgba(255, 204, 0, 0.5); }
+    .load-badge.state-heavy  { border-color: rgba(230, 126, 34, 0.5); }
+    .load-badge.state-over   { border-color: rgba(204, 0, 0, 0.6); }
 
-    .load-badge-top {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    .load-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,170,102,0.7); }
-    #loadStatus  { font-size: 11px; font-weight: 700; transition: color 1.2s ease; color: #6b8fa8; }
+    .load-badge-top { display: flex; justify-content: space-between; align-items: center; }
+    .load-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #1E5FA8; opacity: 0.8; }
+    #loadStatus { font-size: 11px; font-weight: 700; transition: color 1.2s ease; color: #5A5A5A; }
 
-    .load-bar-track {
-        height: 4px;
-        background: rgba(255,255,255,0.06);
-        border-radius: 10px;
-        overflow: hidden;
-    }
-    .load-bar-fill {
-        height: 100%;
-        width: 0%;
-        border-radius: 10px;
-        transition: width 1.2s cubic-bezier(0.4,0,0.2,1), background 1.2s ease;
-        background: #00b894;
-    }
+    .load-bar-track { height: 4px; background: rgba(0,0,0,0.08); border-radius: 10px; overflow: hidden; }
+    .load-bar-fill { height: 100%; width: 0%; border-radius: 10px; transition: width 1.2s cubic-bezier(0.4,0,0.2,1), background 1.2s ease; background: #00AA00; }
 
-    .load-value {
-        text-align: right;
-        font-size: 18px;
-        font-weight: 800;
-        letter-spacing: -0.5px;
-        line-height: 1;
-        transition: color 1.2s ease;
-        color: #6b8fa8;
-        font-family: 'SF Mono', 'Fira Code', monospace;
-    }
+    .load-value { text-align: right; font-size: 18px; font-weight: 800; letter-spacing: -0.5px; line-height: 1; transition: color 1.2s ease; color: #5A5A5A; font-family: monospace; }
 
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(6px); z-index: 500; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.25s ease; }
+    .modal-backdrop.open { opacity: 1; pointer-events: all; }
+    .modal { background: #D0D2D6; border: 1px solid #1E5FA8; border-radius: 20px; box-shadow: 0 32px 64px rgba(0,0,0,0.3); width: 340px; max-width: calc(100vw - 32px); overflow: hidden; transform: translateY(12px) scale(0.97); transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1); }
+    .modal-backdrop.open .modal { transform: translateY(0) scale(1); }
+    .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px 14px; border-bottom: 1px solid rgba(30, 95, 168, 0.15); background: linear-gradient(135deg, rgba(30, 95, 168, 0.06), transparent); }
+    .modal-title { font-size: 13px; font-weight: 700; color: #1E5FA8; letter-spacing: 0.8px; }
+    .modal-close { background: none; border: none; color: #5A5A5A; font-size: 20px; cursor: pointer; width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+    .modal-close:hover { background: rgba(30, 95, 168, 0.1); color: #1E5FA8; }
+    .modal-body { padding: 14px 16px; }
+    .save-input-row { display: flex; gap: 8px; margin-bottom: 14px; }
+    .save-name-input { flex: 1; background: #FFFFFF; border: 1px solid rgba(30, 95, 168, 0.25); border-radius: 10px; padding: 8px 12px; font-size: 12px; color: #1A1A1A; font-family: inherit; outline: none; transition: border-color 0.2s; }
+    .save-name-input:focus { border-color: #1E5FA8; }
+    .save-name-input::placeholder { color: #9A9C9F; }
+    .btn-save-new { background: rgba(30, 95, 168, 0.12); border: 1px solid rgba(30, 95, 168, 0.3); border-radius: 10px; color: #1E5FA8; font-size: 11px; font-weight: 700; padding: 8px 14px; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+    .btn-save-new:hover { background: rgba(30, 95, 168, 0.22); transform: translateY(-1px); }
+    .btn-save-new:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+    .slots-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; color: #1E5FA8; margin-bottom: 8px; }
+    .slots-list { display: flex; flex-direction: column; gap: 6px; max-height: 260px; overflow-y: auto; padding-right: 2px; }
+    .slots-list::-webkit-scrollbar { width: 2px; }
+    .slots-list::-webkit-scrollbar-thumb { background: rgba(30, 95, 168, 0.3); border-radius: 4px; }
+    .slot-item { background: #FFFFFF; border: 1px solid rgba(30, 95, 168, 0.12); border-radius: 12px; padding: 10px 12px; display: flex; align-items: center; gap: 10px; transition: border-color 0.2s; }
+    .slot-item:hover { border-color: rgba(30, 95, 168, 0.3); background: rgba(30, 95, 168, 0.02); }
+    .slot-icon { font-size: 20px; flex-shrink: 0; width: 32px; height: 32px; background: rgba(30, 95, 168, 0.08); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+    .slot-info { flex: 1; min-width: 0; }
+    .slot-name { font-size: 12px; font-weight: 600; color: #1A1A1A; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .slot-meta { font-size: 9.5px; color: #5A5A5A; margin-top: 2px; display: flex; gap: 8px; }
+    .slot-actions { display: flex; gap: 5px; flex-shrink: 0; }
+    .btn-slot { background: none; border: 1px solid rgba(0,0,0,0.08); border-radius: 7px; color: #5A5A5A; font-size: 13px; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.15s; }
+    .btn-slot-load:hover { background: rgba(30, 95, 168, 0.12); border-color: #1E5FA8; color: #1E5FA8; }
+    .btn-slot-del:hover { background: rgba(204, 0, 0, 0.12); border-color: #CC0000; color: #CC0000; }
+    .slots-empty { text-align: center; padding: 24px 0; color: #9A9C9F; font-size: 11px; }
+    .slots-limit { font-size: 9.5px; color: #5A5A5A; text-align: right; margin-top: 10px; }
+
+    .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-8px); background: rgba(30, 95, 168, 0.9); border: 1px solid #1E5FA8; backdrop-filter: blur(12px); color: white; padding: 8px 20px; border-radius: 20px; font-size: 11px; font-weight: 600; pointer-events: none; z-index: 300; opacity: 0; transition: opacity 0.25s ease, transform 0.25s ease; letter-spacing: 0.5px; }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 </style>
 </head>
 <body>
@@ -374,11 +336,9 @@
         <button class="panel-toggle" id="panelToggle">−</button>
     </div>
     <div class="panel-content">
-
-        <!-- Auto-load info -->
         <div class="autoload-badge">
             <div class="al-dot"></div>
-            <span>Tự động tải: <strong id="autoFileName" style="color:#00e5ff;">VIRTUAL_MILLING_CNC.stp</strong></span>
+            <span>Tự động tải: <strong id="autoFileName" style="color:#1E5FA8;">VIRTUAL_MILLING_CNC.stp</strong></span>
         </div>
 
         <div class="section-label">Hiển thị</div>
@@ -452,12 +412,12 @@
         <div class="load-badge" id="loadBadge">
             <div class="load-badge-top">
                 <span class="load-label">⚡ Tải trọng</span>
-                <span id="loadStatus">— Chưa có dữ liệu</span>
+                <span id="loadStatus">⏳ Đang chờ dữ liệu...</span>
             </div>
             <div class="load-bar-track">
                 <div class="load-bar-fill" id="loadBarFill"></div>
             </div>
-            <div class="load-value" id="loadValue">—</div>
+            <div class="load-value" id="loadValue">— %</div>
         </div>
 
         <div class="separator"></div>
@@ -515,13 +475,40 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-// =============================================
-// CẤU HÌNH: Tên file STP đặt cùng thư mục HTML
-// =============================================
+// ========== CẤU HÌNH ==========
 const AUTO_LOAD_FILE = 'VIRTUAL_MILLING_CNC.stp';
-// =============================================
-
 document.getElementById('autoFileName').textContent = AUTO_LOAD_FILE;
+
+// ========== ĐỒNG BỘ MÀU NỀN VỚI THEME ISA-101 ==========
+function applyThemeToViewer() {
+    const saved = localStorage.getItem('cnc_theme');
+    if (saved) {
+        try {
+            const theme = JSON.parse(saved);
+            if (theme.headerBg) {
+                document.body.style.background = theme.headerBg;
+                if (renderer) {
+                    renderer.setClearColor(new THREE.Color(theme.headerBg), 1);
+                }
+            }
+        } catch(e) {}
+    }
+}
+
+// Lắng nghe theme thay đổi
+window.addEventListener('storage', (event) => {
+    if (event.key === 'cnc_theme' && event.newValue) {
+        try {
+            const theme = JSON.parse(event.newValue);
+            if (theme.headerBg) {
+                document.body.style.background = theme.headerBg;
+                if (renderer) {
+                    renderer.setClearColor(new THREE.Color(theme.headerBg), 1);
+                }
+            }
+        } catch(e) {}
+    }
+});
 
 // ===== RENDERER =====
 const canvas = document.createElement('canvas');
@@ -531,14 +518,13 @@ canvas.style.cssText = 'position:fixed;inset:0;display:block;width:100%;height:1
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: 'high-performance' });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setClearColor(0x0a0e14, 1);
+renderer.setClearColor(new THREE.Color('#C8CACF'), 1);
 renderer.physicallyCorrectLights = true;
-renderer.outputEncoding = THREE.sRGBEncoding;
 
 // ===== SCENE =====
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x0a0e14);
-scene.fog = new THREE.FogExp2(0x0a0e14, 0.00012);
+scene.background = new THREE.Color('#C8CACF');
+scene.fog = new THREE.FogExp2('#C8CACF', 0.00012);
 
 const camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.5, 6000);
 camera.position.set(500, 420, 700);
@@ -626,7 +612,6 @@ function applyDragMomentum() {
     dragMomentumX *= DRAG_FRICTION; dragMomentumY *= DRAG_FRICTION;
 }
 
-// ===== HELPERS =====
 function applyRotation() { if (mainGroup) mainGroup.rotation.set(currentRotation.x, currentRotation.y, currentRotation.z, 'XYZ'); autoSaveTransform(); }
 function applyScale() {
     if (mainGroup) mainGroup.scale.setScalar(currentScale);
@@ -645,7 +630,7 @@ function showToast(msg) {
 }
 
 function setDragMode(enabled) {
-    dragMode = enabled; dragMomentumX = 0; dragMomentumY = 0;
+    dragMode = enabled;
     document.getElementById('modeDrag').classList.toggle('active', dragMode);
     document.getElementById('modeRotate').classList.toggle('active', !dragMode);
     orbitControls.enabled = !dragMode;
@@ -767,7 +752,7 @@ async function processFile(file, saveToDb = false) {
         const box3 = new THREE.Box3().setFromObject(mainGroup);
         mainGroup.position.sub(box3.getCenter(new THREE.Vector3()));
         restoreTransform();
-        snapshotOriginalColors();   // lưu màu gốc để có thể reset load về 0
+        snapshotOriginalColors();
         document.getElementById('partsCount').textContent = allMeshes.length;
         setProgress(100, `✅ ${allMeshes.length} parts`);
         document.getElementById('status').textContent = `✅ ${allMeshes.length} parts`;
@@ -877,13 +862,12 @@ document.getElementById('saveNameInput').addEventListener('keydown',e=>{if(e.key
 // =============================================
 let currentLoad = 0;
 let _originalColors = [];
-let _targetMeshColor = null;   // THREE.Color đích, null = về màu gốc
-const _currentMeshColors = []; // màu lerp hiện tại từng mesh
-const MESH_LERP_SPEED = 0.018; // nhỏ = chậm hơn (0.01–0.05)
+let _targetMeshColor = null;
+let _currentMeshColors = [];
+const MESH_LERP_SPEED = 0.018;
 
 function snapshotOriginalColors() {
     _originalColors = allMeshes.map(m => m.material.color.getHex());
-    // Sync current lerp colors với màu gốc
     _currentMeshColors.length = 0;
     allMeshes.forEach(m => _currentMeshColors.push(m.material.color.clone()));
     _targetMeshColor = null;
@@ -892,36 +876,33 @@ function snapshotOriginalColors() {
 function updateColorByLoad(loadPercent) {
     currentLoad = loadPercent;
 
-    let hex, cssColor, stateClass, label;
-    if (loadPercent <= 0) {
-        _targetMeshColor = null; // về màu gốc
+    if (!loadPercent || loadPercent <= 0) {
+        _targetMeshColor = null;
         document.getElementById('loadBadge').className = 'load-badge';
-        document.getElementById('loadStatus').textContent = '— Chưa có dữ liệu';
-        document.getElementById('loadStatus').style.color = '#6b8fa8';
-        document.getElementById('loadValue').textContent = '—';
-        document.getElementById('loadValue').style.color = '#6b8fa8';
+        document.getElementById('loadStatus').textContent = '⏳ Đang chờ dữ liệu...';
+        document.getElementById('loadStatus').style.color = '#5A5A5A';
+        document.getElementById('loadValue').textContent = '— %';
+        document.getElementById('loadValue').style.color = '#5A5A5A';
         document.getElementById('loadBarFill').style.width = '0%';
-        document.getElementById('loadBarFill').style.background = '#6b8fa8';
-        ambientLight.intensity = 0.9;
-        mainLight.intensity   = 2.0;
+        document.getElementById('loadBarFill').style.background = '#5A5A5A';
         return;
     }
 
+    let hex, cssColor, stateClass, label;
     if (loadPercent < 30) {
-        hex = 0x00b894; cssColor = '#00b894'; stateClass = 'state-light';  label = '🟢 Tải nhẹ';
+        hex = 0x00AA00; cssColor = '#00AA00'; stateClass = 'state-light';  label = '🟢 Tải nhẹ';
     } else if (loadPercent < 70) {
-        hex = 0xf39c12; cssColor = '#f39c12'; stateClass = 'state-medium'; label = '🟡 Tải trung bình';
+        hex = 0xFFCC00; cssColor = '#FFCC00'; stateClass = 'state-medium'; label = '🟡 Tải trung bình';
     } else if (loadPercent < 100) {
         hex = 0xe67e22; cssColor = '#e67e22'; stateClass = 'state-heavy';  label = '🟠 Tải nặng';
     } else {
-        hex = 0xe74c3c; cssColor = '#e74c3c'; stateClass = 'state-over';   label = '🔴 QUÁ TẢI';
+        hex = 0xCC0000; cssColor = '#CC0000'; stateClass = 'state-over';   label = '🔴 QUÁ TẢI';
     }
 
-    // Chỉ đặt màu đích — render loop sẽ lerp dần
     _targetMeshColor = new THREE.Color(hex);
 
     if (loadPercent >= 90) { ambientLight.intensity = 1.4; mainLight.intensity = 3.0; }
-    else                   { ambientLight.intensity = 0.9; mainLight.intensity = 2.0; }
+    else { ambientLight.intensity = 0.9; mainLight.intensity = 2.0; }
 
     const badge = document.getElementById('loadBadge');
     badge.className = `load-badge ${stateClass}`;
@@ -934,13 +915,12 @@ function updateColorByLoad(loadPercent) {
     fill.style.background = cssColor;
 }
 
-// Nhận dữ liệu tải từ bên ngoài (postMessage / iframe)
+// Nhận dữ liệu tải từ bên ngoài (postMessage từ monitor.html)
 window.addEventListener('message', ev => {
     if (ev.data?.type === 'update_load') {
         const load = parseFloat(ev.data.load);
         if (!isNaN(load)) updateColorByLoad(load);
     }
-    // Các lệnh điều khiển cũ
     if (ev.data?.type !== 'cnc_control') return;
     switch (ev.data.action) {
         case 'reset': document.getElementById('resetPos').click(); document.getElementById('resetRot').click(); break;
@@ -956,7 +936,6 @@ function animate(time) {
     orbitControls.update();
     applyDragMomentum();
 
-    // Lerp màu mesh chậm rãi về màu đích
     if (allMeshes.length && _currentMeshColors.length === allMeshes.length) {
         allMeshes.forEach((mesh, i) => {
             const target = _targetMeshColor
@@ -977,13 +956,13 @@ ro.observe(document.body);
 
 // ===== INIT — TỰ ĐỘNG TẢI FILE =====
 setDragMode(true);
+applyThemeToViewer();
 
 async function init() {
     try {
         setProgress(10, 'Tải OCCT engine...');
         occt = await loadOCCT();
 
-        // Bước 1: Thử fetch file STP cùng thư mục (ưu tiên cao nhất)
         setProgress(25, `🔍 Tìm ${AUTO_LOAD_FILE}...`);
         let autoFile = null;
         try {
@@ -993,16 +972,12 @@ async function init() {
                 autoFile = new File([blob], AUTO_LOAD_FILE, { type: 'application/step' });
                 setProgress(40, `✅ Tìm thấy ${AUTO_LOAD_FILE}`);
             }
-        } catch (fetchErr) {
-            // fetch thất bại → thử từ IndexedDB
-        }
+        } catch (fetchErr) { }
 
         if (autoFile) {
-            // Tải file tìm được từ cùng thư mục
             await processFile(autoFile, false);
             showToast(`🚀 Tự động tải ${AUTO_LOAD_FILE}`);
         } else {
-            // Bước 2: Fallback → thử khôi phục file đã lưu trong IndexedDB
             setProgress(40, '🔄 Kiểm tra lưu trữ...');
             const savedFile = await dbLoadCurrentFile().catch(() => null);
             if (savedFile) {
@@ -1010,7 +985,6 @@ async function init() {
                 await processFile(savedFile, false);
                 showToast(`🔄 Đã khôi phục ${savedFile.name}`);
             } else {
-                // Bước 3: Không có gì cả → chờ người dùng upload
                 setProgress(100, `⚠️ Không tìm thấy ${AUTO_LOAD_FILE} — hãy đặt file cùng thư mục HTML`);
                 document.getElementById('status').textContent = '📂 Chờ file...';
                 setTimeout(() => document.getElementById('overlay').classList.add('hidden'), 2500);
@@ -1024,6 +998,13 @@ async function init() {
 }
 
 init();
+
+// ========== THÔNG BÁO SẴN SÀNG CHO PARENT WINDOW ==========
+window.addEventListener('load', () => {
+    if (window.parent !== window) {
+        window.parent.postMessage({ type: 'viewer_ready' }, '*');
+    }
+});
 </script>
 </body>
 </html>
