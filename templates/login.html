@@ -4,174 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Đăng Nhập - CNC Smart System</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&family=Be+Vietnam+Pro:wght@300;400;600&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --red:    #c0392b;
-            --gold:   #d4a017;
-            --navy:   #0d1b2a;
-            --steel:  #1e3a5f;
-            --cyan:   #00c9d4;
-            --light:  #e8f4f8;
-            --white:  #ffffff;
-            --border: rgba(0,201,212,0.3);
-        }
-
-        * { margin:0; padding:0; box-sizing:border-box; }
-
-        body {
-            font-family: 'Be Vietnam Pro', sans-serif;
-            background: var(--navy);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        /* Grid background */
-        body::before {
-            content:'';
-            position:fixed; inset:0;
-            background-image:
-                linear-gradient(rgba(0,201,212,.04) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0,201,212,.04) 1px, transparent 1px);
-            background-size: 40px 40px;
-            pointer-events:none;
-        }
-
-        /* ===== HEADER ===== */
-        .header {
-            background: var(--navy);
-            border-bottom: 2px solid var(--gold);
-            padding: 0 32px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            height: 90px;
-            position: relative;
-            flex-shrink: 0;
-        }
-        .header::after {
-            content:'';
-            position:absolute; bottom:-4px; left:0; right:0;
-            height: 2px;
-            background: var(--cyan);
-            opacity: .7;
-        }
-
-        .logo-bk {
-            display:flex; align-items:center; gap:10px;
-        }
-        .logo-bk img { height:55px; width:auto; object-fit:contain; }
-        .logo-bk-text {
-            font-family:'Be Vietnam Pro'; font-size:11px; font-weight:600;
-            color: var(--gold);
-            line-height:1.4; text-transform:uppercase; letter-spacing:.5px;
-        }
-
-        .header-center {
-            text-align:center; flex:1; padding:0 20px;
-        }
-        .header-center .main-title {
-            font-family:'Be Vietnam Pro'; font-weight:700;
-            font-size:13px;
-            color: var(--white);
-            text-transform:uppercase; letter-spacing:.8px; line-height:1.4;
-        }
-        .header-center .sub-title {
-            font-size:11px;
-            color: var(--gold);
-            font-weight:400; margin-top:4px; letter-spacing:.5px;
-        }
-
-        /* ===== MAIN ===== */
-        .main {
-            flex:1; display:flex;
-            align-items:center; justify-content:center;
-            padding:40px 20px;
-        }
-
-        /* ===== LOGIN CARD ===== */
-        .login-card {
-            background: var(--steel);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 40px 48px;
-            width: 100%; max-width: 420px;
-            backdrop-filter: blur(16px);
-            box-shadow: 0 0 60px rgba(0,201,212,.08), 0 20px 60px rgba(0,0,0,.4);
-            animation: fadeUp .5s ease both;
-        }
-        @keyframes fadeUp {
-            from { opacity:0; transform:translateY(20px); }
-            to   { opacity:1; transform:translateY(0); }
-        }
-
-        .login-title {
-            font-family:'Orbitron'; font-size:14px; font-weight:600;
-            color: var(--cyan);
-            text-align:center; letter-spacing:2px;
-            text-transform:uppercase; margin-bottom:32px;
-            padding-bottom:16px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .form-row {
-            display:flex; align-items:center; gap:12px; margin-bottom:18px;
-        }
-        .form-row label {
-            font-size:13px;
-            color: var(--light);
-            width:72px;
-            font-weight:600; letter-spacing:.5px; flex-shrink:0;
-        }
-        .form-row input {
-            flex:1;
-            background: rgba(255,255,255,.06);
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            padding: 10px 14px;
-            color: var(--white);
-            font-size:13px;
-            font-family:'Be Vietnam Pro';
-            outline:none; transition:.2s;
-        }
-        .form-row input:focus {
-            border-color: var(--cyan);
-            background: rgba(0,201,212,.08);
-            box-shadow: 0 0 0 3px rgba(0,201,212,.1);
-        }
-
-        .error-msg {
-            color: #ff6b6b;
-            font-size:12px; text-align:center;
-            margin-bottom:12px; min-height:18px;
-        }
-
-        /* ===== BUTTON ===== */
-        .btn-enter {
-            display:block; width:140px; margin:24px auto 0;
-            background: transparent;
-            border: 2px solid var(--cyan);
-            color: var(--cyan);
-            font-family:'Orbitron'; font-size:13px; font-weight:600;
-            letter-spacing:3px; padding:11px 20px;
-            border-radius: 4px;
-            cursor:pointer;
-            transition:.25s; text-transform:uppercase;
-            position:relative; overflow:hidden;
-        }
-        .btn-enter::before {
-            content:''; position:absolute; inset:0;
-            background: var(--cyan);
-            transform:scaleX(0);
-            transform-origin:left; transition:.3s ease;
-            z-index:0;
-        }
-        .btn-enter:hover::before { transform:scaleX(1); }
-        .btn-enter:hover { color: var(--navy); }
-        .btn-enter span { position:relative; z-index:1; }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&family=Be+Vietnam+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/isa101.css">
 </head>
 <body>
 
@@ -189,20 +23,18 @@
 </header>
 
 <!-- LOGIN FORM -->
-<main class="main">
+<main class="content" style="display: flex; align-items: center; justify-content: center;">
     <div class="login-card">
         <div class="login-title">ĐĂNG NHẬP HỆ THỐNG</div>
 
         <form method="POST" action="/login" onsubmit="return handleLogin(event)">
             <div class="form-row">
                 <label for="username">User</label>
-                <input type="text" id="username" name="username"
-                       autocomplete="username" spellcheck="false" required>
+                <input type="text" id="username" name="username" autocomplete="username" spellcheck="false" required>
             </div>
             <div class="form-row">
                 <label for="password">Password</label>
-                <input type="password" id="password" name="password"
-                       autocomplete="current-password" required>
+                <input type="password" id="password" name="password" autocomplete="current-password" required>
             </div>
 
             <div class="error-msg" id="errMsg">
@@ -218,7 +50,8 @@
 function handleLogin(e) {
     const user = document.getElementById('username').value.trim();
     const pass = document.getElementById('password').value.trim();
-    const err  = document.getElementById('errMsg');
+    const err = document.getElementById('errMsg');
+    
     if (!user || !pass) {
         e.preventDefault();
         err.textContent = '⚠ Vui lòng nhập đầy đủ thông tin.';
@@ -226,10 +59,16 @@ function handleLogin(e) {
     }
     return true;
 }
-document.querySelectorAll('input').forEach(el =>
-    el.addEventListener('input', () => document.getElementById('errMsg').textContent = '')
-);
-document.getElementById('username').addEventListener('keydown', e => {
+
+// Clear error when typing
+document.querySelectorAll('input').forEach(el => {
+    el.addEventListener('input', () => {
+        document.getElementById('errMsg').textContent = '';
+    });
+});
+
+// Enter key moves to next field
+document.getElementById('username').addEventListener('keydown', (e) => {
     if (e.key === 'Enter') document.getElementById('password').focus();
 });
 
@@ -239,11 +78,12 @@ function loadThemeFromLocal() {
     if (saved) {
         try {
             const theme = JSON.parse(saved);
-            document.documentElement.style.setProperty('--navy', theme.headerBg || '#0d1b2a');
-            document.documentElement.style.setProperty('--steel', theme.sidebarBg || '#1e3a5f');
-            document.documentElement.style.setProperty('--cyan', theme.accentColor || '#00c9d4');
-            document.documentElement.style.setProperty('--border', theme.borderColor || 'rgba(0,201,212,0.3)');
-            document.documentElement.style.setProperty('--white', theme.textColor || '#ffffff');
+            const root = document.documentElement;
+            if (theme.headerBg) root.style.setProperty('--gray-card', theme.headerBg);
+            if (theme.sidebarBg) root.style.setProperty('--gray-sidebar', theme.sidebarBg);
+            if (theme.accentColor) root.style.setProperty('--cyan-portal', theme.accentColor);
+            if (theme.borderColor) root.style.setProperty('--gray-border', theme.borderColor);
+            if (theme.textColor) root.style.setProperty('--text-primary', theme.textColor);
             console.log('🎨 Theme loaded from localStorage');
         } catch(e) { console.error('Theme parse error:', e); }
     }
@@ -254,17 +94,18 @@ window.addEventListener('storage', (event) => {
     if (event.key === 'cnc_theme' && event.newValue) {
         try {
             const theme = JSON.parse(event.newValue);
-            document.documentElement.style.setProperty('--navy', theme.headerBg || '#0d1b2a');
-            document.documentElement.style.setProperty('--steel', theme.sidebarBg || '#1e3a5f');
-            document.documentElement.style.setProperty('--cyan', theme.accentColor || '#00c9d4');
-            document.documentElement.style.setProperty('--border', theme.borderColor || 'rgba(0,201,212,0.3)');
-            document.documentElement.style.setProperty('--white', theme.textColor || '#ffffff');
+            const root = document.documentElement;
+            if (theme.headerBg) root.style.setProperty('--gray-card', theme.headerBg);
+            if (theme.sidebarBg) root.style.setProperty('--gray-sidebar', theme.sidebarBg);
+            if (theme.accentColor) root.style.setProperty('--cyan-portal', theme.accentColor);
+            if (theme.borderColor) root.style.setProperty('--gray-border', theme.borderColor);
+            if (theme.textColor) root.style.setProperty('--text-primary', theme.textColor);
             console.log('🎨 Theme updated from another tab');
         } catch(e) {}
     }
 });
 
-// Khởi tạo load theme khi trang load
+// Khởi tạo
 loadThemeFromLocal();
 </script>
 
