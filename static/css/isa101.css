@@ -257,7 +257,7 @@ body::before {
     color: var(--text-muted);
     letter-spacing: 3px;
     text-align: center;
-    margin-top: -30px;
+    margin-top: 8px;
 }
 
 .menu-grid {
