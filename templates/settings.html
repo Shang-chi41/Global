@@ -718,9 +718,9 @@ modal.onclick = (e) => { if (e.target === modal) modal.classList.remove('show');
 function applyThemeToPage(theme) {
     const root = document.documentElement;
     // Đồng bộ với biến CSS của isa101.css
-    if (theme.headerBg) root.style.setProperty('--gray-card', theme.headerBg);
+    if (theme.headerBg) root.style.setProperty('--gray-header', theme.headerBg);
     if (theme.sidebarBg) root.style.setProperty('--gray-sidebar', theme.sidebarBg);
-    if (theme.cardBg) root.style.setProperty('--gray-card', theme.cardBg);
+    if (theme.cardBg)   root.style.setProperty('--gray-card', theme.cardBg); 
     if (theme.accentColor) {
         root.style.setProperty('--cyan-portal', theme.accentColor);
         root.style.setProperty('--cyan', theme.accentColor);
