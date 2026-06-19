@@ -627,7 +627,8 @@ let tp3dSimSpeed = 1.0;
         try {
             const theme = JSON.parse(saved);
             const root = document.documentElement;
-            if (theme.headerBg) root.style.setProperty('--gray-card', theme.headerBg);
+            if (theme.headerBg) root.style.setProperty('--gray-header', theme.headerBg); // ← đổi tên biến
+            if (theme.cardBg)   root.style.setProperty('--gray-card', theme.cardBg);   
             if (theme.sidebarBg) root.style.setProperty('--gray-sidebar', theme.sidebarBg);
             if (theme.accentColor) {
                 root.style.setProperty('--cyan-portal', theme.accentColor);
