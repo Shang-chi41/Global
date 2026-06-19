@@ -11,7 +11,7 @@
     --gray-sidebar: #BABCBF;
     --gray-hover: #B0B2B6;
     --gray-border: #9A9C9F;
-
+    --gray-header: #D0D2D6;
     /* === MÀU CHỮ === */
     --white-pure: #FFFFFF;
     --text-primary: #1A1A1A;
@@ -64,7 +64,7 @@ body::before {
 
 /* ===== HEADER ===== */
 .header {
-    background: var(--gray-card);
+    background: var(--gray-header);
     border-bottom: 2px solid var(--gray-border);
     padding: 0 28px;
     display: flex;
