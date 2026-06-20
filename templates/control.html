@@ -274,7 +274,7 @@
         padding: 8px 12px;
         border-radius: 8px;
         max-width: 95%;
-        font-size: 11px;
+        font-size: 18px;
     }
 
     .chat-message.user {
@@ -298,7 +298,7 @@
     }
 
     .chat-message .content {
-        font-size: 11px;
+        font-size: 18px;
         word-break: break-word;
         color: var(--text-primary);
     }
@@ -315,8 +315,13 @@
         border-radius: 6px;
         padding: 10px;
         color: var(--text-primary);
-        font-size: 11px;
+        font-size: 18px;
         outline: none;
+        resize: none;
+        font-family: 'Be Vietnam Pro', sans-serif;
+        line-height: 1.4;
+        max-height: 120px;
+        overflow-y: auto;
     }
 
     .chat-input:focus {
@@ -587,7 +592,7 @@
                             <div class="chat-message assistant"><div class="role">🤖 AI</div><div class="content">Chào bạn! 👋<br><br>🔹 Upload file phôi (STL, PNG, STEP)<br>🔹 Chat để tạo G-Code<br>🔹 Nạp file G-Code để xem đường chạy dao 3D<br><br>💡 VD: "Tạo G-Code gia công nhôm"</div></div>
                         </div>
                         <div id="typingIndicator" class="typing-indicator" style="display:none;"><span class="loading-spinner"></span> AI đang suy nghĩ...</div>
-                        <div class="chat-input-group"><input type="text" id="chatInput" class="chat-input" placeholder="Nhập câu hỏi..." onkeypress="if(event.key==='Enter') sendMessage()"><button class="send-btn" onclick="sendMessage()">📤</button></div>
+                        <div class="chat-input-group"><textarea id="chatInput" class="chat-input" placeholder="Nhập câu hỏi... (Shift+Enter để xuống dòng)" rows="1" onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault(); sendMessage();}" oninput="this.style.height='auto'; this.style.height=Math.min(this.scrollHeight,120)+'px';"></textarea><button class="send-btn" onclick="sendMessage()">📤</button></div>
                     </div>
                 </div>
             </div>
@@ -795,6 +800,7 @@ async function sendMessage() {
     const msg = input.value.trim();
     if (!msg || isWaitingForResponse) return;
     input.value = '';
+    input.style.height = 'auto';
     addChatMessage('user', msg);
     isWaitingForResponse = true;
     document.getElementById('typingIndicator').style.display = 'block';
@@ -920,8 +926,11 @@ function loadGCodeFile(file) {
 }
 function askAiAboutGCode() {
     if (!currentGCode) return;
-    document.getElementById('chatInput').value = 'Hãy phân tích và tối ưu G-Code này cho tôi';
-    document.getElementById('chatInput').focus();
+    const input = document.getElementById('chatInput');
+    input.value = 'Hãy phân tích và tối ưu G-Code này cho tôi';
+    input.style.height = 'auto';
+    input.style.height = Math.min(input.scrollHeight, 120) + 'px';
+    input.focus();
 }
 
 // ========== 3D TOOLPATH FUNCTIONS (ISA-101 THEME) ==========
