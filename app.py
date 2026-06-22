@@ -405,12 +405,14 @@ def api_chat_messages(conv_id):
         
         result_messages = []
         for m in messages:
+            # Chuẩn hóa role: dữ liệu cũ có thể lưu "ai" thay vì "assistant"
+            role = "assistant" if m["role"] in ("ai", "assistant") else m["role"]
             msg_data = {
-                "role": m["role"],
+                "role": role,
                 "message": m["message"],
                 "time": m.get("timestamp", "")
             }
-            if m["role"] == "assistant":
+            if role == "assistant":
                 gcode_match = re.search(r'```gcode\n(.*?)\n```', m["message"], re.DOTALL)
                 if gcode_match:
                     msg_data["has_gcode"] = True
