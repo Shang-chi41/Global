@@ -352,7 +352,9 @@ def api_chat():
     if not message:
         return jsonify({"error": "Tin nhắn trống"}), 400
 
-    conv_id = data.get("conversation_id") or str(ObjectId())
+    # Mỗi lượt gửi PHẢI có 1 job_id riêng biệt để polling không lấy nhầm
+    # kết quả của lượt chat trước đó (dù client gửi lại conversation_id cũ).
+    conv_id = str(ObjectId())
     
     # Lấy thông tin ảnh nếu có
     image_info = ""
