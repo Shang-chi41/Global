@@ -33,6 +33,7 @@ try:
     
     # Collections
     sensor_data = db["Sensor_Data"]
+    sensor_virtual = db["Sensor_Virtual"]
     uploaded_images = db["Uploaded_Images"]
     generated_gcode = db["Generated_GCode"]
     chat_messages = db["Chat_Messages"]
@@ -44,6 +45,7 @@ try:
     client.admin.command('ping')
     print("✅ MongoDB Atlas connected!")
     print("   - Sensor_Data: dữ liệu cảm biến")
+    print("   - Sensor_Virtual: dữ liệu virtual sensor (MATLAB)")
     print("   - Uploaded_Images: ảnh phôi")
     print("   - Generated_GCode: G-Code")
     print("   - Chat_Messages: tin nhắn")
@@ -53,6 +55,7 @@ except Exception as e:
     print(f"❌ MongoDB error: {e}")
     db = None
     sensor_data = None
+    sensor_virtual = None
     uploaded_images = None
     generated_gcode = None
     chat_messages = None
@@ -337,6 +340,79 @@ def api_history():
         return jsonify([])
 
 # ─────────────────────────────────────────────
+#  API: VIRTUAL SENSOR (MATLAB)
+# ─────────────────────────────────────────────
+@app.route("/api/virtual/latest")
+@login_required
+def api_virtual_latest():
+    if sensor_virtual is None:
+        return jsonify({"status": "db_error"})
+    try:
+        doc = sensor_virtual.find_one(
+            {"matlab_results": {"$exists": True}},
+            sort=[("timestamp", -1)]
+        )
+        if doc:
+            mr = doc.get("matlab_results", {})
+            torque   = mr.get("torque",   {"x": 0, "y": 0, "z": 0})
+            velocity = mr.get("velocity", {"x": 0, "y": 0, "z": 0})
+            position = mr.get("position", {"x": 0, "y": 0, "z": 0})
+            ts = doc.get("timestamp", "")
+            health = doc.get("system_health", doc.get("edge_computing", {}).get("system_health", {}))
+            return jsonify({
+                "vi_tri_x":  position.get("x", 0),
+                "vi_tri_y":  position.get("y", 0),
+                "vi_tri_z":  position.get("z", 0),
+                "van_toc_x": velocity.get("x", 0),
+                "van_toc_y": velocity.get("y", 0),
+                "van_toc_z": velocity.get("z", 0),
+                "moment_x":  torque.get("x", 0),
+                "moment_y":  torque.get("y", 0),
+                "moment_z":  torque.get("z", 0),
+                "timestamp": ts.isoformat() if hasattr(ts, "isoformat") else str(ts),
+                "health_status": health.get("status", "UNKNOWN"),
+                "health_score":  health.get("score", 0),
+            })
+        return jsonify({"status": "no_data"})
+    except Exception as e:
+        return jsonify({"status": "error", "error": str(e)})
+
+@app.route("/api/virtual/history")
+@login_required
+def api_virtual_history():
+    if sensor_virtual is None:
+        return jsonify([])
+    try:
+        limit = int(request.args.get("limit", 500))
+        docs = list(sensor_virtual.find(
+            {"matlab_results": {"$exists": True}}
+        ).sort("timestamp", -1).limit(limit))
+        docs.reverse()  # chronological
+
+        result = []
+        for d in docs:
+            mr = d.get("matlab_results", {})
+            torque   = mr.get("torque",   {"x": 0, "y": 0, "z": 0})
+            velocity = mr.get("velocity", {"x": 0, "y": 0, "z": 0})
+            position = mr.get("position", {"x": 0, "y": 0, "z": 0})
+            ts = d.get("timestamp", "")
+            result.append({
+                "time":      ts.isoformat() if hasattr(ts, "isoformat") else str(ts),
+                "vi_tri_x":  position.get("x", 0),
+                "vi_tri_y":  position.get("y", 0),
+                "vi_tri_z":  position.get("z", 0),
+                "van_toc_x": velocity.get("x", 0),
+                "van_toc_y": velocity.get("y", 0),
+                "van_toc_z": velocity.get("z", 0),
+                "moment_x":  torque.get("x", 0),
+                "moment_y":  torque.get("y", 0),
+                "moment_z":  torque.get("z", 0),
+            })
+        return jsonify(result)
+    except Exception as e:
+        return jsonify([])
+
+# ─────────────────────────────────────────────
 #  API: CHAT AI
 # ─────────────────────────────────────────────
 @app.route("/api/chat", methods=["POST"])
@@ -352,9 +428,7 @@ def api_chat():
     if not message:
         return jsonify({"error": "Tin nhắn trống"}), 400
 
-    # Mỗi lượt gửi PHẢI có 1 job_id riêng biệt để polling không lấy nhầm
-    # kết quả của lượt chat trước đó (dù client gửi lại conversation_id cũ).
-    conv_id = str(ObjectId())
+    conv_id = data.get("conversation_id") or str(ObjectId())
     
     # Lấy thông tin ảnh nếu có
     image_info = ""
@@ -407,14 +481,12 @@ def api_chat_messages(conv_id):
         
         result_messages = []
         for m in messages:
-            # Chuẩn hóa role: dữ liệu cũ có thể lưu "ai" thay vì "assistant"
-            role = "assistant" if m["role"] in ("ai", "assistant") else m["role"]
             msg_data = {
-                "role": role,
+                "role": m["role"],
                 "message": m["message"],
                 "time": m.get("timestamp", "")
             }
-            if role == "assistant":
+            if m["role"] == "assistant":
                 gcode_match = re.search(r'```gcode\n(.*?)\n```', m["message"], re.DOTALL)
                 if gcode_match:
                     msg_data["has_gcode"] = True
