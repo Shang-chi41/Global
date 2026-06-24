@@ -353,6 +353,12 @@
             <button class="tbtn" onclick="changeTime(1440,this)">1 NGÀY</button>
             <button class="tbtn" onclick="changeTime(10080,this)">1 TUẦN</button>
         </div>
+
+        <div class="time-btns" id="sourceBtns">
+            <button class="tbtn active" id="srcPhysical" onclick="setSource('physical',this)">📡 VẬT LÝ (ESP32)</button>
+            <button class="tbtn" id="srcVirtual"   onclick="setSource('virtual',this)">🔬 VIRTUAL (MATLAB)</button>
+            <button class="tbtn" id="srcBoth"      onclick="setSource('both',this)">⚡ CẢ HAI</button>
+        </div>
         
         <div class="chart-wrap">
             <div class="chart-label">
@@ -397,6 +403,7 @@
         <div class="panel-title" style="display:flex; align-items:center; justify-content:space-between; padding:10px 14px;">
             <span>🚨 CẢNH BÁO & SỰ CỐ</span>
             <div style="display:flex; gap:8px; align-items:center;">
+                <span id="virtualHealthBadge" style="display:none; font-size:10px; font-family:'Orbitron',monospace; padding:3px 8px; border-radius:12px; background:rgba(0,201,212,0.1); border:1px solid var(--cyan-portal); color:var(--cyan-portal);">🔬 —</span>
                 <span class="alarm-count" id="alarmCount">0 cảnh báo</span>
                 <button class="refresh-btn" onclick="fetchAlarms()">↺ Làm mới</button>
             </div>
@@ -521,6 +528,7 @@ let alarmFilter = 'all';
 let allAlarms = [];
 let currentData = [];
 let lastLoad = 0;
+let dataSource = 'physical'; // 'physical' | 'virtual' | 'both'
 
 const colors = {
     x: '#e74c3c',
@@ -606,86 +614,206 @@ document.addEventListener('click', (e) => {
 // Khởi tạo 3 biểu đồ
 const chartPosition = createMultiChart(document.getElementById('chartPosition').getContext('2d'));
 const chartVelocity = createMultiChart(document.getElementById('chartVelocity').getContext('2d'));
-const chartMoment = createMultiChart(document.getElementById('chartMoment').getContext('2d'));
+const chartMoment   = createMultiChart(document.getElementById('chartMoment').getContext('2d'));
 
-// ========== THAY ĐỔI KHOẢNG THỜI GIAN ==========
-function changeTime(min, btn) {
-    currentMinutes = min;
-    document.querySelectorAll('.time-btns .tbtn').forEach(b => b.classList.remove('active'));
+// ========== THAY ĐỔI NGUỒN DỮ LIỆU ==========
+function setSource(src, btn) {
+    dataSource = src;
+    document.querySelectorAll('#sourceBtns .tbtn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     fetchChart();
 }
 
-// Xóa dữ liệu cũ
+// ========== THAY ĐỔI KHOẢNG THỜI GIAN ==========
+function changeTime(min, btn) {
+    currentMinutes = min;
+    document.querySelectorAll('.time-btns:first-of-type .tbtn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    fetchChart();
+}
+
+// Xóa dữ liệu cũ về 3 dataset gốc (X/Y/Z)
 function clearCharts() {
     [chartPosition, chartVelocity, chartMoment].forEach(chart => {
         chart.data.labels = [];
-        chart.data.datasets.forEach(ds => ds.data = []);
+        chart.data.datasets = [
+            { label: 'X', data: [], borderColor: colors.x, borderWidth: 2, pointRadius: 2, pointHoverRadius: 6, tension: 0.3, fill: false },
+            { label: 'Y', data: [], borderColor: colors.y, borderWidth: 2, pointRadius: 2, pointHoverRadius: 6, tension: 0.3, fill: false },
+            { label: 'Z', data: [], borderColor: colors.z, borderWidth: 2, pointRadius: 2, pointHoverRadius: 6, tension: 0.3, fill: false }
+        ];
     });
 }
 
+// ========== HELPER: map 1 document → point ==========
+function mapPoint(d) {
+    return {
+        time:  d.time || d.mqtt_timestamp || '',
+        pos_x: d.vi_tri_x  || d.vi_tri  || 0,
+        pos_y: d.vi_tri_y  || 0,
+        pos_z: d.vi_tri_z  || 0,
+        vel_x: d.van_toc_x || d.van_toc || 0,
+        vel_y: d.van_toc_y || 0,
+        vel_z: d.van_toc_z || 0,
+        mom_x: d.moment_x  || d.moment  || 0,
+        mom_y: d.moment_y  || 0,
+        mom_z: d.moment_z  || 0,
+        temp:  d.temp  || 0,
+        load:  d.load  || 0
+    };
+}
+
+function formatTime(raw) {
+    try {
+        const dt = new Date(raw);
+        return currentMinutes <= 60
+            ? dt.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
+            : dt.toLocaleDateString('vi-VN', { month: '2-digit', day: '2-digit' }) + ' ' + dt.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+    } catch (e) { return raw || ''; }
+}
+
+function pushToSingleCharts(t, p) {
+    chartPosition.data.labels.push(t);
+    chartVelocity.data.labels.push(t);
+    chartMoment.data.labels.push(t);
+    chartPosition.data.datasets[0].data.push(p.pos_x);
+    chartPosition.data.datasets[1].data.push(p.pos_y);
+    chartPosition.data.datasets[2].data.push(p.pos_z);
+    chartVelocity.data.datasets[0].data.push(p.vel_x);
+    chartVelocity.data.datasets[1].data.push(p.vel_y);
+    chartVelocity.data.datasets[2].data.push(p.vel_z);
+    chartMoment.data.datasets[0].data.push(p.mom_x);
+    chartMoment.data.datasets[1].data.push(p.mom_y);
+    chartMoment.data.datasets[2].data.push(p.mom_z);
+}
+
+function updateCharts() {
+    chartPosition.update();
+    chartVelocity.update();
+    chartMoment.update();
+}
+
+// ========== RENDER SINGLE SOURCE ==========
+function renderSingle(data) {
+    currentData = [];
+    data.forEach(d => {
+        const t = formatTime(d.time || d.mqtt_timestamp);
+        const p = mapPoint(d);
+        currentData.push(p);
+        pushToSingleCharts(t, p);
+    });
+    updateCharts();
+}
+
+// ========== RENDER BOTH SOURCES (6 lines) ==========
+function renderBoth(physData, virtData) {
+    currentData = [];
+    [chartPosition, chartVelocity, chartMoment].forEach(chart => {
+        chart.data.labels = [];
+        chart.data.datasets = [
+            // Vật lý: nét liền, đậm
+            { label: 'X (ESP32)',  data: [], borderColor: '#e74c3c', borderWidth: 2, pointRadius: 1, tension: 0.3, fill: false },
+            { label: 'Y (ESP32)',  data: [], borderColor: '#00b894', borderWidth: 2, pointRadius: 1, tension: 0.3, fill: false },
+            { label: 'Z (ESP32)',  data: [], borderColor: '#3498db', borderWidth: 2, pointRadius: 1, tension: 0.3, fill: false },
+            // Virtual: nét đứt, màu nhạt
+            { label: 'X (MATLAB)', data: [], borderColor: '#f1948a', borderWidth: 1.5, borderDash: [5, 4], pointRadius: 0, tension: 0.3, fill: false },
+            { label: 'Y (MATLAB)', data: [], borderColor: '#76d7c4', borderWidth: 1.5, borderDash: [5, 4], pointRadius: 0, tension: 0.3, fill: false },
+            { label: 'Z (MATLAB)', data: [], borderColor: '#7fb3d3', borderWidth: 1.5, borderDash: [5, 4], pointRadius: 0, tension: 0.3, fill: false },
+        ];
+    });
+
+    physData.forEach(d => {
+        const t = formatTime(d.time || d.mqtt_timestamp);
+        const p = mapPoint(d);
+        chartPosition.data.labels.push(t);
+        chartVelocity.data.labels.push(t);
+        chartMoment.data.labels.push(t);
+        chartPosition.data.datasets[0].data.push(p.pos_x);
+        chartPosition.data.datasets[1].data.push(p.pos_y);
+        chartPosition.data.datasets[2].data.push(p.pos_z);
+        chartVelocity.data.datasets[0].data.push(p.vel_x);
+        chartVelocity.data.datasets[1].data.push(p.vel_y);
+        chartVelocity.data.datasets[2].data.push(p.vel_z);
+        chartMoment.data.datasets[0].data.push(p.mom_x);
+        chartMoment.data.datasets[1].data.push(p.mom_y);
+        chartMoment.data.datasets[2].data.push(p.mom_z);
+    });
+
+    virtData.forEach(d => {
+        const p = mapPoint(d);
+        chartPosition.data.datasets[3].data.push(p.pos_x);
+        chartPosition.data.datasets[4].data.push(p.pos_y);
+        chartPosition.data.datasets[5].data.push(p.pos_z);
+        chartVelocity.data.datasets[3].data.push(p.vel_x);
+        chartVelocity.data.datasets[4].data.push(p.vel_y);
+        chartVelocity.data.datasets[5].data.push(p.vel_z);
+        chartMoment.data.datasets[3].data.push(p.mom_x);
+        chartMoment.data.datasets[4].data.push(p.mom_y);
+        chartMoment.data.datasets[5].data.push(p.mom_z);
+    });
+
+    updateCharts();
+}
+
 // ========== LẤY DỮ LIỆU BIỂU ĐỒ ==========
-function fetchChart() {
+async function fetchChart() {
     const infoEl = document.getElementById('chartInfo');
     if (infoEl) infoEl.innerHTML = '<span style="color:var(--cyan-portal)">🔄 Đang tải dữ liệu...</span>';
-    
-    fetch('/api/history?minutes=' + currentMinutes + '&_t=' + Date.now())
-        .then(r => r.json())
-        .then(data => {
-            clearCharts();
-            currentData = [];
 
-            data.forEach(d => {
-                let t = '';
-                try {
-                    const dt = new Date(d.time);
-                    t = currentMinutes <= 60
-                        ? dt.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
-                        : dt.toLocaleDateString('vi-VN', { month: '2-digit', day: '2-digit' }) + ' ' + dt.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
-                } catch (e) { t = d.time || ''; }
+    try {
+        let physData = [], virtData = [];
 
-                currentData.push({
-                    time: d.time,
-                    pos_x: d.vi_tri_x || d.vi_tri || 0,
-                    pos_y: d.vi_tri_y || 0,
-                    pos_z: d.vi_tri_z || 0,
-                    vel_x: d.van_toc_x || d.van_toc || 0,
-                    vel_y: d.van_toc_y || 0,
-                    vel_z: d.van_toc_z || 0,
-                    mom_x: d.moment_x || d.moment || 0,
-                    mom_y: d.moment_y || 0,
-                    mom_z: d.moment_z || 0,
-                    temp: d.temp || 0,
-                    load: d.load || 0
-                });
+        if (dataSource === 'physical' || dataSource === 'both') {
+            const r = await fetch('/api/history?minutes=' + currentMinutes + '&_t=' + Date.now());
+            physData = await r.json();
+        }
+        if (dataSource === 'virtual' || dataSource === 'both') {
+            const r = await fetch('/api/virtual/history?limit=500&_t=' + Date.now());
+            virtData = await r.json();
+        }
 
-                chartPosition.data.labels.push(t);
-                chartVelocity.data.labels.push(t);
-                chartMoment.data.labels.push(t);
+        clearCharts();
+        currentData = [];
 
-                chartPosition.data.datasets[0].data.push(currentData[currentData.length - 1].pos_x);
-                chartPosition.data.datasets[1].data.push(currentData[currentData.length - 1].pos_y);
-                chartPosition.data.datasets[2].data.push(currentData[currentData.length - 1].pos_z);
-
-                chartVelocity.data.datasets[0].data.push(currentData[currentData.length - 1].vel_x);
-                chartVelocity.data.datasets[1].data.push(currentData[currentData.length - 1].vel_y);
-                chartVelocity.data.datasets[2].data.push(currentData[currentData.length - 1].vel_z);
-
-                chartMoment.data.datasets[0].data.push(currentData[currentData.length - 1].mom_x);
-                chartMoment.data.datasets[1].data.push(currentData[currentData.length - 1].mom_y);
-                chartMoment.data.datasets[2].data.push(currentData[currentData.length - 1].mom_z);
-            });
-
-            chartPosition.update();
-            chartVelocity.update();
-            chartMoment.update();
-
+        if (dataSource === 'both') {
+            renderBoth(physData, virtData);
             const now = new Date().toLocaleTimeString('vi-VN');
-            if (infoEl) infoEl.innerHTML = `🕒 ${now} | 📊 ${data.length} điểm dữ liệu | Click vào điểm bất kỳ để xem chi tiết X/Y/Z`;
-        })
-        .catch(() => {
-            if (infoEl) infoEl.innerHTML = '❌ Lỗi tải dữ liệu từ server';
-        });
+            if (infoEl) infoEl.innerHTML = `🕒 ${now} | 📡 ${physData.length} điểm ESP32 &nbsp;|&nbsp; 🔬 ${virtData.length} điểm MATLAB`;
+        } else {
+            const data = dataSource === 'virtual' ? virtData : physData;
+            renderSingle(data);
+            const src = dataSource === 'virtual' ? '🔬 Virtual (MATLAB)' : '📡 Vật lý (ESP32)';
+            const now = new Date().toLocaleTimeString('vi-VN');
+            if (infoEl) infoEl.innerHTML = `🕒 ${now} | ${src} | 📊 ${data.length} điểm dữ liệu | Click vào điểm bất kỳ để xem chi tiết`;
+        }
+
+        // Cập nhật health badge nếu đang xem virtual
+        if (dataSource === 'virtual' || dataSource === 'both') {
+            fetchVirtualHealth();
+        } else {
+            const badge = document.getElementById('virtualHealthBadge');
+            if (badge) badge.style.display = 'none';
+        }
+
+    } catch (e) {
+        if (infoEl) infoEl.innerHTML = '❌ Lỗi tải dữ liệu từ server';
+    }
+}
+
+// ========== VIRTUAL HEALTH BADGE ==========
+async function fetchVirtualHealth() {
+    const badge = document.getElementById('virtualHealthBadge');
+    if (!badge) return;
+    try {
+        const r = await fetch('/api/virtual/latest?_t=' + Date.now());
+        const d = await r.json();
+        if (d.health_status) {
+            const colorMap = { EXCELLENT: '#00b894', GOOD: '#00b894', FAIR: '#886600', POOR: '#880000', UNKNOWN: 'var(--text-muted)' };
+            badge.style.display = 'inline-block';
+            badge.style.color = colorMap[d.health_status] || 'var(--text-muted)';
+            badge.style.borderColor = colorMap[d.health_status] || 'var(--gray-border)';
+            badge.textContent = `🔬 ${d.health_status} (${d.health_score ?? '—'})`;
+        }
+    } catch (e) { /* ignore */ }
 }
 
 // ========== GỬI DỮ LIỆU LOAD SANG 3D VIEWER ==========
@@ -822,6 +950,7 @@ document.querySelectorAll('.nav-link').forEach(a => {
 window.changeTime = changeTime;
 window.fetchAlarms = fetchAlarms;
 window.filterAlarm = filterAlarm;
+window.setSource = setSource;
 </script>
 </body>
 </html>
