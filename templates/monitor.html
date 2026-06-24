@@ -347,7 +347,7 @@
 <main class="main">
     <div class="panel-left">
         <div class="panel-title">ĐỒ THỊ GIÁM SÁT</div>
-        <div class="time-btns">
+        <div class="time-btns" id="timeBtns">
             <button class="tbtn active" onclick="changeTime(60,this)">1 GIỜ</button>
             <button class="tbtn" onclick="changeTime(720,this)">12 GIỜ</button>
             <button class="tbtn" onclick="changeTime(1440,this)">1 NGÀY</button>
@@ -356,8 +356,7 @@
 
         <div class="time-btns" id="sourceBtns">
             <button class="tbtn active" id="srcPhysical" onclick="setSource('physical',this)">📡 VẬT LÝ (ESP32)</button>
-            <button class="tbtn" id="srcVirtual"   onclick="setSource('virtual',this)">🔬 VIRTUAL (MATLAB)</button>
-            <button class="tbtn" id="srcBoth"      onclick="setSource('both',this)">⚡ CẢ HAI</button>
+            <button class="tbtn" id="srcVirtual" onclick="setSource('virtual',this)">🔬 VIRTUAL (MATLAB)</button>
         </div>
         
         <div class="chart-wrap">
@@ -627,7 +626,7 @@ function setSource(src, btn) {
 // ========== THAY ĐỔI KHOẢNG THỜI GIAN ==========
 function changeTime(min, btn) {
     currentMinutes = min;
-    document.querySelectorAll('.time-btns:first-of-type .tbtn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('#timeBtns .tbtn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     fetchChart();
 }
@@ -760,34 +759,26 @@ async function fetchChart() {
     if (infoEl) infoEl.innerHTML = '<span style="color:var(--cyan-portal)">🔄 Đang tải dữ liệu...</span>';
 
     try {
-        let physData = [], virtData = [];
+        let data = [];
 
-        if (dataSource === 'physical' || dataSource === 'both') {
-            const r = await fetch('/api/history?minutes=' + currentMinutes + '&_t=' + Date.now());
-            physData = await r.json();
-        }
-        if (dataSource === 'virtual' || dataSource === 'both') {
+        if (dataSource === 'virtual') {
             const r = await fetch('/api/virtual/history?limit=500&_t=' + Date.now());
-            virtData = await r.json();
+            data = await r.json();
+        } else {
+            const r = await fetch('/api/history?minutes=' + currentMinutes + '&_t=' + Date.now());
+            data = await r.json();
         }
 
         clearCharts();
         currentData = [];
+        renderSingle(data);
 
-        if (dataSource === 'both') {
-            renderBoth(physData, virtData);
-            const now = new Date().toLocaleTimeString('vi-VN');
-            if (infoEl) infoEl.innerHTML = `🕒 ${now} | 📡 ${physData.length} điểm ESP32 &nbsp;|&nbsp; 🔬 ${virtData.length} điểm MATLAB`;
-        } else {
-            const data = dataSource === 'virtual' ? virtData : physData;
-            renderSingle(data);
-            const src = dataSource === 'virtual' ? '🔬 Virtual (MATLAB)' : '📡 Vật lý (ESP32)';
-            const now = new Date().toLocaleTimeString('vi-VN');
-            if (infoEl) infoEl.innerHTML = `🕒 ${now} | ${src} | 📊 ${data.length} điểm dữ liệu | Click vào điểm bất kỳ để xem chi tiết`;
-        }
+        const src = dataSource === 'virtual' ? '🔬 Virtual (MATLAB)' : '📡 Vật lý (ESP32)';
+        const now = new Date().toLocaleTimeString('vi-VN');
+        if (infoEl) infoEl.innerHTML = `🕒 ${now} | ${src} | 📊 ${data.length} điểm dữ liệu | Click vào điểm bất kỳ để xem chi tiết`;
 
-        // Cập nhật health badge nếu đang xem virtual
-        if (dataSource === 'virtual' || dataSource === 'both') {
+        // Health badge chỉ hiện khi xem virtual
+        if (dataSource === 'virtual') {
             fetchVirtualHealth();
         } else {
             const badge = document.getElementById('virtualHealthBadge');
