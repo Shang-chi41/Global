@@ -340,11 +340,12 @@ def api_history():
         return jsonify([])
 
 # ─────────────────────────────────────────────
-#  API: VIRTUAL SENSOR (MATLAB)
+#  API: VIRTUAL SENSOR (MATLAB/Simulink)
 # ─────────────────────────────────────────────
 @app.route("/api/virtual/latest")
 @login_required
 def api_virtual_latest():
+    """Lấy bản ghi mới nhất từ Sensor_Virtual (MATLAB)"""
     if sensor_virtual is None:
         return jsonify({"status": "db_error"})
     try:
@@ -353,23 +354,24 @@ def api_virtual_latest():
             sort=[("timestamp", -1)]
         )
         if doc:
-            mr = doc.get("matlab_results", {})
+            mr       = doc.get("matlab_results", {})
             torque   = mr.get("torque",   {"x": 0, "y": 0, "z": 0})
             velocity = mr.get("velocity", {"x": 0, "y": 0, "z": 0})
             position = mr.get("position", {"x": 0, "y": 0, "z": 0})
-            ts = doc.get("timestamp", "")
-            health = doc.get("system_health", doc.get("edge_computing", {}).get("system_health", {}))
+            ts       = doc.get("timestamp", "")
+            health   = doc.get("system_health",
+                        doc.get("edge_computing", {}).get("system_health", {}))
             return jsonify({
-                "vi_tri_x":  position.get("x", 0),
-                "vi_tri_y":  position.get("y", 0),
-                "vi_tri_z":  position.get("z", 0),
-                "van_toc_x": velocity.get("x", 0),
-                "van_toc_y": velocity.get("y", 0),
-                "van_toc_z": velocity.get("z", 0),
-                "moment_x":  torque.get("x", 0),
-                "moment_y":  torque.get("y", 0),
-                "moment_z":  torque.get("z", 0),
-                "timestamp": ts.isoformat() if hasattr(ts, "isoformat") else str(ts),
+                "vi_tri_x":     position.get("x", 0),
+                "vi_tri_y":     position.get("y", 0),
+                "vi_tri_z":     position.get("z", 0),
+                "van_toc_x":    velocity.get("x", 0),
+                "van_toc_y":    velocity.get("y", 0),
+                "van_toc_z":    velocity.get("z", 0),
+                "moment_x":     torque.get("x", 0),
+                "moment_y":     torque.get("y", 0),
+                "moment_z":     torque.get("z", 0),
+                "timestamp":    ts.isoformat() if hasattr(ts, "isoformat") else str(ts),
                 "health_status": health.get("status", "UNKNOWN"),
                 "health_score":  health.get("score", 0),
             })
@@ -380,6 +382,7 @@ def api_virtual_latest():
 @app.route("/api/virtual/history")
 @login_required
 def api_virtual_history():
+    """Lấy lịch sử từ Sensor_Virtual (MATLAB), trả về cùng format /api/history"""
     if sensor_virtual is None:
         return jsonify([])
     try:
@@ -387,15 +390,15 @@ def api_virtual_history():
         docs = list(sensor_virtual.find(
             {"matlab_results": {"$exists": True}}
         ).sort("timestamp", -1).limit(limit))
-        docs.reverse()  # chronological
+        docs.reverse()  # chronological order
 
         result = []
         for d in docs:
-            mr = d.get("matlab_results", {})
+            mr       = d.get("matlab_results", {})
             torque   = mr.get("torque",   {"x": 0, "y": 0, "z": 0})
             velocity = mr.get("velocity", {"x": 0, "y": 0, "z": 0})
             position = mr.get("position", {"x": 0, "y": 0, "z": 0})
-            ts = d.get("timestamp", "")
+            ts       = d.get("timestamp", "")
             result.append({
                 "time":      ts.isoformat() if hasattr(ts, "isoformat") else str(ts),
                 "vi_tri_x":  position.get("x", 0),
@@ -428,7 +431,9 @@ def api_chat():
     if not message:
         return jsonify({"error": "Tin nhắn trống"}), 400
 
-    conv_id = data.get("conversation_id") or str(ObjectId())
+    # Mỗi lượt gửi PHẢI có 1 job_id riêng biệt để polling không lấy nhầm
+    # kết quả của lượt chat trước đó (dù client gửi lại conversation_id cũ).
+    conv_id = str(ObjectId())
     
     # Lấy thông tin ảnh nếu có
     image_info = ""
@@ -481,12 +486,14 @@ def api_chat_messages(conv_id):
         
         result_messages = []
         for m in messages:
+            # Chuẩn hóa role: dữ liệu cũ có thể lưu "ai" thay vì "assistant"
+            role = "assistant" if m["role"] in ("ai", "assistant") else m["role"]
             msg_data = {
-                "role": m["role"],
+                "role": role,
                 "message": m["message"],
                 "time": m.get("timestamp", "")
             }
-            if m["role"] == "assistant":
+            if role == "assistant":
                 gcode_match = re.search(r'```gcode\n(.*?)\n```', m["message"], re.DOTALL)
                 if gcode_match:
                     msg_data["has_gcode"] = True
